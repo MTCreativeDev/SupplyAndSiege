@@ -10,6 +10,22 @@
 /**
  * 
  */
+
+//Struct used to return the MousePosition and the MovementAxis
+USTRUCT(BlueprintType)
+struct FMouseEdgeResult
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	EMousePosition MousePosition = EMousePosition::None;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D MovementAxis = FVector2D::ZeroVector;
+
+};
+
+
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_PlayerController : public APlayerController
 {
@@ -18,7 +34,7 @@ class SUPPLYANDSIEGE_API ASAS_PlayerController : public APlayerController
 public:
 	
 	UFUNCTION(BlueprintCallable)
-	EMousePosition GetMouseEdgePosition(
+	FMouseEdgeResult GetMouseEdgePosition(
 		float HorizontalEdgeDistance,
 		float VerticalEdgeDistance
 	) const;
