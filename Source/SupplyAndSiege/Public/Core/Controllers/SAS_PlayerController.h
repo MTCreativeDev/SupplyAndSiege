@@ -32,7 +32,9 @@ class SUPPLYANDSIEGE_API ASAS_PlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (Bitmask, BitmaskEnum = "/Script/SUPPLYANDSIEGE.EMovementBlocker"))
+	int32 MovementBlockerMask = 0;
+
 	UFUNCTION(BlueprintCallable)
 	FMouseEdgeResult GetMouseEdgePosition(
 		float HorizontalEdgeDistance,
