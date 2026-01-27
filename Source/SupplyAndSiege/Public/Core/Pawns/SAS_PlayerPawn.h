@@ -6,6 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "SAS_PlayerPawn.generated.h"
 
+class UFloatingPawnMovement;
+
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_PlayerPawn : public APawn
 {
@@ -16,14 +18,21 @@ public:
 	ASAS_PlayerPawn();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement")
+	TObjectPtr<UFloatingPawnMovement> FloatingMovement;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	float MovementSpeed = 5000.f;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UFUNCTION(BlueprintCallable)
+	void Move(FVector2D MovementAxis);
+
+	UFUNCTION(BlueprintCallable)
+	void Rotate(float RotationChange);
+
+
 
 };

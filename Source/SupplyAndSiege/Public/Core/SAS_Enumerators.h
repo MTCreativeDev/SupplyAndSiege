@@ -24,3 +24,20 @@ enum class EMovementBlocker : uint8
     Rotating = 1 << 0   UMETA(displayName = "Rotating"),
     Paused =  1 << 1    UMETA(displayName = "Paused")
 };
+
+//Enum used as a bitblocker to ensure we are allowed to rotate.
+UENUM(BlueprintType, meta = (Bitflags))
+enum class ERotationBlocker : uint8
+{
+    None = 0   UMETA(Hidden, displayName = "None"),
+    Moving = 1 << 0   UMETA(displayName = "Moving"),
+    Paused = 1 << 1   UMETA(displayName = "Paused"),
+};
+
+UENUM(BlueprintType)
+enum class EControllerAction : uint8
+{
+    None    UMETA(DisplayName = "None"),
+    Moving    UMETA(DisplayName = "Moving"),
+    Rotating    UMETA(DisplayName = "Rotating")
+};

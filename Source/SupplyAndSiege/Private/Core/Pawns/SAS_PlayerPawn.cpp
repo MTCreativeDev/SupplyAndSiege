@@ -2,33 +2,41 @@
 
 
 #include "Core/Pawns/SAS_PlayerPawn.h"
+#include "GameFramework/FloatingPawnMovement.h"
 
 // Sets default values
 ASAS_PlayerPawn::ASAS_PlayerPawn()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	FloatingMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("FloatingPawnMovement"));
 }
 
-// Called when the game starts or when spawned
-void ASAS_PlayerPawn::BeginPlay()
+UFUNCTION(BlueprintCallable)
+void ASAS_PlayerPawn::Move(FVector2D MovementAxis)
 {
-	Super::BeginPlay();
-	
+	if (!FloatingMovement)
+	{
+		return;
+
+	}
+
+	const FVector Forward = GetActorForwardVector();
+	const FVector Right = GetActorRightVector();
+
+	FVector MovementVector = (Forward * MovementAxis.Y) + (Right * MovementAxis.X);
+
+	MovementVector = MovementVector.GetClampedToMaxSize(1.f);
+
+	MovementVector *= MovementSpeed;
+
+	FloatingMovement->AddInputVector(MovementVector, false);
 }
 
-// Called every frame
-void ASAS_PlayerPawn::Tick(float DeltaTime)
+UFUNCTION(BlueprintCallable)
+void ASAS_PlayerPawn::Rotate(float RotationChange)
 {
-	Super::Tick(DeltaTime);
-
+	FRotator NewRotation = GetActorRotation();
+	NewRotation.Yaw += RotationChange;
+	SetActorRotation(NewRotation);
 }
 
-// Called to bind functionality to input
-void ASAS_PlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
 
