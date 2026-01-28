@@ -2,9 +2,9 @@
 
 
 #include "Core/Controllers/SAS_PlayerController.h"
+#include "Core/Pawns/SAS_PlayerPawn.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
-#include "Core/Pawns/SAS_PlayerPawn.h"
 
 
 
@@ -41,11 +41,35 @@ void ASAS_PlayerController::Tick(float DeltaSeconds)
         break;
 
     case EControllerAction::Rotating:
+        Rotate();
         break;
 
     case EControllerAction::None:
     default:
         break;
+    }
+
+    if (bSelecting)
+    {
+        float MouseX, MouseY;
+        if (GetMousePosition(MouseX, MouseY))
+        {
+            CurrentSelectionMousePos = FVector2D(MouseX, MouseY);
+        }
+        UpdateSelectionDragState();
+
+        const FString StateString = bDragging ? TEXT("Dragging") : TEXT("Clicking");
+
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(
+                -1,
+                0.f,
+                FColor::Cyan,
+                StateString
+            );
+        }
+
     }
 }
 
@@ -65,6 +89,7 @@ void ASAS_PlayerController::SetupInputComponent()
     checkf(EIC, TEXT("ASAS_PlayerController requires Enhanced Input. InputComponent is not UEnhancedInputComponent."));
     checkf(IA_ToggleRotate, TEXT("ASAS_PlayerController: IA_Rotate is not assigned. Set it in the PlayerController Blueprint defaults."));
     checkf(IA_Move, TEXT("ASAS_PlayerController: IA_Move is not assigned. Set it in the PlayerController Blueprint defaults."));
+    checkf(IA_Select, TEXT("ASAS_PlayerController: IA_Select is not assigned. Set it in the PlayerController Blueprint defaults."));
 
     EIC->BindAction(IA_ToggleRotate, ETriggerEvent::Started, this, &ASAS_PlayerController::OnRotationToggleStarted);
     EIC->BindAction(IA_ToggleRotate, ETriggerEvent::Completed, this, &ASAS_PlayerController::OnRotationToggleEnded);
@@ -74,6 +99,11 @@ void ASAS_PlayerController::SetupInputComponent()
     EIC->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ASAS_PlayerController::MoveUpdated);
     EIC->BindAction(IA_Move, ETriggerEvent::Completed, this, &ASAS_PlayerController::MoveEnded);
     EIC->BindAction(IA_Move, ETriggerEvent::Canceled, this, &ASAS_PlayerController::MoveEnded);
+
+    EIC->BindAction(IA_Select, ETriggerEvent::Started, this, &ASAS_PlayerController::SelectionStarted);
+    EIC->BindAction(IA_Select, ETriggerEvent::Completed, this, &ASAS_PlayerController::SelectionCompleted);
+    EIC->BindAction(IA_Select, ETriggerEvent::Canceled, this, &ASAS_PlayerController::SelectionCompleted);
+
 }
 
 void ASAS_PlayerController::MoveUpdated(const FInputActionValue& Value)
@@ -97,7 +127,6 @@ void ASAS_PlayerController::MoveEnded(const FInputActionValue& Value)
         RotationBlockerMask &= ~static_cast<int64>(ERotationBlocker::Moving);
     }
 }
-
 
 FMouseEdgeResult ASAS_PlayerController::GetMouseEdgePosition(float HorizontalEdgeDistance, float VerticalEdgeDistance) const
 {
@@ -185,6 +214,7 @@ void ASAS_PlayerController::OnRotationToggleStarted(const FInputActionValue& Val
     if (RotationBlockerMask != 0) return;
 
     MovementBlockerMask |= static_cast<int64>(EMovementBlocker::Rotating);
+    CacheMouseLocationOnViewport();
     CurrentAction = EControllerAction::Rotating;
 }
 
@@ -213,3 +243,101 @@ void ASAS_PlayerController::Move()
         PlayerPawn->Move(MoveInputActionAxis);
     }
 }
+
+void ASAS_PlayerController::CacheMouseLocationOnViewport()
+{
+    float MouseX, MouseY;
+    if (GetMousePosition(MouseX, MouseY))
+    {
+        CachedMouseLocation = FVector2D(MouseX, MouseY);
+    }
+    //If we can't get the mouse position on the viewport for some reason, set the cached location to the center of the screen.
+    else
+    {
+        int32 ViewportX, ViewportY;
+        GetViewportSize(ViewportX, ViewportY);
+        CachedMouseLocation = FVector2D(ViewportX / 2, ViewportY / 2);
+    }
+}
+
+void ASAS_PlayerController::Rotate()
+{
+    float MouseX, MouseY;
+    if (!GetMousePosition(MouseX, MouseY))
+    {
+        return;
+    }
+    const float DeltaX = MouseX - CachedMouseLocation.X;
+    if (MaxEvaluatedRotationDistance <= 0.f) return;
+    const float Normalized = FMath::Clamp(DeltaX / MaxEvaluatedRotationDistance,-1.f,1.f);
+    PlayerPawn->Rotate(Normalized);
+}
+
+void ASAS_PlayerController::SelectionStarted()
+{
+    bSelecting = true;
+    bDragging = false;
+    
+    if (GetWorld())
+    {
+        SelectionStartedTime = GetWorld()->GetTimeSeconds();
+    }
+    else
+    {
+        SelectionStartedTime = 0.f;
+    }
+    
+    float MouseX, MouseY;
+    if (GetMousePosition(MouseX, MouseY))
+    {
+        SelectionStartMousePos = FVector2D(MouseX, MouseY);
+        CurrentSelectionMousePos = SelectionStartMousePos;
+    }
+}
+
+void ASAS_PlayerController::SelectionCompleted()
+{
+    if (!bSelecting) return;
+
+    const float CurrentTime = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
+    const float HeldTime = CurrentTime - SelectionStartedTime;
+
+    const float DragDist = FVector2D::Distance(CurrentSelectionMousePos, SelectionStartMousePos);
+    const bool bWasDrag = bDragging || (DragDist >= SelectionDistanceTillDrag);
+    const bool bWasClick = !bWasDrag && (HeldTime <= SelectingTimeTillDrag);
+
+    if (bWasClick)
+    {
+        DoSingleSelect(SelectionStartMousePos);
+    }
+    else
+    {
+        DoBoxSelect(SelectionStartMousePos, CurrentSelectionMousePos);
+    }
+
+    bSelecting = false;
+    bDragging = false;
+}
+
+void ASAS_PlayerController::UpdateSelectionDragState()
+{
+    if (bDragging)
+    {
+        return;
+    }
+
+    const float DragDist = FVector2D::Distance(CurrentSelectionMousePos, SelectionStartMousePos);
+    if (DragDist >= SelectionDistanceTillDrag)
+    {
+        bDragging = true;
+    }
+}
+
+void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
+{
+}
+
+void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const FVector2D& ScreenPositionB)
+{
+}
+
