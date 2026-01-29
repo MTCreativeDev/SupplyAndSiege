@@ -25,13 +25,12 @@ void ASAS_PlayerController::Tick(float DeltaSeconds)
             CurrentAction = EControllerAction::Moving;
             RotationBlockerMask |= static_cast<int64>(ERotationBlocker::Moving);
         }
-        else
+     
+    
+        if (CurrentAction == EControllerAction::Moving && OverrideMoveByInputAction == false)
         {
-            if (CurrentAction == EControllerAction::Moving && OverrideMoveByInputAction == false)
-            {
-                CurrentAction = EControllerAction::None;
-                RotationBlockerMask &= ~static_cast<int64>(ERotationBlocker::Moving);
-            }
+            CurrentAction = EControllerAction::None;
+            RotationBlockerMask &= ~static_cast<int64>(ERotationBlocker::Moving);
         }
     }
     switch (CurrentAction)
