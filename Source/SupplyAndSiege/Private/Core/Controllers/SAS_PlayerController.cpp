@@ -5,8 +5,7 @@
 #include "Core/Pawns/SAS_PlayerPawn.h"
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
-
-//Ignore
+#include "DrawDebugHelpers.h"
 
 ASAS_PlayerController::ASAS_PlayerController()
 {
@@ -17,6 +16,7 @@ ASAS_PlayerController::ASAS_PlayerController()
 void ASAS_PlayerController::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+
     if (MovementBlockerMask == 0)
     {
         MouseEdgeResult = GetMouseEdgePosition(ScreenMovementBounds.X, ScreenMovementBounds.Y);
@@ -25,13 +25,16 @@ void ASAS_PlayerController::Tick(float DeltaSeconds)
             CurrentAction = EControllerAction::Moving;
             RotationBlockerMask |= static_cast<int64>(ERotationBlocker::Moving);
         }
-     
-    
-        if (CurrentAction == EControllerAction::Moving && OverrideMoveByInputAction == false)
+
+        else
         {
-            CurrentAction = EControllerAction::None;
-            RotationBlockerMask &= ~static_cast<int64>(ERotationBlocker::Moving);
+            if (CurrentAction == EControllerAction::Moving && OverrideMoveByInputAction == false)
+            {
+                CurrentAction = EControllerAction::None;
+                RotationBlockerMask &= ~static_cast<int64>(ERotationBlocker::Moving);
+            }
         }
+
     }
     switch (CurrentAction)
     {
@@ -55,10 +58,22 @@ void ASAS_PlayerController::Tick(float DeltaSeconds)
         {
             CurrentSelectionMousePos = FVector2D(MouseX, MouseY);
         }
+
+        else
+        {
+            if (GEngine)
+            {
+                GEngine->AddOnScreenDebugMessage(
+                    -1,
+                    0.f,
+                    FColor::Yellow,
+                    FString::Printf(TEXT("Failed to get mouse pos"))
+                );
+            }
+        }
         UpdateSelectionDragState();
 
         const FString StateString = bDragging ? TEXT("Dragging") : TEXT("Clicking");
-
         if (GEngine)
         {
             GEngine->AddOnScreenDebugMessage(
@@ -68,6 +83,7 @@ void ASAS_PlayerController::Tick(float DeltaSeconds)
                 StateString
             );
         }
+
 
     }
 }
@@ -334,6 +350,65 @@ void ASAS_PlayerController::UpdateSelectionDragState()
 
 void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
 {
+
+    //Test - Delete and re-write
+
+    FVector WorldOrigin;
+    FVector WorldDirection;
+
+    if (!DeprojectScreenPositionToWorld(
+        SelectionStartMousePos.X,
+        SelectionStartMousePos.Y,
+        WorldOrigin,
+        WorldDirection))
+    {
+        return;
+    }
+
+    const FVector TraceStart = WorldOrigin;
+    const FVector TraceEnd = WorldOrigin + (WorldDirection * 100000.f);
+
+    FHitResult Hit;
+    FCollisionQueryParams Params;
+    Params.bTraceComplex = true;
+    
+    const bool bHit = GetWorld()->LineTraceSingleByChannel(
+        Hit,
+        TraceStart,
+        TraceEnd,
+        ECollisionChannel::ECC_Visibility,
+        Params
+    );
+
+    DrawDebugLine(
+        GetWorld(),
+        TraceStart,
+        TraceEnd,
+        FColor::Green,
+        false,
+        2.f,
+        0,
+        .1
+    );
+
+    if (bHit && Hit.GetActor())
+    {
+        // Hit.GetActor() is your selected actor
+    }
+
+    if (bHit && Hit.GetActor())
+    {
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(
+                -1,
+                2.f,
+                FColor::Green,
+                Hit.GetActor()->GetName()
+            );
+        }
+    }
+
 }
 
 void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const FVector2D& ScreenPositionB)

@@ -91,7 +91,7 @@ protected:
 	bool bDragging = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	float SelectingTimeTillDrag = .3f;
+	float SelectingTimeTillDrag = 9.3f;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	float SelectionDistanceTillDrag = 8.f;
 
