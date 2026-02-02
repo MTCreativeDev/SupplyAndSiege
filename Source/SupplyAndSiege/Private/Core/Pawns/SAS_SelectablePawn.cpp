@@ -4,6 +4,7 @@
 #include "Core/Pawns/SAS_SelectablePawn.h"
 #include "Core/Components/SAS_UnitInformationComponent.h"
 
+
 ASAS_SelectablePawn::ASAS_SelectablePawn()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -15,6 +16,14 @@ ASAS_SelectablePawn::ASAS_SelectablePawn()
 void ASAS_SelectablePawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UnitInformationComponent->SetTeam(AssignTeamOnSpawn);
 	
+}
+
+void ASAS_SelectablePawn::DestroySelf()
+{
+	UnitInformationComponent->RemoveUnitFromGame();
+	Destroy();
 }
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Core/SAS_Enumerators.h"
 #include "SAS_SelectablePawn.generated.h"
 
 class USAS_UnitInformationComponent;
@@ -16,12 +17,22 @@ class SUPPLYANDSIEGE_API ASAS_SelectablePawn : public APawn
 public:
 	ASAS_SelectablePawn();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SAS_Unit", meta = (ExposeOnSpawn = true))
+	ESAS_Team AssignTeamOnSpawn = ESAS_Team::None;
+
 
 
 protected:
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
+	void DestroySelf();
+
 public:
+
+
+
+protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
 	USAS_UnitInformationComponent* UnitInformationComponent;

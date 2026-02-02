@@ -11,7 +11,7 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 class ASAS_PlayerPawn;
-
+class USAS_UnitManagerComponent;
 
 
 /**
@@ -55,6 +55,9 @@ public:
 
 
 protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
+	USAS_UnitManagerComponent* UnitManagerComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller State")
 	EControllerAction CurrentAction = EControllerAction::None;

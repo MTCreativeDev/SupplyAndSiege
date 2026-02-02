@@ -19,20 +19,64 @@ void USAS_UnitInformationComponent::BeginPlay()
 
 void USAS_UnitInformationComponent::SetTeam(ESAS_Team NewTeam)
 {
-	if (AssignedUnitManager && AssignedTeam != NewTeam)
+	if (AssignedTeam == NewTeam)
 	{
-		AActor* Owner = GetOwner();
-		if (!Owner) return;
+		return;
+	}
+	AActor* Owner = GetOwner();
+	if (!Owner) return;
+	
+	if (AssignedUnitManager)
+	{
 		AssignedUnitManager->RemoveSelectableUnit(Owner);
+		AssignedUnitManager = nullptr;
+	}
 
-		/*
-			START HERE	
-			switch(ESAS_Team)
 
-		
-		*/
+	switch (NewTeam)
+	{
+	case ESAS_Team::None:
+		break;
+	case ESAS_Team::EnvironmentTeam:
+	{
+		//TODO Figure out what to do with environment units
+		break;
+	}
+	case ESAS_Team::Team1:
+	{	//WARNING: This will only work for a single player game. 
+		APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+		if (!PC) break;
+		USAS_UnitManagerComponent* UnitManagerComponent = PC->FindComponentByClass<USAS_UnitManagerComponent>();
+		if (!UnitManagerComponent) break;
+		AssignedUnitManager = UnitManagerComponent;
+		AssignedUnitManager->AssignSelectableUnit(Owner, true);
+		break;
+	}
+	case ESAS_Team::Team2:
+	{
+		//TODO
+		break;
+	}
+
+	
+	default:
+	{
+		break;
+	}
 
 	}
+
+	AssignedTeam = NewTeam;
+}
+
+void USAS_UnitInformationComponent::RemoveUnitFromGame()
+{
+	if (!AssignedUnitManager) return;
+	AActor* Owner = GetOwner();
+	if (!Owner) return;
+
+	AssignedUnitManager->RemoveSelectableUnit(Owner);
+	//TODO: Make sure to set it up so this unit gets removed from any active selections
 }
 
 

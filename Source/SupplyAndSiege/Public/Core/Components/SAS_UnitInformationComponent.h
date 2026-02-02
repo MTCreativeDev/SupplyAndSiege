@@ -34,6 +34,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetTeam(ESAS_Team NewTeam);
 
+	void RemoveUnitFromGame();
+
 
 		
 protected:

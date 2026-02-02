@@ -17,21 +17,78 @@ void USAS_UnitManagerComponent::BeginPlay()
 
 void USAS_UnitManagerComponent::AssignSelectableUnit(TWeakObjectPtr<AActor> NewUnit, bool BypassComponentCheck)
 {
+    if (!NewUnit.IsValid()) return;
+
     if (!BypassComponentCheck)
     {
         //Only accepts units that have the UnitInformationComponent. The bool input is used if the component is the thing adding the unit.
-        if (!NewUnit.IsValid()) return;
-
         AActor* Actor = NewUnit.Get();
         USAS_UnitInformationComponent* UnitInformationComponent = Actor->FindComponentByClass<USAS_UnitInformationComponent>();
         if (!UnitInformationComponent) return;
     }
+
     //Only accepts units that have the UnitInformationComponent
     SelectableUnits.AddUnique(NewUnit);       
+
+
+    //Debug print
+    if (GEngine)
+    {
+        FString ActorList;
+
+        for (const TWeakObjectPtr<AActor>& Unit : SelectableUnits)
+        {
+            if (Unit.IsValid())
+            {
+                ActorList += Unit->GetName();
+                ActorList += TEXT(", ");
+            }
+        }
+
+        GEngine->AddOnScreenDebugMessage(
+            -1,
+            30.f,
+            FColor::Green,
+            FString::Printf(
+                TEXT("SelectableUnits Count: %d | [%s]"),
+                SelectableUnits.Num(),
+                *ActorList
+            )
+        );
+    }
+
+
 }
 
 void USAS_UnitManagerComponent::RemoveSelectableUnit(TWeakObjectPtr<AActor> UnitToRemove)
 {
     SelectableUnits.Remove(UnitToRemove);
     //TODO:: Need to set it up so that when a unit is removed it is removed from any current unit selections.
+
+
+     //Debug print
+    if (GEngine)
+    {
+        FString ActorList;
+
+        for (const TWeakObjectPtr<AActor>& Unit : SelectableUnits)
+        {
+            if (Unit.IsValid())
+            {
+                ActorList += Unit->GetName();
+                ActorList += TEXT(", ");
+            }
+        }
+
+        GEngine->AddOnScreenDebugMessage(
+            -1,
+            30.f,
+            FColor::Green,
+            FString::Printf(
+                TEXT("SelectableUnits Count: %d | [%s]"),
+                SelectableUnits.Num(),
+                *ActorList
+            )
+        );
+    }
 }

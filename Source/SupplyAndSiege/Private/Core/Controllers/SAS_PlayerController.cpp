@@ -6,11 +6,14 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "DrawDebugHelpers.h"
+#include "Core/Components/SAS_UnitManagerComponent.h"
 
 ASAS_PlayerController::ASAS_PlayerController()
 {
     PrimaryActorTick.bCanEverTick = true;
     PrimaryActorTick.bStartWithTickEnabled = true;
+
+    UnitManagerComponent = CreateDefaultSubobject<USAS_UnitManagerComponent>(TEXT("UnitManagerComponent"));
 }
 
 void ASAS_PlayerController::Tick(float DeltaSeconds)
