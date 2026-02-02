@@ -41,3 +41,12 @@ enum class EControllerAction : uint8
     Moving    UMETA(DisplayName = "Moving"),
     Rotating    UMETA(DisplayName = "Rotating")
 };
+
+UENUM(BlueprintType)
+enum class ESAS_Team : uint8
+{
+    None    UMETA(DisplayName = "None"),
+    EnvironmentTeam    UMETA(DisplayName = "Environment Team"),
+    Team1    UMETA(DisplayName = "Team 1"),
+    Team2    UMETA(DisplayName = "Team 2")
+};

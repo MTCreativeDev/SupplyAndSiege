@@ -2,33 +2,37 @@
 
 
 #include "Core/Components/SAS_UnitInformationComponent.h"
+#include "Core/Components/SAS_UnitManagerComponent.h"
 
-// Sets default values for this component's properties
+
 USAS_UnitInformationComponent::USAS_UnitInformationComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
 }
 
-
-// Called when the game starts
 void USAS_UnitInformationComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
 }
 
-
-// Called every frame
-void USAS_UnitInformationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void USAS_UnitInformationComponent::SetTeam(ESAS_Team NewTeam)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (AssignedUnitManager && AssignedTeam != NewTeam)
+	{
+		AActor* Owner = GetOwner();
+		if (!Owner) return;
+		AssignedUnitManager->RemoveSelectableUnit(Owner);
 
-	// ...
+		/*
+			START HERE	
+			switch(ESAS_Team)
+
+		
+		*/
+
+	}
 }
+
 

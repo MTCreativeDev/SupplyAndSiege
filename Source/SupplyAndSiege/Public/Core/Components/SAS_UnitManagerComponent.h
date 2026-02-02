@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Core/SAS_Enumerators.h"
 #include "SAS_UnitManagerComponent.generated.h"
 
 
@@ -16,13 +17,21 @@ public:
 	// Sets default values for this component's properties
 	USAS_UnitManagerComponent();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ESAS_Team AssignedTeam = ESAS_Team::None;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+	void AssignSelectableUnit(TWeakObjectPtr<AActor> NewUnit, bool BypassComponentCheck);
+
+	void RemoveSelectableUnit(TWeakObjectPtr<AActor> UnitToRemove);
+
+protected:
+
+	//This is the array of all available units to this player. Units include buildings, pawns etc. Anything that the player can select.
+	TArray<TWeakObjectPtr<AActor>> SelectableUnits;
 };

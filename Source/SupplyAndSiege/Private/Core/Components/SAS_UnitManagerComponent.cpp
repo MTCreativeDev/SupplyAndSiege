@@ -2,33 +2,36 @@
 
 
 #include "Core/Components/SAS_UnitManagerComponent.h"
+#include "Core/Components/SAS_UnitInformationComponent.h"
 
 // Sets default values for this component's properties
 USAS_UnitManagerComponent::USAS_UnitManagerComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
-
-// Called when the game starts
 void USAS_UnitManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
 }
 
-
-// Called every frame
-void USAS_UnitManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void USAS_UnitManagerComponent::AssignSelectableUnit(TWeakObjectPtr<AActor> NewUnit, bool BypassComponentCheck)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    if (!BypassComponentCheck)
+    {
+        //Only accepts units that have the UnitInformationComponent. The bool input is used if the component is the thing adding the unit.
+        if (!NewUnit.IsValid()) return;
 
-	// ...
+        AActor* Actor = NewUnit.Get();
+        USAS_UnitInformationComponent* UnitInformationComponent = Actor->FindComponentByClass<USAS_UnitInformationComponent>();
+        if (!UnitInformationComponent) return;
+    }
+    //Only accepts units that have the UnitInformationComponent
+    SelectableUnits.AddUnique(NewUnit);       
 }
 
+void USAS_UnitManagerComponent::RemoveSelectableUnit(TWeakObjectPtr<AActor> UnitToRemove)
+{
+    SelectableUnits.Remove(UnitToRemove);
+    //TODO:: Need to set it up so that when a unit is removed it is removed from any current unit selections.
+}

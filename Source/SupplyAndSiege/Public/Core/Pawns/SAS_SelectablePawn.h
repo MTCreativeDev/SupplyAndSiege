@@ -6,24 +6,24 @@
 #include "GameFramework/Pawn.h"
 #include "SAS_SelectablePawn.generated.h"
 
+class USAS_UnitInformationComponent;
+
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_SelectablePawn : public APawn
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	ASAS_SelectablePawn();
 
+
+
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public:
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
+	USAS_UnitInformationComponent* UnitInformationComponent;
 
 };

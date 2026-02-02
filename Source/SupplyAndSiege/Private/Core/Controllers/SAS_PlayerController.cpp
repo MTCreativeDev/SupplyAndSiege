@@ -413,5 +413,12 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
 
 void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const FVector2D& ScreenPositionB)
 {
+    const float MinX = FMath::Min(SelectionStartMousePos.X, CurrentSelectionMousePos.X);
+    const float MinY = FMath::Min(SelectionStartMousePos.Y, CurrentSelectionMousePos.Y);
+    const float MaxX = FMath::Max(SelectionStartMousePos.X, CurrentSelectionMousePos.X);
+    const float MaxY = FMath::Max(SelectionStartMousePos.Y, CurrentSelectionMousePos.Y);
+
+
+
 }
 
