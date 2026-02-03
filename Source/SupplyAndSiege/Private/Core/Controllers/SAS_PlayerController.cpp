@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "DrawDebugHelpers.h"
+#include "Core/CustomCollision.h"
 #include "Core/Components/SAS_UnitManagerComponent.h"
 
 ASAS_PlayerController::ASAS_PlayerController()
@@ -353,20 +354,14 @@ void ASAS_PlayerController::UpdateSelectionDragState()
 
 void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
 {
-
-    //Test - Delete and re-write
+    //TODO: Set up the logic to check if the player is trying to select additional units instead of only select. E.g. holding shift or something like that.
+    if (!UnitManagerComponent) return;
+    UnitManagerComponent->ClearAllSelectedUnits();
 
     FVector WorldOrigin;
     FVector WorldDirection;
 
-    if (!DeprojectScreenPositionToWorld(
-        SelectionStartMousePos.X,
-        SelectionStartMousePos.Y,
-        WorldOrigin,
-        WorldDirection))
-    {
-        return;
-    }
+    if (!DeprojectScreenPositionToWorld(SelectionStartMousePos.X, SelectionStartMousePos.Y, WorldOrigin, WorldDirection)) return;
 
     const FVector TraceStart = WorldOrigin;
     const FVector TraceEnd = WorldOrigin + (WorldDirection * 100000.f);
@@ -379,10 +374,11 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
         Hit,
         TraceStart,
         TraceEnd,
-        ECollisionChannel::ECC_Visibility,
+        Trace_SelectableUnit,
         Params
     );
 
+    //Debug line trace to show where we clicked
     DrawDebugLine(
         GetWorld(),
         TraceStart,
@@ -396,31 +392,73 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
 
     if (bHit && Hit.GetActor())
     {
-        // Hit.GetActor() is your selected actor
+        const AActor* Actor = Hit.GetActor();
+
+        USAS_UnitInformationComponent* UnitInformationComponent = Actor->FindComponentByClass<USAS_UnitInformationComponent>();
+        if (!UnitInformationComponent) return;
+    
+        UnitManagerComponent->AddSelectedUnit(UnitInformationComponent);
+
     }
 
-    if (bHit && Hit.GetActor())
-    {
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(
-                -1,
-                2.f,
-                FColor::Green,
-                Hit.GetActor()->GetName()
-            );
-        }
-    }
-
+    
 }
 
 void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const FVector2D& ScreenPositionB)
 {
+    if (!UnitManagerComponent) return;
+    UnitManagerComponent->ClearAllSelectedUnits();
+    
     const float MinX = FMath::Min(SelectionStartMousePos.X, CurrentSelectionMousePos.X);
     const float MinY = FMath::Min(SelectionStartMousePos.Y, CurrentSelectionMousePos.Y);
     const float MaxX = FMath::Max(SelectionStartMousePos.X, CurrentSelectionMousePos.X);
     const float MaxY = FMath::Max(SelectionStartMousePos.Y, CurrentSelectionMousePos.Y);
 
+    for (const TWeakObjectPtr<AActor>& WeakActor : UnitManagerComponent->SelectableUnits)
+    {
+        if (!WeakActor.IsValid()) continue;
+        AActor* Actor = WeakActor.Get();
+
+        FVector2D ScreenPos;
+        if (!ProjectWorldLocationToScreen(Actor->GetActorLocation(), ScreenPos, false)) continue;
+
+        const bool bInside = ScreenPos.X >= MinX && ScreenPos.X <= MaxX && ScreenPos.Y >= MinY && ScreenPos.Y <= MaxY;
+
+        if (!bInside) continue;
+
+        USAS_UnitInformationComponent* InfoComponent = Actor->FindComponentByClass<USAS_UnitInformationComponent>();
+        if (!InfoComponent) continue;
+
+        UnitManagerComponent->AddSelectedUnit(InfoComponent);
+    }
+
+    //debug print
+    if (GEngine)
+    {
+        FString UnitNames;
+
+        for (const TWeakObjectPtr<USAS_UnitInformationComponent>& WeakInfo : UnitManagerComponent->SelectedUnits)
+        {
+            if (!WeakInfo.IsValid()) continue;
+
+            AActor* UnitActor = WeakInfo->GetOwner();
+            if (!UnitActor) continue;
+
+            UnitNames += UnitActor->GetName();
+            UnitNames += TEXT(", ");
+        }
+
+        GEngine->AddOnScreenDebugMessage(
+            -1,
+            2.f,
+            FColor::Green,
+            FString::Printf(
+                TEXT("Selected Units: %d | [%s]"),
+                UnitManagerComponent->SelectedUnits.Num(),
+                *UnitNames
+            )
+        );
+    }
 
 
 }

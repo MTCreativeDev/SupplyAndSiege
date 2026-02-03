@@ -45,6 +45,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (Bitmask, BitmaskEnum = "/Script/SUPPLYANDSIEGE.ERotationBlocker"))
 	int32 RotationBlockerMask = 0;
 
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D SelectionStartMousePos = FVector2D::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D CurrentSelectionMousePos = FVector2D::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bDragging = false;
+
+
 	//functions
 
 	ASAS_PlayerController();
@@ -91,7 +101,7 @@ protected:
 
 	// Selection States - I'm using two bools instead of an Enum since I don't expect there to be more than the two states.
 	bool bSelecting = false;
-	bool bDragging = false;
+
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	float SelectingTimeTillDrag = 9.3f;
@@ -99,8 +109,7 @@ protected:
 	float SelectionDistanceTillDrag = 8.f;
 
 	float SelectionStartedTime = 0.f;
-	FVector2D SelectionStartMousePos = FVector2D::ZeroVector;
-	FVector2D CurrentSelectionMousePos = FVector2D::ZeroVector;
+
 
 	
 	//functions

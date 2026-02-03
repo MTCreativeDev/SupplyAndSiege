@@ -2,7 +2,7 @@
 
 
 #include "Core/Components/SAS_UnitManagerComponent.h"
-#include "Core/Components/SAS_UnitInformationComponent.h"
+
 
 // Sets default values for this component's properties
 USAS_UnitManagerComponent::USAS_UnitManagerComponent()
@@ -32,6 +32,7 @@ void USAS_UnitManagerComponent::AssignSelectableUnit(TWeakObjectPtr<AActor> NewU
 
 
     //Debug print
+    /*
     if (GEngine)
     {
         FString ActorList;
@@ -56,6 +57,7 @@ void USAS_UnitManagerComponent::AssignSelectableUnit(TWeakObjectPtr<AActor> NewU
             )
         );
     }
+    */
 
 
 }
@@ -91,4 +93,31 @@ void USAS_UnitManagerComponent::RemoveSelectableUnit(TWeakObjectPtr<AActor> Unit
             )
         );
     }
+}
+
+void USAS_UnitManagerComponent::AddSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation)
+{
+    if (!UnitInformation.IsValid()) return;
+    SelectedUnits.AddUnique(UnitInformation);
+
+    //Debug Print
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(
+            -1,
+            2.f,
+            FColor::Blue,
+            TEXT("Unit Added")
+        );
+    }
+}
+
+void USAS_UnitManagerComponent::RemoveSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation)
+{
+    SelectedUnits.Remove(UnitInformation);
+}
+
+void USAS_UnitManagerComponent::ClearAllSelectedUnits()
+{
+    SelectedUnits.Empty();
 }

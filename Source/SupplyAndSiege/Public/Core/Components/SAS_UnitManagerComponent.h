@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Core/SAS_Enumerators.h"
+#include "Core/Components/SAS_UnitInformationComponent.h"
 #include "SAS_UnitManagerComponent.generated.h"
-
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_UnitManagerComponent : public UActorComponent
@@ -26,12 +26,25 @@ protected:
 
 public:	
 
+	//This is the array of all available units to this player. Units include buildings, pawns etc. Anything that the player can select.
+	TArray<TWeakObjectPtr<AActor>> SelectableUnits;
+
+	TArray<TWeakObjectPtr<USAS_UnitInformationComponent>> SelectedUnits;
+
 	void AssignSelectableUnit(TWeakObjectPtr<AActor> NewUnit, bool BypassComponentCheck);
 
 	void RemoveSelectableUnit(TWeakObjectPtr<AActor> UnitToRemove);
 
+	void AddSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation);
+
+	void RemoveSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation);
+
+	void ClearAllSelectedUnits();
+
+
+
+
 protected:
 
-	//This is the array of all available units to this player. Units include buildings, pawns etc. Anything that the player can select.
-	TArray<TWeakObjectPtr<AActor>> SelectableUnits;
+
 };
