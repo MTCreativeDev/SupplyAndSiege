@@ -15,6 +15,9 @@ ASAS_PlayerController::ASAS_PlayerController()
     PrimaryActorTick.bStartWithTickEnabled = true;
 
     UnitManagerComponent = CreateDefaultSubobject<USAS_UnitManagerComponent>(TEXT("UnitManagerComponent"));
+    //WARNING: This only works in a single player game.
+    UnitManagerComponent->SetTeam(ESAS_Team::Team1);
+
 }
 
 void ASAS_PlayerController::Tick(float DeltaSeconds)
@@ -431,35 +434,5 @@ void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const 
 
         UnitManagerComponent->AddSelectedUnit(InfoComponent);
     }
-
-    //debug print
-    if (GEngine)
-    {
-        FString UnitNames;
-
-        for (const TWeakObjectPtr<USAS_UnitInformationComponent>& WeakInfo : UnitManagerComponent->SelectedUnits)
-        {
-            if (!WeakInfo.IsValid()) continue;
-
-            AActor* UnitActor = WeakInfo->GetOwner();
-            if (!UnitActor) continue;
-
-            UnitNames += UnitActor->GetName();
-            UnitNames += TEXT(", ");
-        }
-
-        GEngine->AddOnScreenDebugMessage(
-            -1,
-            2.f,
-            FColor::Green,
-            FString::Printf(
-                TEXT("Selected Units: %d | [%s]"),
-                UnitManagerComponent->SelectedUnits.Num(),
-                *UnitNames
-            )
-        );
-    }
-
-
 }
 

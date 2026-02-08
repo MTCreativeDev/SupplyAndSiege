@@ -9,6 +9,10 @@
 
 class USAS_UnitManagerComponent;
 
+
+//Dispatchers
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FToggleSelectionRing, bool, bShow);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_UnitInformationComponent : public UActorComponent
 {
@@ -18,17 +22,22 @@ public:
 	// Sets default values for this component's properties
 	USAS_UnitInformationComponent();
 
+
 	
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+
+
 public:	
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	ESAS_Team AssignedTeam = ESAS_Team::None;
 
+	UPROPERTY(BlueprintAssignable)
+	FToggleSelectionRing ToggleSelectionRing;
 
 	//functions
 	UFUNCTION(BlueprintCallable)
@@ -36,6 +45,9 @@ public:
 
 	void RemoveUnitFromGame();
 
+	void NotifySelected(ESAS_Team SelectedByTeam);
+
+	void NotifyDeselected(ESAS_Team DeselectedByTeam);
 
 		
 protected:

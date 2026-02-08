@@ -31,6 +31,8 @@ public:
 
 	TArray<TWeakObjectPtr<USAS_UnitInformationComponent>> SelectedUnits;
 
+	void SetTeam(ESAS_Team NewTeam);
+
 	void AssignSelectableUnit(TWeakObjectPtr<AActor> NewUnit, bool BypassComponentCheck);
 
 	void RemoveSelectableUnit(TWeakObjectPtr<AActor> UnitToRemove);

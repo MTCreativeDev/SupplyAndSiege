@@ -79,4 +79,24 @@ void USAS_UnitInformationComponent::RemoveUnitFromGame()
 	//TODO: Make sure to set it up so this unit gets removed from any active selections
 }
 
+void USAS_UnitInformationComponent::NotifySelected(ESAS_Team SelectedByTeam)
+{
+	//Warning: This only works for a single player game. Essentially only the player will be team 1 so no other selections needs to show the ring.
+	if (SelectedByTeam == ESAS_Team::Team1) ToggleSelectionRing.Broadcast(true);
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("false"));
+	}
+}
+
+void USAS_UnitInformationComponent::NotifyDeselected(ESAS_Team DeselectedByTeam)
+{
+	//Warning: This only works for a single player game. Essentially only the player will be team 1 so no other de-selections needs to show the ring.
+	if (DeselectedByTeam == ESAS_Team::Team1) ToggleSelectionRing.Broadcast(false);
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("false"));
+	}
+}
+
 
