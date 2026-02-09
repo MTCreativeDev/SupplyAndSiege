@@ -8,6 +8,8 @@
 #include "SAS_SelectablePawn.generated.h"
 
 class USAS_UnitInformationComponent;
+class UCapsuleComponent;
+class UFloatingPawnMovement;
 
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_SelectablePawn : public APawn
@@ -17,9 +19,7 @@ class SUPPLYANDSIEGE_API ASAS_SelectablePawn : public APawn
 public:
 	ASAS_SelectablePawn();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SAS_Unit", meta = (ExposeOnSpawn = true))
-	ESAS_Team AssignTeamOnSpawn = ESAS_Team::None;
-
+	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
 
 protected:
@@ -30,11 +30,18 @@ protected:
 
 public:
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SAS_Unit", meta = (ExposeOnSpawn = true))
+	ESAS_Team AssignTeamOnSpawn = ESAS_Team::None;
 
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
 	USAS_UnitInformationComponent* UnitInformationComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UCapsuleComponent* Capsule;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UFloatingPawnMovement* MovementComponent;
 
 };

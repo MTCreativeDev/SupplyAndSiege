@@ -9,3 +9,4 @@
  */
 
 #define Trace_SelectableUnit ECC_GameTraceChannel1
+#define Trace_NavigableArea ECC_GameTraceChannel2

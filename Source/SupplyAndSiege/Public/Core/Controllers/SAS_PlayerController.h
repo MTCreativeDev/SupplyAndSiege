@@ -80,6 +80,8 @@ protected:
 	TObjectPtr<UInputAction> IA_ToggleRotate;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> IA_Select;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_RightClick;
 
 
 	FMouseEdgeResult MouseEdgeResult = FMouseEdgeResult();
@@ -136,6 +138,9 @@ protected:
 
 	void DoSingleSelect(const FVector2D& ScreenPosition);
 	void DoBoxSelect(const FVector2D& ScreenPositionA, const FVector2D& ScreenPositionB);
+
+	void RightClickStarted();
+	void RightClickCompleted();
 
 
 

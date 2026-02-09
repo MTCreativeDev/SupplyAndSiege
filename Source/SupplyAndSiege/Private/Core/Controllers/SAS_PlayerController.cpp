@@ -112,6 +112,7 @@ void ASAS_PlayerController::SetupInputComponent()
     checkf(IA_ToggleRotate, TEXT("ASAS_PlayerController: IA_Rotate is not assigned. Set it in the PlayerController Blueprint defaults."));
     checkf(IA_Move, TEXT("ASAS_PlayerController: IA_Move is not assigned. Set it in the PlayerController Blueprint defaults."));
     checkf(IA_Select, TEXT("ASAS_PlayerController: IA_Select is not assigned. Set it in the PlayerController Blueprint defaults."));
+    checkf(IA_RightClick, TEXT("ASAS_PlayerController: IA_RightClick is not assigned. Set it in the PlayerController Blueprint defaults."));
 
     EIC->BindAction(IA_ToggleRotate, ETriggerEvent::Started, this, &ASAS_PlayerController::OnRotationToggleStarted);
     EIC->BindAction(IA_ToggleRotate, ETriggerEvent::Completed, this, &ASAS_PlayerController::OnRotationToggleEnded);
@@ -125,6 +126,10 @@ void ASAS_PlayerController::SetupInputComponent()
     EIC->BindAction(IA_Select, ETriggerEvent::Started, this, &ASAS_PlayerController::SelectionStarted);
     EIC->BindAction(IA_Select, ETriggerEvent::Completed, this, &ASAS_PlayerController::SelectionCompleted);
     EIC->BindAction(IA_Select, ETriggerEvent::Canceled, this, &ASAS_PlayerController::SelectionCompleted);
+
+    EIC->BindAction(IA_RightClick, ETriggerEvent::Started, this, &ASAS_PlayerController::RightClickStarted);
+    EIC->BindAction(IA_RightClick, ETriggerEvent::Completed, this, &ASAS_PlayerController::RightClickCompleted);
+    EIC->BindAction(IA_RightClick, ETriggerEvent::Canceled, this, &ASAS_PlayerController::RightClickCompleted);
 
 }
 
@@ -381,18 +386,6 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
         Params
     );
 
-    //Debug line trace to show where we clicked
-    DrawDebugLine(
-        GetWorld(),
-        TraceStart,
-        TraceEnd,
-        FColor::Green,
-        false,
-        2.f,
-        0,
-        .1
-    );
-
     if (bHit && Hit.GetActor())
     {
         const AActor* Actor = Hit.GetActor();
@@ -434,5 +427,76 @@ void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const 
 
         UnitManagerComponent->AddSelectedUnit(InfoComponent);
     }
+}
+
+void ASAS_PlayerController::RightClickStarted()
+{
+
+    float MouseX, MouseY;
+    if (!GetMousePosition(MouseX, MouseY)) return;
+
+    FVector WorldOrigin;
+    FVector WorldDirection;
+
+    if (!DeprojectScreenPositionToWorld(MouseX, MouseY, WorldOrigin, WorldDirection)) return;
+
+    const FVector TraceStart = WorldOrigin;
+    const FVector TraceEnd = WorldOrigin + (WorldDirection * 100000.f);
+
+    FHitResult Hit;
+    FCollisionQueryParams Params;
+    Params.bTraceComplex = true;
+
+    const bool bHit = GetWorld()->LineTraceSingleByChannel(
+        Hit,
+        TraceStart,
+        TraceEnd,
+        Trace_NavigableArea,
+        Params
+    );
+
+    //Debug line trace to show where we clicked
+    DrawDebugLine(
+        GetWorld(),
+        TraceStart,
+        TraceEnd,
+        FColor::Blue,
+        false,
+        2.f,
+        0,
+        .1
+    );
+
+    if (bHit && Hit.GetActor())
+    {
+        const AActor* Actor = Hit.GetActor();
+
+        //debug print
+        if (Actor)
+        {
+            GEngine->AddOnScreenDebugMessage(
+                -1,
+                2.f,
+                FColor::Green,
+                FString::Printf(TEXT("Hit Actor: %s"), *Actor->GetName())
+            );
+        }
+        else
+        {
+            GEngine->AddOnScreenDebugMessage(
+                -1,
+                2.f,
+                FColor::Red,
+                TEXT("Hit Actor: NONE")
+            );
+
+        }   
+        //end debug print
+
+    }
+}
+
+void ASAS_PlayerController::RightClickCompleted()
+{
 }
 
