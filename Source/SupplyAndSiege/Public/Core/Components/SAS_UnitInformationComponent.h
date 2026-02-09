@@ -49,6 +49,8 @@ public:
 
 	void NotifyDeselected(ESAS_Team DeselectedByTeam);
 
+	void IssueMoveOrder(FVector WorldLocation);
+
 		
 protected:
 

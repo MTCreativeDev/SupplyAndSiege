@@ -99,3 +99,24 @@ void USAS_UnitManagerComponent::ClearAllSelectedUnits()
     }
     SelectedUnits.Empty();
 }
+
+void USAS_UnitManagerComponent::IssueMoveOrderToSelectedUnits(FVector WorldLocation)
+{
+    for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitCompPtr : SelectedUnits)
+    {
+        if (!UnitCompPtr.IsValid()) continue;
+        //TODO. Need to set up a proper formation creation process so that multiple actors dont get assigned the same exact location.
+        UnitCompPtr->IssueMoveOrder(WorldLocation);
+    }
+}
+
+void USAS_UnitManagerComponent::RightClickReceived(FVector WorldLocation)
+{
+    //TODO: Need to update this function to account for various possible right clicks. E.g. attack htis actor, harvest this unit  or move here etc.
+    if (SelectedUnits.Num() == 0) return;
+
+    //TODO: set up  logic to check if the selected units can even move.
+
+    IssueMoveOrderToSelectedUnits(WorldLocation);
+
+}

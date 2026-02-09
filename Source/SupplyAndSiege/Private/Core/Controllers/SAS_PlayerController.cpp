@@ -304,6 +304,11 @@ void ASAS_PlayerController::SelectionStarted()
 {
     bSelecting = true;
     bDragging = false;
+
+    MovementBlockerMask |= static_cast<int64>(EMovementBlocker::Selecting);
+    RotationBlockerMask |= static_cast<int64>(ERotationBlocker::Selecting);
+    CurrentAction = EControllerAction::None;
+
     
     if (GetWorld())
     {
@@ -344,6 +349,10 @@ void ASAS_PlayerController::SelectionCompleted()
 
     bSelecting = false;
     bDragging = false;
+
+    MovementBlockerMask &= ~static_cast<int64>(EMovementBlocker::Selecting);
+    RotationBlockerMask &= ~static_cast<int64>(ERotationBlocker::Selecting);
+
 }
 
 void ASAS_PlayerController::UpdateSelectionDragState()
@@ -470,29 +479,8 @@ void ASAS_PlayerController::RightClickStarted()
     if (bHit && Hit.GetActor())
     {
         const AActor* Actor = Hit.GetActor();
-
-        //debug print
-        if (Actor)
-        {
-            GEngine->AddOnScreenDebugMessage(
-                -1,
-                2.f,
-                FColor::Green,
-                FString::Printf(TEXT("Hit Actor: %s"), *Actor->GetName())
-            );
-        }
-        else
-        {
-            GEngine->AddOnScreenDebugMessage(
-                -1,
-                2.f,
-                FColor::Red,
-                TEXT("Hit Actor: NONE")
-            );
-
-        }   
-        //end debug print
-
+        const FVector WorldLocation = Hit.ImpactPoint;
+        UnitManagerComponent->RightClickReceived(WorldLocation);
     }
 }
 

@@ -31,6 +31,11 @@ ASAS_SelectablePawn::ASAS_SelectablePawn()
 
 }
 
+UPawnMovementComponent* ASAS_SelectablePawn::GetMovementComponent() const
+{
+	return MovementComponent;
+}
+
 void ASAS_SelectablePawn::BeginPlay()
 {
 	Super::BeginPlay();

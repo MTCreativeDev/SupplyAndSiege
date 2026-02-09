@@ -43,7 +43,9 @@ public:
 
 	void ClearAllSelectedUnits();
 
+	void IssueMoveOrderToSelectedUnits(FVector WorldLocation);
 
+	void RightClickReceived(FVector WorldLocation);
 
 
 protected:

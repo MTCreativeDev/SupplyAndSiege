@@ -3,6 +3,7 @@
 
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "Core/Components/SAS_UnitManagerComponent.h"
+#include "AIController.h"
 
 
 USAS_UnitInformationComponent::USAS_UnitInformationComponent()
@@ -91,6 +92,15 @@ void USAS_UnitInformationComponent::NotifyDeselected(ESAS_Team DeselectedByTeam)
 	//Warning: This only works for a single player game. Essentially only the player will be team 1 so no other de-selections needs to show the ring.
 	if (DeselectedByTeam == ESAS_Team::Team1) ToggleSelectionRing.Broadcast(false);
 
+}
+
+void USAS_UnitInformationComponent::IssueMoveOrder(FVector WorldLocation)
+{
+	APawn* Pawn = Cast<APawn>(GetOwner());
+	AAIController* AI = Pawn ? Cast<AAIController>(Pawn->GetController()) : nullptr;
+	if (!AI) return;
+
+	AI->MoveToLocation(WorldLocation, 75.f, true);
 }
 
 

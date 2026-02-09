@@ -22,7 +22,8 @@ enum class EMovementBlocker : uint8
 {
     None = 0   UMETA(Hidden, displayName = "None"),
     Rotating = 1 << 0   UMETA(displayName = "Rotating"),
-    Paused =  1 << 1    UMETA(displayName = "Paused")
+    Paused =  1 << 1    UMETA(displayName = "Paused"),
+    Selecting = 1 << 2    UMETA(displayName = "Selecting")
 };
 
 //Enum used as a bitblocker to ensure we are allowed to rotate.
@@ -32,6 +33,7 @@ enum class ERotationBlocker : uint8
     None = 0   UMETA(Hidden, displayName = "None"),
     Moving = 1 << 0   UMETA(displayName = "Moving"),
     Paused = 1 << 1   UMETA(displayName = "Paused"),
+    Selecting = 1 << 2    UMETA(displayName = "Selecting")
 };
 
 UENUM(BlueprintType)
