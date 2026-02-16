@@ -34,6 +34,7 @@ void USAS_UnitInformationComponent::SetTeam(ESAS_Team NewTeam)
 	}
 
 
+
 	switch (NewTeam)
 	{
 	case ESAS_Team::None:
@@ -68,6 +69,8 @@ void USAS_UnitInformationComponent::SetTeam(ESAS_Team NewTeam)
 	}
 
 	AssignedTeam = NewTeam;
+	NotifyTeamChange.Broadcast(AssignedTeam);
+
 }
 
 void USAS_UnitInformationComponent::RemoveUnitFromGame()

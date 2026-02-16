@@ -12,6 +12,7 @@ class USAS_UnitManagerComponent;
 
 //Dispatchers
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FToggleSelectionRing, bool, bShow);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNotifyTeamChange, ESAS_Team, NewTeam);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_UnitInformationComponent : public UActorComponent
@@ -39,6 +40,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FToggleSelectionRing ToggleSelectionRing;
 
+	UPROPERTY(BlueprintAssignable)
+	FNotifyTeamChange NotifyTeamChange;
+
 	//functions
 	UFUNCTION(BlueprintCallable)
 	void SetTeam(ESAS_Team NewTeam);
@@ -56,5 +60,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	USAS_UnitManagerComponent* AssignedUnitManager;
+
 
 };
