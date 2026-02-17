@@ -30,8 +30,4 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UTexture2D* Icon = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int32 DefaultMaxStack = 1;
-
-
 };

@@ -33,6 +33,12 @@ protected:
 	void HandleTeamChanged(ESAS_Team NewTeam);
 
 
+private:
+
+	void GetUnitInformationAndBindToTeamChange();
+
+	void CreateSlotsFromProfile();
+
 public:	
 
 protected:

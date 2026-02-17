@@ -8,6 +8,8 @@
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "SAS_UnitManagerComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitSelectionChange, TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>, SelectedUnits);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_UnitManagerComponent : public UActorComponent
 {
@@ -19,6 +21,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	ESAS_Team AssignedTeam = ESAS_Team::None;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnUnitSelectionChange OnUnitSelectionChange;
+
 
 protected:
 	// Called when the game starts

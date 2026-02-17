@@ -81,6 +81,7 @@ void USAS_UnitManagerComponent::AddSelectedUnit(TWeakObjectPtr<USAS_UnitInformat
     SelectedUnits.AddUnique(UnitInformation);
 
     UnitInformation->NotifySelected(AssignedTeam);
+    OnUnitSelectionChange.Broadcast(SelectedUnits);
 
 }
 
@@ -88,6 +89,7 @@ void USAS_UnitManagerComponent::RemoveSelectedUnit(TWeakObjectPtr<USAS_UnitInfor
 {
     SelectedUnits.Remove(UnitInformation);
     UnitInformation->NotifyDeselected(AssignedTeam);
+    OnUnitSelectionChange.Broadcast(SelectedUnits);
 }
 
 void USAS_UnitManagerComponent::ClearAllSelectedUnits()
@@ -98,6 +100,7 @@ void USAS_UnitManagerComponent::ClearAllSelectedUnits()
         UnitCompPtr->NotifyDeselected(AssignedTeam);
     }
     SelectedUnits.Empty();
+    OnUnitSelectionChange.Broadcast(SelectedUnits);
 }
 
 void USAS_UnitManagerComponent::IssueMoveOrderToSelectedUnits(FVector WorldLocation)
