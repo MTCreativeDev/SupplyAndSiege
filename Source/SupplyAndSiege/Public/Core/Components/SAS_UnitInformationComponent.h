@@ -8,6 +8,7 @@
 #include "SAS_UnitInformationComponent.generated.h"
 
 class USAS_UnitManagerComponent;
+class USAS_UnitTypeData;
 
 
 //Dispatchers
@@ -23,27 +24,6 @@ public:
 	// Sets default values for this component's properties
 	USAS_UnitInformationComponent();
 
-
-	
-
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-
-
-public:	
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ESAS_Team AssignedTeam = ESAS_Team::None;
-
-	UPROPERTY(BlueprintAssignable)
-	FToggleSelectionRing ToggleSelectionRing;
-
-	UPROPERTY(BlueprintAssignable)
-	FNotifyTeamChange NotifyTeamChange;
-
-	//functions
 	UFUNCTION(BlueprintCallable)
 	void SetTeam(ESAS_Team NewTeam);
 
@@ -55,6 +35,29 @@ public:
 
 	void IssueMoveOrder(FVector WorldLocation);
 
+	//Dispatchers
+	UPROPERTY(BlueprintAssignable)
+	FToggleSelectionRing ToggleSelectionRing;
+
+	UPROPERTY(BlueprintAssignable)
+	FNotifyTeamChange NotifyTeamChange;
+
+	
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+
+
+public:	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Unit Information")
+	ESAS_Team AssignedTeam = ESAS_Team::None;
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit Information")
+	USAS_UnitTypeData* UnitType = nullptr;
 		
 protected:
 

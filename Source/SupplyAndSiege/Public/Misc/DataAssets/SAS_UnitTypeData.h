@@ -6,6 +6,8 @@
 #include "Engine/DataAsset.h"
 #include "SAS_UnitTypeData.generated.h"
 
+
+class UTexture2D;
 /**
  * 
  */
@@ -14,4 +16,15 @@ class SUPPLYANDSIEGE_API USAS_UnitTypeData : public UDataAsset
 {
 	GENERATED_BODY()
 	
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FName UnitId;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText DisplayName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UTexture2D* Icon = nullptr;
+
 };
