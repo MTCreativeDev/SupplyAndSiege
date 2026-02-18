@@ -18,14 +18,9 @@ class SUPPLYANDSIEGE_API UItemDefinitionPrimaryData : public UPrimaryDataAsset
 	
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FName ItemId;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FText DisplayName;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bStackable = true;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UTexture2D* Icon = nullptr;

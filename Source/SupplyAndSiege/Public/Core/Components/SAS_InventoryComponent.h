@@ -6,12 +6,21 @@
 #include "Components/ActorComponent.h"
 #include "Misc/Structs/SAS_InventorySlot.h"
 #include "Core/SAS_Enumerators.h"
+#include "Engine/AssetManagerTypes.h"
 #include "SAS_InventoryComponent.generated.h"
 
 
 class USAS_InventoryProfileData;
 class USAS_UnitInformationComponent;
 class UItemDefinitionPrimaryData;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
+	FOnInventoryChanged,
+	USAS_InventoryComponent*, Sender,
+	FPrimaryAssetId, ItemId,
+	int32, Delta
+);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_InventoryComponent : public UActorComponent
@@ -22,7 +31,20 @@ public:
 
 	USAS_InventoryComponent();
 
+	ESAS_Team GetAssignedTeam();
 
+	USAS_InventoryProfileData* GetInventoryProfile();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void GetAllItemTotals(TMap<FPrimaryAssetId, int32>& OutTotals) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int32 AddItem(UItemDefinitionPrimaryData* Item, int32 Quantity);
+
+	//Dispatchers
+
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnInventoryChanged OnInventoryChanged;
 
 protected:
 

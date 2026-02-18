@@ -18,6 +18,9 @@ struct FSAS_InventorySlot
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	int32 Quantity = 0;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
+	int32 RemainingSpaceInSlot = 1;
+
 	bool IsEmpty() const { return Item == nullptr || Quantity <= 0; }
 	void ClearSlot() { Item = nullptr; Quantity = 0; }
 };

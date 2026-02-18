@@ -36,6 +36,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	UItemDefinitionPrimaryData* OnlyStorableResource = nullptr;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	bool bIsStockpileInventory = false;
 
 
 };
