@@ -11,7 +11,7 @@ class UTexture2D;
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class SUPPLYANDSIEGE_API USAS_UnitTypeData : public UDataAsset
 {
 	GENERATED_BODY()
