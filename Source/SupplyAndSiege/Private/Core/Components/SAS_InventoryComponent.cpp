@@ -5,6 +5,8 @@
 #include "Misc/DataAssets/SAS_InventoryProfileData.h"
 #include "Misc/DataAssets/ItemDefinitionPrimaryData.h"
 #include "Core/Components/SAS_UnitInformationComponent.h"
+#include "Core/Components/SAS_InventoryManagerComponent.h"
+#include "Core/SAS_GameState.h"
 
 
 USAS_InventoryComponent::USAS_InventoryComponent()
@@ -85,10 +87,6 @@ int32 USAS_InventoryComponent::AddItem(UItemDefinitionPrimaryData* Item, int32 Q
 
 }
 
-
-
-
-
 void USAS_InventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -113,9 +111,29 @@ void USAS_InventoryComponent::HandleTeamChanged(ESAS_Team NewTeam)
 {
 	if (AssignedTeam == NewTeam) return;
 
+	ASAS_GameState* GameState = GetWorld() ? GetWorld()->GetGameState<ASAS_GameState>() : nullptr;
+
+	if (!GameState)
+	{
+		AssignedTeam = NewTeam;
+		return;
+	}
+	if (AssignedTeam == ESAS_Team::Team1 || AssignedTeam == ESAS_Team::Team2)
+	{
+		USAS_InventoryManagerComponent* OldInventoryManagerComponent = GameState->GetInventoryManagerForTeam(AssignedTeam);
+		check(OldInventoryManagerComponent);
+		OldInventoryManagerComponent->UnregisterTeamInventory(this);
+	}
+
 	AssignedTeam = NewTeam;
 
-	//TODO: Need to set it up so that this is broadcast to the new team so they see their new resource count etc. Also remove any assigned resources from the old team, but likely irrelevant in this situation.
+	if (NewTeam == ESAS_Team::Team1 || NewTeam == ESAS_Team::Team2)
+	{
+		USAS_InventoryManagerComponent* NewInventoryManagerComponent = GameState->GetInventoryManagerForTeam(NewTeam);
+		check(NewInventoryManagerComponent);
+		NewInventoryManagerComponent->RegisterTeamInventory(this);
+	}
+
 }
 
 void USAS_InventoryComponent::GetUnitInformationAndBindToTeamChange()

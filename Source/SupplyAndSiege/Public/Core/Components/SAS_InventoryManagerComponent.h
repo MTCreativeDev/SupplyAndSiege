@@ -34,6 +34,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void UnregisterTeamInventory(USAS_InventoryComponent* Inventory);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void GetAllStockpuleTotals(TMap<FPrimaryAssetId, int32>& OutTotals) const;
+
 	//Dispatchers
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnTeamInventoryChanged OnTeamInventoryChanged;
@@ -43,6 +46,8 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
+
+
 
 private:
 	

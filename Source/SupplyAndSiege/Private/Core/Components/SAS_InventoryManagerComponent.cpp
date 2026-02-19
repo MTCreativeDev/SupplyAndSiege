@@ -57,6 +57,11 @@ void USAS_InventoryManagerComponent::UnregisterTeamInventory(USAS_InventoryCompo
 	AllTeamUnitInventories.Remove(Inventory);
 }
 
+void USAS_InventoryManagerComponent::GetAllStockpuleTotals(TMap<FPrimaryAssetId, int32>& OutTotals) const
+{
+	OutTotals = TeamStockpileTotals;
+}
+
 void USAS_InventoryManagerComponent::HandleInventoryChanged(USAS_InventoryComponent* Sender, FPrimaryAssetId ItemId, int32 Delta)
 {
 	if (!Sender) return;
@@ -66,6 +71,7 @@ void USAS_InventoryManagerComponent::HandleInventoryChanged(USAS_InventoryCompon
 	if (!StockpileInventories.Contains(Sender)) return;
 
 	ApplyDeltaAndBroadcast(ItemId, Delta);
+
 }
 
 void USAS_InventoryManagerComponent::AddEntireInventoryToStockpile(USAS_InventoryComponent* Inventory)
