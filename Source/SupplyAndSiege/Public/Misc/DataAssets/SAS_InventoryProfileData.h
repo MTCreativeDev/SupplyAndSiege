@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "Core/SAS_Enumerators.h"
 #include "SAS_InventoryProfileData.generated.h"
 
 /**
@@ -37,7 +38,6 @@ public:
 	UItemDefinitionPrimaryData* OnlyStorableResource = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
-	bool bIsStockpileInventory = false;
-
+	ESAS_TrackedInventoryCategory TrackedInventoryCategory = ESAS_TrackedInventoryCategory::None;
 
 };

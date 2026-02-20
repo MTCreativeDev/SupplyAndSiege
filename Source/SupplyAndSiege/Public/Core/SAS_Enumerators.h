@@ -52,3 +52,12 @@ enum class ESAS_Team : uint8
     Team1    UMETA(DisplayName = "Team 1"),
     Team2    UMETA(DisplayName = "Team 2")
 };
+
+UENUM(BlueprintType)
+enum class ESAS_TrackedInventoryCategory : uint8
+{
+    None    UMETA(DisplayName = "None"),
+    Stockpile    UMETA(DisplayName = "Stockpile"),
+    Transit    UMETA(DisplayName = "Transit"),
+    RefinerInput    UMETA(DisplayName = "Refiner Input")
+};

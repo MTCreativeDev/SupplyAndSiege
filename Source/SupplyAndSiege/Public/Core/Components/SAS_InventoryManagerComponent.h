@@ -35,11 +35,17 @@ public:
 	void UnregisterTeamInventory(USAS_InventoryComponent* Inventory);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void GetAllStockpuleTotals(TMap<FPrimaryAssetId, int32>& OutTotals) const;
+	void GetInventoryTotals(ESAS_TrackedInventoryCategory InventoryToGet, TMap<FPrimaryAssetId, int32>& OutTotals) const;
 
 	//Dispatchers
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
-	FOnTeamInventoryChanged OnTeamInventoryChanged;
+	FOnTeamInventoryChanged OnTeamStockpileInventoryChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnTeamInventoryChanged OnTeamTransitInventoryChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnTeamInventoryChanged OnTeamRefinerInputInventoryChanged;
 
 
 
@@ -54,11 +60,11 @@ private:
 	UFUNCTION()
 	void HandleInventoryChanged(USAS_InventoryComponent* Sender, FPrimaryAssetId ItemId, int32 Delta);
 
-	void AddEntireInventoryToStockpile(USAS_InventoryComponent* Inventory);
+	void AddEntireInventoryToTrackedInventory(ESAS_TrackedInventoryCategory TrackedInventory, USAS_InventoryComponent* Inventory);
 
-	void RemoveEntireInventoryFromStockpile(USAS_InventoryComponent* Inventory);
+	void RemoveEntireInventoryFromTrackedInventory(ESAS_TrackedInventoryCategory TrackedInventory, USAS_InventoryComponent* Inventory);
 
-	void ApplyDeltaAndBroadcast(const FPrimaryAssetId& ItemId, int32 Delta);
+	void ApplyDeltaAndBroadcast(ESAS_TrackedInventoryCategory InventoryToModify, const FPrimaryAssetId& ItemId, int32 Delta);
 
 public:	
 
@@ -69,9 +75,20 @@ private:
 	UPROPERTY()
 	TMap<FPrimaryAssetId, int32> TeamStockpileTotals;
 
-	//The inventories that will contribute to the TeamStockpileTotals. We ignore villagers transfering materials etc to avoid constant updates.
+	UPROPERTY()
+	TMap<FPrimaryAssetId, int32> TeamTransitTotals;
+
+	UPROPERTY()
+	TMap<FPrimaryAssetId, int32> TeamRefinerInputTotals;
+
 	UPROPERTY()
 	TSet<TWeakObjectPtr<USAS_InventoryComponent>> StockpileInventories;
+
+	UPROPERTY()
+	TSet<TWeakObjectPtr<USAS_InventoryComponent>> TransitInventories;
+
+	UPROPERTY()
+	TSet<TWeakObjectPtr<USAS_InventoryComponent>> RefinerInputInventories;
 
 	UPROPERTY()
 	TSet<TWeakObjectPtr<USAS_InventoryComponent>> AllTeamUnitInventories;
