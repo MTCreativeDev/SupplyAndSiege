@@ -8,6 +8,7 @@
 #include "DrawDebugHelpers.h"
 #include "Core/CustomCollision.h"
 #include "Core/Components/SAS_UnitManagerComponent.h"
+#include "Core/Objects/SAS_SelectionInventoryViewModel.h"
 
 ASAS_PlayerController::ASAS_PlayerController()
 {
@@ -17,6 +18,8 @@ ASAS_PlayerController::ASAS_PlayerController()
     UnitManagerComponent = CreateDefaultSubobject<USAS_UnitManagerComponent>(TEXT("UnitManagerComponent"));
     //WARNING: This only works in a single player game.
     UnitManagerComponent->SetTeam(ESAS_Team::Team1);
+
+
 
 }
 
@@ -100,6 +103,33 @@ void ASAS_PlayerController::OnPossess(APawn* InPawn)
     Super::OnPossess(InPawn);
 
     PlayerPawn = Cast<ASAS_PlayerPawn>(InPawn);
+}
+
+void ASAS_PlayerController::BeginPlay()
+{
+    Super::BeginPlay();
+
+    InitializeSelectionInventoryViewModel();
+}
+
+void ASAS_PlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (SelectionInventoryViewModel)
+    {
+        SelectionInventoryViewModel->Shutdown();
+    }
+
+    Super::EndPlay(EndPlayReason);
+}
+
+
+USAS_SelectionInventoryViewModel* ASAS_PlayerController::GetSelectionInventoryViewModel()
+{
+    if (!SelectionInventoryViewModel)
+    {
+        InitializeSelectionInventoryViewModel();
+    }
+    return SelectionInventoryViewModel;
 }
 
 void ASAS_PlayerController::SetupInputComponent()
@@ -486,5 +516,28 @@ void ASAS_PlayerController::RightClickStarted()
 
 void ASAS_PlayerController::RightClickCompleted()
 {
+}
+
+void ASAS_PlayerController::InitializeSelectionInventoryViewModel()
+{
+    if (!UnitManagerComponent)
+    {
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(
+                -1,
+                5.f,
+                FColor::Red,
+                TEXT("Unit Manager Component must be initialized first")
+            );
+        }
+        return;
+    }
+    if (!SelectionInventoryViewModel)
+    {
+        SelectionInventoryViewModel = NewObject<USAS_SelectionInventoryViewModel>(this);
+        SelectionInventoryViewModel->Initialize(UnitManagerComponent);
+
+    }
 }
 

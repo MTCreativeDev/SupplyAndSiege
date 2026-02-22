@@ -12,6 +12,7 @@ class UInputAction;
 struct FInputActionValue;
 class ASAS_PlayerPawn;
 class USAS_UnitManagerComponent;
+class USAS_SelectionInventoryViewModel;
 
 
 /**
@@ -36,26 +37,9 @@ UCLASS()
 class SUPPLYANDSIEGE_API ASAS_PlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
+
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (Bitmask, BitmaskEnum = "/Script/SUPPLYANDSIEGE.EMovementBlocker"))
-	int32 MovementBlockerMask = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (Bitmask, BitmaskEnum = "/Script/SUPPLYANDSIEGE.ERotationBlocker"))
-	int32 RotationBlockerMask = 0;
-
-	UPROPERTY(BlueprintReadOnly)
-	FVector2D SelectionStartMousePos = FVector2D::ZeroVector;
-
-	UPROPERTY(BlueprintReadOnly)
-	FVector2D CurrentSelectionMousePos = FVector2D::ZeroVector;
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bDragging = false;
-
-
-	//functions
 
 	ASAS_PlayerController();
 
@@ -63,62 +47,18 @@ public:
 
 	virtual void OnPossess(APawn* InPawn) override;
 
+	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory Selection View")
+	USAS_SelectionInventoryViewModel* GetSelectionInventoryViewModel();
 
 protected:
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
-	USAS_UnitManagerComponent* UnitManagerComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller State")
-	EControllerAction CurrentAction = EControllerAction::None;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputMappingContext> IMC_PlayerMovement;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputAction> IA_Move;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputAction> IA_ToggleRotate;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputAction> IA_Select;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UInputAction> IA_RightClick;
-
-
-	FMouseEdgeResult MouseEdgeResult = FMouseEdgeResult();
-
-	UPROPERTY(EditDefaultsOnly,Category = "Input")
-	FVector2D ScreenMovementBounds = FVector2D(50.f, 50.f);
-
-	bool OverrideMoveByInputAction = false;
-
-	FVector2D MoveInputActionAxis = FVector2D::ZeroVector;
-
-	UPROPERTY(BlueprintReadOnly)
-	ASAS_PlayerPawn* PlayerPawn;
-
-	FVector2D CachedMouseLocation = FVector2D::ZeroVector;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	float MaxEvaluatedRotationDistance = 400.f;
-
-	// Selection States - I'm using two bools instead of an Enum since I don't expect there to be more than the two states.
-	bool bSelecting = false;
-
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	float SelectingTimeTillDrag = 9.3f;
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	float SelectionDistanceTillDrag = 8.f;
-
-	float SelectionStartedTime = 0.f;
-
-
-	
-	//functions
-
 	virtual void SetupInputComponent() override;
 
-	FMouseEdgeResult GetMouseEdgePosition(float HorizontalEdgeDistance,float VerticalEdgeDistance) const;
+	FMouseEdgeResult GetMouseEdgePosition(float HorizontalEdgeDistance, float VerticalEdgeDistance) const;
 
 	void MoveUpdated(const FInputActionValue& Value);
 	void MoveEnded(const FInputActionValue& Value);
@@ -141,6 +81,79 @@ protected:
 
 	void RightClickStarted();
 	void RightClickCompleted();
+
+private:
+	
+	void InitializeSelectionInventoryViewModel();
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (Bitmask, BitmaskEnum = "/Script/SUPPLYANDSIEGE.EMovementBlocker"))
+	int32 MovementBlockerMask = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (Bitmask, BitmaskEnum = "/Script/SUPPLYANDSIEGE.ERotationBlocker"))
+	int32 RotationBlockerMask = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D SelectionStartMousePos = FVector2D::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D CurrentSelectionMousePos = FVector2D::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bDragging = false;
+
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
+	USAS_UnitManagerComponent* UnitManagerComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller State")
+	EControllerAction CurrentAction = EControllerAction::None;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputMappingContext> IMC_PlayerMovement;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_Move;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_ToggleRotate;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_Select;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_RightClick;
+
+	FMouseEdgeResult MouseEdgeResult = FMouseEdgeResult();
+
+	UPROPERTY(EditDefaultsOnly,Category = "Input")
+	FVector2D ScreenMovementBounds = FVector2D(50.f, 50.f);
+
+	bool OverrideMoveByInputAction = false;
+
+	FVector2D MoveInputActionAxis = FVector2D::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly)
+	ASAS_PlayerPawn* PlayerPawn;
+
+	FVector2D CachedMouseLocation = FVector2D::ZeroVector;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	float MaxEvaluatedRotationDistance = 400.f;
+
+	// Selection States - I'm using two bools instead of an Enum since I don't expect there to be more than the two states.
+	bool bSelecting = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	float SelectingTimeTillDrag = 9.3f;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	float SelectionDistanceTillDrag = 8.f;
+
+	float SelectionStartedTime = 0.f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Selected Inventory")
+	USAS_SelectionInventoryViewModel* SelectionInventoryViewModel;
+
+	
+
 
 
 
