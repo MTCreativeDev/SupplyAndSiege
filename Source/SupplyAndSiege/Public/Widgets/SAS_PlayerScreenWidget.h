@@ -26,7 +26,7 @@ protected:
 	virtual void NativeDestruct() override;
 
 	UFUNCTION()
-	void HandleSelectedUnitsChanged(TArray<TWeakObjectPtr<USAS_UnitInformationComponent>> NewSelection);
+	void HandleSelectedUnitsChanged(const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>& NewSelection);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit Selection")
 	void BP_SelectedUnitsChanged(const TArray<USAS_UnitInformationComponent*>& NewSelection);

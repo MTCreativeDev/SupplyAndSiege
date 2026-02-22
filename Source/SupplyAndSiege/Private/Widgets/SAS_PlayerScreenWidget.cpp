@@ -33,7 +33,7 @@ void UPlayerScreenWidget::NativeDestruct()
 
 }
 
-void UPlayerScreenWidget::HandleSelectedUnitsChanged(TArray<TWeakObjectPtr<USAS_UnitInformationComponent>> NewSelection)
+void UPlayerScreenWidget::HandleSelectedUnitsChanged(const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>& NewSelection)
 {
 	TArray<USAS_UnitInformationComponent*> BPArray;
 	BPArray.Reserve(NewSelection.Num());

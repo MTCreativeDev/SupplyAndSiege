@@ -61,3 +61,11 @@ enum class ESAS_TrackedInventoryCategory : uint8
     Transit    UMETA(DisplayName = "Transit"),
     RefinerInput    UMETA(DisplayName = "Refiner Input")
 };
+
+UENUM(BlueprintType)
+enum class ESAS_SelectionInventoryMode : uint8
+{
+    None    UMETA(DisplayName = "None"),
+    Single  UMETA(DisplayName = "Single"),
+    Group   UMETA(DisplayName = "Group")
+};

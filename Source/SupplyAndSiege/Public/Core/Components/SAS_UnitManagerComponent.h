@@ -8,34 +8,18 @@
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "SAS_UnitManagerComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitSelectionChange, TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>, SelectedUnits);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitSelectionChange, const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>&, SelectedUnits);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_UnitManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+
+public:
+
 	// Sets default values for this component's properties
 	USAS_UnitManagerComponent();
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ESAS_Team AssignedTeam = ESAS_Team::None;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnUnitSelectionChange OnUnitSelectionChange;
-
-
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:	
-
-	//This is the array of all available units to this player. Units include buildings, pawns etc. Anything that the player can select.
-	TArray<TWeakObjectPtr<AActor>> SelectableUnits;
-
-	TArray<TWeakObjectPtr<USAS_UnitInformationComponent>> SelectedUnits;
 
 	void SetTeam(ESAS_Team NewTeam);
 
@@ -52,6 +36,34 @@ public:
 	void IssueMoveOrderToSelectedUnits(FVector WorldLocation);
 
 	void RightClickReceived(FVector WorldLocation);
+
+	const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>& GetSelectedUnits() const { return SelectedUnits; }
+
+	//Dispatchers
+	UPROPERTY(BlueprintAssignable)
+	FOnUnitSelectionChange OnUnitSelectionChange;
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+public:	
+
+	//This is the array of all available units to this player. Units include buildings, pawns etc. Anything that the player can select.
+	TArray<TWeakObjectPtr<AActor>> SelectableUnits;
+
+	UPROPERTY()
+	TArray<TWeakObjectPtr<USAS_UnitInformationComponent>> SelectedUnits;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ESAS_Team AssignedTeam = ESAS_Team::None;
+
+
+
+
+
+
+
 
 
 protected:
