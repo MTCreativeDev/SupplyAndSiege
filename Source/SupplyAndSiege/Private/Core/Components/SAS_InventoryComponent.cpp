@@ -42,37 +42,7 @@ void USAS_InventoryComponent::GetAllItemTotals(TMap<FPrimaryAssetId, int32>& Out
 
 int32 USAS_InventoryComponent::AddItem(UItemDefinitionPrimaryData* Item, int32 Quantity)
 {
-	if (!Item || Quantity <= 0) return 0;
-
-	//TODO: Still need to set it up so that slots are updated with the max stack for the slot based on inventory type and item in the slot.
-	int32 Remaining = Quantity;
-
-	for (FSAS_InventorySlot& Slot : Slots)
-	{
-		if (Remaining <= 0) break;
-		if (Slot.Item != Item) continue;
-		if (Slot.RemainingSpaceInSlot <= 0) continue;
-
-		int32 AmountToAddToSlot = FMath::Min(Remaining, Slot.RemainingSpaceInSlot);
-		Slot.Quantity += AmountToAddToSlot;
-		Remaining += AmountToAddToSlot;
-	}
-
-	if (Remaining > 0)
-	{
-		for (FSAS_InventorySlot& Slot : Slots)
-		{
-			if (Remaining <= 0) break;
-			if (!Slot.IsEmpty()) continue;
-
-			//TODO: Need to update this so that when adding to a new slot it evaluates the inventory type and item to set the new max stack for this slot.
-			Slot.Item = Item;
-			Slot.Quantity = Remaining;
-			Remaining = 0;
-		}
-	}
-	
-	const int32 Added = Quantity - Remaining;
+	const int32 Added = AddItem_Internal(Item, Quantity);
 
 	if (Added > 0)
 	{
@@ -82,9 +52,40 @@ int32 USAS_InventoryComponent::AddItem(UItemDefinitionPrimaryData* Item, int32 Q
 			OnInventoryChanged.Broadcast(this, ItemId, Added);
 		}
 	}
-
 	return Added;
+	
+}
 
+int32 USAS_InventoryComponent::GetMaxStack(const UItemDefinitionPrimaryData* Item) const
+{
+	if (!Item) return 0;
+	if (!InventoryProfile) return 0;
+
+	if (InventoryProfile->bCanOnlyStoreOneResource)
+	{
+		if (!InventoryProfile->OnlyStorableResource) return 0;
+		if (InventoryProfile->OnlyStorableResource != Item) return 0;
+	}
+	if (const int32* Override = InventoryProfile->MaxPerSlotOverrides.Find(const_cast<UItemDefinitionPrimaryData*>(Item)))
+	{
+		return FMath::Max(0, *Override);
+	}
+	return FMath::Max(0, InventoryProfile->DefaultMaxPerSlot);
+}
+
+int32 USAS_InventoryComponent::RemoveItem(UItemDefinitionPrimaryData* Item, int32 Quantity)
+{
+	const int32 Removed = RemoveItem_Internal(Item,Quantity);
+
+	if (Removed > 0)
+	{
+		const FPrimaryAssetId ItemId = Item->GetPrimaryAssetId();
+		if (ItemId.IsValid())
+		{
+			OnInventoryChanged.Broadcast(this, ItemId, -Removed);
+		}
+	}
+	return Removed;
 }
 
 void USAS_InventoryComponent::BeginPlay()
@@ -197,6 +198,72 @@ void USAS_InventoryComponent::CreateSlotsFromProfile()
 		Slot.ClearSlot();
 	}
 
+}
+
+int32 USAS_InventoryComponent::AddItem_Internal(UItemDefinitionPrimaryData* Item, int32 Quantity)
+{
+	if (!Item || Quantity <= 0) return 0;
+	int32 Remaining = Quantity;
+
+	//Existing Slots
+	for (FSAS_InventorySlot& Slot : Slots)
+	{
+		if (Remaining <= 0) break;
+		if (Slot.IsEmpty())
+		if (Slot.Item != Item) continue;
+
+		const int32 MaxStack = GetMaxStack(Item);
+		const int32 SpaceLeft = FMath::Max(0, MaxStack - Slot.Quantity);
+		if (SpaceLeft <= 0) continue;
+
+		const int32 AmountToAddToSlot = FMath::Min(Remaining, SpaceLeft);
+		Slot.Quantity += AmountToAddToSlot;
+		Remaining -= AmountToAddToSlot;
+	}
+
+
+	// Empty Slots
+
+		for (FSAS_InventorySlot& Slot : Slots)
+		{
+			if (Remaining <= 0) break;
+			if (!Slot.IsEmpty()) continue;
+
+			const int32 MaxStack = GetMaxStack(Item);
+			const int32 AmountToAddToSlot = FMath::Min(Remaining, MaxStack);
+
+			Slot.Item = Item;
+			Slot.Quantity = AmountToAddToSlot;
+			
+			Remaining -= AmountToAddToSlot;
+		}
+	return Quantity - Remaining;
+}
+
+int32 USAS_InventoryComponent::RemoveItem_Internal(UItemDefinitionPrimaryData* Item, int32 Quantity)
+{
+	if (!Item || Quantity <= 0) return 0;
+
+	int32 Remaining = Quantity;
+
+	for (FSAS_InventorySlot& Slot : Slots)
+	{
+		if (Remaining <= 0) break;
+		if (Slot.IsEmpty()) continue;
+		if (Slot.Item != Item) continue;
+		if (Slot.Quantity <= 0) { Slot.ClearSlot(); continue;}
+
+		const int32 AmountToRemove = FMath::Min(Remaining, Slot.Quantity);
+		Slot.Quantity -= AmountToRemove;
+		Remaining -= AmountToRemove;
+
+		if (Slot.Quantity <= 0)
+		{
+			Slot.ClearSlot();
+		}
+	}
+
+	return Quantity - Remaining;
 }
 
 
