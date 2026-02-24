@@ -38,6 +38,10 @@ protected:
 	UFUNCTION()
 	void HandleSelectionInventoryModelChanged();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Selection Inventory")
+	void BP_OnSelectionInventoryChanged(ESAS_SelectionInventoryMode Mode, const TMap<FPrimaryAssetId, int32>& Totals);
+	virtual void BP_OnSelectionInventoryChanged_Implementation(ESAS_SelectionInventoryMode Mode, const TMap<FPrimaryAssetId, int32>& Totals);
+
 private:
 
 

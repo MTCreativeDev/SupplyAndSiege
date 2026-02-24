@@ -71,30 +71,12 @@ void UPlayerScreenWidget::HandleSelectionInventoryModelChanged()
 
 	const ESAS_SelectionInventoryMode Mode = InventoryViewModel->GetMode();
 
-	if (Mode == ESAS_SelectionInventoryMode::None)
-	{
-		//TODO: Remove all shown inventory
-		return;
-	}
-
 	const TMap<FPrimaryAssetId, int32>& Totals = InventoryViewModel->GetGroupTotals();
 
-	for (const TPair<FPrimaryAssetId, int32>& Pair : Totals)
-	{
-		const FString Msg = FString::Printf(
-			TEXT("Item: %s | Qty: %d"),
-			*Pair.Key.ToString(),
-			Pair.Value
-		);
+	BP_OnSelectionInventoryChanged(Mode, Totals);
+}
 
-		UE_LOG(LogTemp, Log, TEXT("%s"), *Msg);
-
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, Msg);
-		}
-	}
-
-	//TODO: Pass this informaton along to the widget.
-
+void UPlayerScreenWidget::BP_OnSelectionInventoryChanged_Implementation(ESAS_SelectionInventoryMode Mode, const TMap<FPrimaryAssetId, int32>& Totals)
+{
+	//handled in BP
 }

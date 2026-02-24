@@ -82,19 +82,7 @@ void ASAS_PlayerController::Tick(float DeltaSeconds)
             }
         }
         UpdateSelectionDragState();
-
-        const FString StateString = bDragging ? TEXT("Dragging") : TEXT("Clicking");
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(
-                -1,
-                0.f,
-                FColor::Cyan,
-                StateString
-            );
-        }
-
-
+                
     }
 }
 
@@ -121,7 +109,6 @@ void ASAS_PlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
     Super::EndPlay(EndPlayReason);
 }
-
 
 USAS_SelectionInventoryViewModel* ASAS_PlayerController::GetSelectionInventoryViewModel()
 {
@@ -465,6 +452,7 @@ void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const 
         if (!InfoComponent) continue;
 
         UnitManagerComponent->AddSelectedUnit(InfoComponent);
+        //TODO: Set up a process to only have the unit manager broadcast an update after all of the selected units are complete. Right now this will cause the UI to update x amount of times based on units selected.
     }
 }
 
