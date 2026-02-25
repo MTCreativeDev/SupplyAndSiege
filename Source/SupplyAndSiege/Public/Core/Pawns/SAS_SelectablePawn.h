@@ -25,7 +25,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "SAS_Unit")
 	void DestroySelf();
 
 public:
