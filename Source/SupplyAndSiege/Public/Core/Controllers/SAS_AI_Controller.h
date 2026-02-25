@@ -6,12 +6,21 @@
 #include "AIController.h"
 #include "SAS_AI_Controller.generated.h"
 
+class UStateTreeAIComponent;
+
 /**
- * 
+ * AIC for units.
  */
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_AI_Controller : public AAIController
 {
 	GENERATED_BODY()
-	
+
+public:
+	ASAS_AI_Controller();
+
+protected:
+	/** Runs the behavior StateTree for this unit. */
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	TObjectPtr<UStateTreeAIComponent> StateTreeComp;
 };
