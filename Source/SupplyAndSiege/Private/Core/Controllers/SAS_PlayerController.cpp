@@ -428,8 +428,12 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
 
 void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const FVector2D& ScreenPositionB)
 {
-    if (!UnitManagerComponent) return;
-    UnitManagerComponent->ClearAllSelectedUnits();
+    if (!UnitManagerComponent) { return; }
+    
+    if (!IsInputKeyDown(EKeys::LeftShift) && !IsInputKeyDown(EKeys::RightShift))
+    {
+        UnitManagerComponent->ClearAllSelectedUnits();
+    }
     
     const float MinX = FMath::Min(SelectionStartMousePos.X, CurrentSelectionMousePos.X);
     const float MinY = FMath::Min(SelectionStartMousePos.Y, CurrentSelectionMousePos.Y);
