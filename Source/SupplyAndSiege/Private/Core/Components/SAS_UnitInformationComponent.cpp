@@ -103,7 +103,7 @@ void USAS_UnitInformationComponent::IssueMoveOrder(FVector WorldLocation)
 	AAIController* AI = Pawn ? Cast<AAIController>(Pawn->GetController()) : nullptr;
 	if (!AI) return;
 
-	AI->MoveToLocation(WorldLocation, 75.f, true);
+	AI->MoveToLocation(WorldLocation);
 }
 
 
