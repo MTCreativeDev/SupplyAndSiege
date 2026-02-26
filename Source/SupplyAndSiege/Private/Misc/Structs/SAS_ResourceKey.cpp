@@ -3,10 +3,3 @@
 
 #include "Misc/Structs/SAS_ResourceKey.h"
 
-SAS_ResourceKey::SAS_ResourceKey()
-{
-}
-
-SAS_ResourceKey::~SAS_ResourceKey()
-{
-}
