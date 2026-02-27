@@ -21,6 +21,6 @@ public:
 
 protected:
 	/** Runs the behavior StateTree for this unit. */
-	UPROPERTY(VisibleAnywhere, Category="Components")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	TObjectPtr<UStateTreeAIComponent> StateTreeComp;
 };
