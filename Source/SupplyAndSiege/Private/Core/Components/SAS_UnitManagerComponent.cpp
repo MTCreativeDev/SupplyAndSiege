@@ -104,6 +104,7 @@ void USAS_UnitManagerComponent::ClearAllSelectedUnits()
 
 void USAS_UnitManagerComponent::RightClickReceived(FVector WorldLocation)
 {
+	LastRightClickLocation = WorldLocation;
 	//TODO: Need to update this function to account for various possible right clicks. E.g. attack htis actor, harvest this unit  or move here etc.
 	if (SelectedUnits.Num() == 0) return;
 
@@ -112,6 +113,7 @@ void USAS_UnitManagerComponent::RightClickReceived(FVector WorldLocation)
 	IssueMoveOrderToSelectedUnits(WorldLocation);
 }
 
+UE_DISABLE_OPTIMIZATION
 void USAS_UnitManagerComponent::IssueMoveOrderToSelectedUnits(FVector WorldLocation)
 {
 	if (ensureMsgf(FormationQuery, TEXT("Please assign an EQS to %s's UnitManagerComponent's FormationQuery"), *GetNameSafe(GetOwner())))
@@ -151,3 +153,4 @@ void USAS_UnitManagerComponent::OnFormationQueryComplete(UEnvQueryInstanceBluepr
 		}
 	}
 }
+UE_ENABLE_OPTIMIZATION

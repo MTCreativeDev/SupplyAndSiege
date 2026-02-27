@@ -34,6 +34,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnUnitSelectionChange OnUnitSelectionChange;
 
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite)
+	FVector LastRightClickLocation;
+
 protected:
 	virtual void BeginPlay() override;
 
