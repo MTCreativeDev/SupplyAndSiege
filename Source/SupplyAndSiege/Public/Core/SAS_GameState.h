@@ -8,6 +8,7 @@
 #include "SAS_GameState.generated.h"
 
 class USAS_InventoryManagerComponent;
+class USAS_ResourceManagerComponent;
 
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_GameState : public AGameStateBase
@@ -27,5 +28,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	USAS_InventoryManagerComponent* InventoryManagerComponentTeam2;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
+	USAS_ResourceManagerComponent* ResourceManagerComponent;
 
 };

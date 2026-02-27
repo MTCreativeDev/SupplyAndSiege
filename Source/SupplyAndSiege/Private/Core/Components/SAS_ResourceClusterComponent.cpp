@@ -62,7 +62,6 @@ bool USAS_ResourceClusterComponent::GetInstanceTransform(const UPrimitiveCompone
 	return HISM->GetInstanceTransform(InstanceIndex, OutWorldTransform, true);
 }
 
-
 void USAS_ResourceClusterComponent::BeginPlay()
 {
 	Super::BeginPlay();

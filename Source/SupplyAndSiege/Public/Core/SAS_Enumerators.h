@@ -69,3 +69,12 @@ enum class ESAS_SelectionInventoryMode : uint8
     Single  UMETA(DisplayName = "Single"),
     Group   UMETA(DisplayName = "Group")
 };
+
+UENUM(BlueprintType)
+enum class ESAS_ResourceValidity : uint8
+{
+    Valid   UMETA(DisplayName = "Valid"),
+    InvalidKey   UMETA(DisplayName = "Invalid Key"),
+    Depleted   UMETA(DisplayName = "Depleted"),
+    ReservedByOther   UMETA(DisplayName = "Reserved by Other"),
+};

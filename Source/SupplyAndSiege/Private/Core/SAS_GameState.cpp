@@ -2,6 +2,7 @@
 
 
 #include "Core/SAS_GameState.h"
+#include "Core/Components/SAS_ResourceManagerComponent.h"
 #include "Core/Components/SAS_InventoryManagerComponent.h"
 
 ASAS_GameState::ASAS_GameState()
@@ -13,6 +14,8 @@ ASAS_GameState::ASAS_GameState()
 	
 	InventoryManagerComponentTeam1->AssignedTeam = ESAS_Team::Team1;
 	InventoryManagerComponentTeam2->AssignedTeam = ESAS_Team::Team2;
+
+	ResourceManagerComponent = CreateDefaultSubobject<USAS_ResourceManagerComponent>(TEXT("ResourceManagerComponent"));
 }
 
 USAS_InventoryManagerComponent* ASAS_GameState::GetInventoryManagerForTeam(ESAS_Team Team) const

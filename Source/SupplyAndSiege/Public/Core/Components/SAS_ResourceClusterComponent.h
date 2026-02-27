@@ -20,6 +20,7 @@ public:
 
 	FSAS_ResourceKey MakeKey(int32 InstanceIndex) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Resource")
 	USAS_ResourceTypeData* GetTypeForHitComponent(const UPrimitiveComponent* HitComponent) const;
 
 	bool IsInstanceInteractable(const UPrimitiveComponent* HitComponent, int32 InstanceIndex) const;
