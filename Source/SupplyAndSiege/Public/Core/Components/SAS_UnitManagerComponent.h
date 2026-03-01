@@ -26,7 +26,8 @@ public:
 	void AddSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation);
 	void RemoveSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation);
 	void ClearAllSelectedUnits();
-	void RightClickReceived(FVector WorldLocation);
+	void RightClickReceived(const FHitResult Hit);
+	void IssueMoveOrderToUnits(const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>& UnitsToMove, const FVector& WorldLocation);
 	void IssueMoveOrderToSelectedUnits(FVector WorldLocation);
 	const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>& GetSelectedUnits() const { return SelectedUnits; }
 
@@ -57,4 +58,9 @@ protected:
 	
 	UFUNCTION()
 	void OnFormationQueryComplete(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+private:
+
+	TArray<TWeakObjectPtr<USAS_UnitInformationComponent>> PendingFormationUnits;
+
 };

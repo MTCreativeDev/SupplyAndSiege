@@ -30,7 +30,6 @@ public:
 	bool GetInstanceTransform(const UPrimitiveComponent* HitComponent, int32 InstanceIndex, FTransform& OutWorldTransform) const;
 
 
-
 protected:
 	virtual void BeginPlay() override;
 

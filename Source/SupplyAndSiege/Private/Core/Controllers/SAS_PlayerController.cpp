@@ -482,7 +482,7 @@ void ASAS_PlayerController::RightClickStarted()
         Hit,
         TraceStart,
         TraceEnd,
-        Trace_NavigableArea,
+        Trace_Interactable,
         Params
     );
 
@@ -500,9 +500,7 @@ void ASAS_PlayerController::RightClickStarted()
 
     if (bHit && Hit.GetActor())
     {
-        const AActor* Actor = Hit.GetActor();
-        const FVector WorldLocation = Hit.ImpactPoint;
-        UnitManagerComponent->RightClickReceived(WorldLocation);
+        UnitManagerComponent->RightClickReceived(Hit);
     }
 }
 

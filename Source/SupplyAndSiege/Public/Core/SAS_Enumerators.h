@@ -78,3 +78,12 @@ enum class ESAS_ResourceValidity : uint8
     Depleted   UMETA(DisplayName = "Depleted"),
     ReservedByOther   UMETA(DisplayName = "Reserved by Other"),
 };
+
+UENUM(BlueprintType)
+enum class ESAS_UnitCategory : uint8
+{
+    None   UMETA(DisplayName = "None"),
+    Pawn_Villager   UMETA(DisplayName = "Villager"),
+    Pawn_Courier   UMETA(DisplayName = "Courier"),
+    Pawn_Military   UMETA(DisplayName = "Military"),
+};

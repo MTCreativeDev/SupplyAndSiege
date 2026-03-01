@@ -142,6 +142,7 @@ int32 USAS_ResourceManagerComponent::ApplyHarvest(const FSAS_ResourceKey& Key, c
 }
 
 
+
 void USAS_ResourceManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();

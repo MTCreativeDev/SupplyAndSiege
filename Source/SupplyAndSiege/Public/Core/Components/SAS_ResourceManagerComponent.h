@@ -75,6 +75,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Resource")
 	int32 ApplyHarvest(const FSAS_ResourceKey& Key, const USAS_ResourceTypeData* TypeData, int32 RequestedAmount, USAS_ResourceClusterComponent* ClusterForVisuals = nullptr, UPrimitiveComponent* HitComponentForVisuals = nullptr);
 
+
+
 protected:
 
 	virtual void BeginPlay() override;

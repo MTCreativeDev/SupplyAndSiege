@@ -4,6 +4,7 @@
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "Core/Components/SAS_UnitManagerComponent.h"
 #include "AIController.h"
+#include "Misc/DataAssets/SAS_ResourceTypeData.h"
 
 
 USAS_UnitInformationComponent::USAS_UnitInformationComponent()
@@ -104,6 +105,11 @@ void USAS_UnitInformationComponent::IssueMoveOrder(FVector WorldLocation)
 	if (!AI) return;
 
 	AI->MoveToLocation(WorldLocation);
+}
+
+void USAS_UnitInformationComponent::IssueHarvestOrder(USAS_ResourceTypeData* TypeData, FSAS_ResourceKey ResourceKey, FVector Location)
+{
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Harvest order received"));
 }
 
 

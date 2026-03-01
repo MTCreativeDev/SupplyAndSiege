@@ -4,10 +4,13 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Core/SAS_Enumerators.h"
+#include "Misc/Structs/SAS_ResourceKey.h"
 #include "SAS_UnitInformationComponent.generated.h"
 
 class USAS_UnitManagerComponent;
 class USAS_UnitTypeData;
+class USAS_ResourceTypeData;
+
 
 
 //Dispatchers
@@ -34,6 +37,8 @@ public:
 
 	void IssueMoveOrder(FVector WorldLocation);
 
+	void IssueHarvestOrder(USAS_ResourceTypeData* TypeData, FSAS_ResourceKey ResourceKey, FVector Location);
+
 	//Dispatchers
 	UPROPERTY(BlueprintAssignable)
 	FToggleSelectionRing ToggleSelectionRing;
@@ -57,11 +62,14 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit Information")
 	USAS_UnitTypeData* UnitType = nullptr;
-		
+
+
 protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	USAS_UnitManagerComponent* AssignedUnitManager;
+
+
 
 
 };
