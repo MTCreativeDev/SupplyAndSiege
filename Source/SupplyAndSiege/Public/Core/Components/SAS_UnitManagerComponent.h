@@ -35,11 +35,13 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnUnitSelectionChange OnUnitSelectionChange;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite)
-	FVector LastRightClickLocation;
+
 
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnFormationQueryComplete(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 
 public:
 	//This is the array of all available units to this player. Units include buildings, pawns etc. Anything that the player can select.
@@ -51,13 +53,15 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	ESAS_Team AssignedTeam = ESAS_Team::None;
 
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite)
+	FVector LastRightClickLocation;
+
 protected:
 	/** The movement formation location query to run. */
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UEnvQuery> FormationQuery;
 	
-	UFUNCTION()
-	void OnFormationQueryComplete(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
 
 private:
 

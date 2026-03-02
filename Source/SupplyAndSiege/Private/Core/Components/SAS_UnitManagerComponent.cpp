@@ -220,11 +220,9 @@ void USAS_UnitManagerComponent::RightClickReceived(const FHitResult Hit)
 	}
 	else
 	{
-
 		if (SelectedUnits.Num() >0)
 		{
 			IssueMoveOrderToSelectedUnits(Hit.ImpactPoint);
-
 		}
 	}
 }
@@ -233,11 +231,18 @@ void USAS_UnitManagerComponent::IssueMoveOrderToUnits(const TArray<TWeakObjectPt
 {
 	if (UnitsToMove.Num() == 0) return;
 
+	if (UnitsToMove.Num() == 1)
+	{
+		UnitsToMove[0]->IssueMoveOrder(WorldLocation);
+		return;
+	}
+
 	if (ensureMsgf(FormationQuery, TEXT("Please assign an EQS to %s's UnitManagerComponent's FormationQuery"), *GetNameSafe(GetOwner())))
 	{
 		PendingFormationUnits = UnitsToMove;
 
 		AActor* WorldContextObject = GetOwner();
+		LastRightClickLocation = WorldLocation;
 		UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(WorldContextObject, FormationQuery, GetOwner(), EEnvQueryRunMode::AllMatching, nullptr);
 
 		constexpr float SpaceBetween = 100.f;
@@ -247,13 +252,10 @@ void USAS_UnitManagerComponent::IssueMoveOrderToUnits(const TArray<TWeakObjectPt
 		const int32 PointLength = FMath::CeilToInt(FMath::Sqrt(static_cast<float>(NumUnits)));
 		const float GridSize = (PointLength - 1) * SpaceBetween;
 		QueryInstance->SetNamedParam(TEXT("SimpleGrid.GridSize"), GridSize);
-
 		QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ThisClass::OnFormationQueryComplete);
 	}
 
 }
-
-
 
 UE_DISABLE_OPTIMIZATION
 void USAS_UnitManagerComponent::IssueMoveOrderToSelectedUnits(FVector WorldLocation)
@@ -268,6 +270,7 @@ void USAS_UnitManagerComponent::OnFormationQueryComplete(UEnvQueryInstanceBluepr
 		UE_LOG(LogTemp, Warning, TEXT("Formation Query failed!"));
 		return;
 	}
+
 
 	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
 	int32 LocIndex = 0;
