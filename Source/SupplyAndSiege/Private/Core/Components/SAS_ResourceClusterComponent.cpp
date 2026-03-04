@@ -3,6 +3,8 @@
 
 #include "Core/Components/SAS_ResourceClusterComponent.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Core/Components/SAS_ResourceManagerComponent.h"
+#include "GameFramework/GameStateBase.h"
 
 
 USAS_ResourceClusterComponent::USAS_ResourceClusterComponent()
@@ -12,9 +14,17 @@ USAS_ResourceClusterComponent::USAS_ResourceClusterComponent()
 
 }
 
-FSAS_ResourceKey USAS_ResourceClusterComponent::MakeKey(int32 InstanceIndex) const
+FSAS_ResourceKey USAS_ResourceClusterComponent::MakeKey(const UPrimitiveComponent* HISMPrimitiveComponent, int32 InstanceIndex) const
 {
-	return FSAS_ResourceKey(ClusterGuid, InstanceIndex);
+	if (!HISMPrimitiveComponent) return FSAS_ResourceKey();
+
+	const UHierarchicalInstancedStaticMeshComponent* HISM = AsHISM(HISMPrimitiveComponent);
+	if (!HISM) return FSAS_ResourceKey();
+
+	const FGuid* GuidPtr = ClusterGuids.Find(HISM);
+	if (!GuidPtr) return FSAS_ResourceKey();
+
+	return FSAS_ResourceKey(*GuidPtr, InstanceIndex);
 }
 
 USAS_ResourceTypeData* USAS_ResourceClusterComponent::GetTypeForHitComponent(const UPrimitiveComponent* HitComponent) const
@@ -65,7 +75,6 @@ bool USAS_ResourceClusterComponent::GetInstanceTransform(const UPrimitiveCompone
 void USAS_ResourceClusterComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	EnsureGuid();
 
 	FindActorHISMs();
 
@@ -73,56 +82,42 @@ void USAS_ResourceClusterComponent::BeginPlay()
 
 void USAS_ResourceClusterComponent::FindActorHISMs()
 {
+
+	AActor* Owner = GetOwner();
+	if (!Owner) return;
+
 	TArray<UHierarchicalInstancedStaticMeshComponent*> HISMs;
-	GetOwner()->GetComponents(HISMs);
+	Owner->GetComponents(HISMs);
+
+	AGameStateBase* GS = GetWorld() ? GetWorld()->GetGameState() : nullptr;
+	USAS_ResourceManagerComponent* RM = GS ? GS->FindComponentByClass<USAS_ResourceManagerComponent>() : nullptr;
 
 	for (UHierarchicalInstancedStaticMeshComponent* HISM : HISMs)
 	{
 		if (!HISM) continue;
 
-
 		//TODO: Need to update this so we can have multipe types, but will handle later.
-		if (DefaultTypeData)
+		USAS_ResourceTypeData* TypeData = DefaultTypeData;
+
+		if (!TypeData) continue;
+			
+		ComponentTypeMap.FindOrAdd(HISM) = TypeData;
+		EnsureGuid(HISM);
+
+		if (RM)
 		{
-			ComponentTypeMap.FindOrAdd(HISM) = DefaultTypeData;
+			RM->RegisterHISMToGrid(TypeData, this, HISM);
 		}
-		else
-		{
-			const FString Msg = TEXT("ResourceCluster WARNING: DefaultTypeData is NULL — resources will not register!");
-
-		if (GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(
-					-1,
-					6.f,
-					FColor::Red,
-					Msg
-				);
-			}
-		}
-	}
-
-	if (GEngine)
-	{
-		const FString Msg = FString::Printf(
-			TEXT("ResourceCluster: Found %d instanced mesh components"),
-			ComponentTypeMap.Num()
-		);
-
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			5.f,
-			FColor::Green,
-			Msg
-		);
 	}
 }
 
-void USAS_ResourceClusterComponent::EnsureGuid()
+void USAS_ResourceClusterComponent::EnsureGuid(UHierarchicalInstancedStaticMeshComponent* HISM)
 {
-	if (!ClusterGuid.IsValid())
+	if (!HISM) return;
+	if (!ClusterGuids.Contains(HISM))
 	{
-		ClusterGuid = FGuid::NewGuid();
+		const FGuid NewGuid = FGuid::NewGuid();
+		ClusterGuids.Add(HISM, NewGuid);
 	}
 }
 

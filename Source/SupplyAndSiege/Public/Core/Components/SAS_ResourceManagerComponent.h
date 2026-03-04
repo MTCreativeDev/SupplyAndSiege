@@ -6,12 +6,14 @@
 #include "Components/ActorComponent.h"
 #include "Misc/Structs/SAS_ResourceKey.h"
 #include "Core/SAS_Enumerators.h"
+
 #include "SAS_ResourceManagerComponent.generated.h"
 
 
 class USAS_ResourceTypeData;
 class USAS_ResourceClusterComponent;
 class UPrimitiveComponent;
+class UHierarchicalInstancedStaticMeshComponent;
 
 //I normally like to create a separate class for structs, but I dont think this will be used elsewhere. If it is, I will move it to its own file.
 USTRUCT()
@@ -39,6 +41,25 @@ struct FSAS_ResourceReservationState
 
 	UPROPERTY()
 	double ExpiresAtSeconds = 0.0f;
+};
+
+USTRUCT()
+struct FSAS_HISMHandle
+{
+	GENERATED_BODY()
+
+	TWeakObjectPtr<UHierarchicalInstancedStaticMeshComponent> HISM;
+	int32 InstanceIndex = INDEX_NONE;
+	FVector WorldLocation = FVector::ZeroVector;
+};
+
+USTRUCT()
+struct FSAS_SpatialGrid
+{
+	GENERATED_BODY()
+
+	float CellSize = 0.f;
+	TMap<FIntPoint, TArray<FSAS_ResourceKey>> Cells;
 };
 
 /*===============================================
@@ -75,7 +96,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Resource")
 	int32 ApplyHarvest(const FSAS_ResourceKey& Key, const USAS_ResourceTypeData* TypeData, int32 RequestedAmount, USAS_ResourceClusterComponent* ClusterForVisuals = nullptr, UPrimitiveComponent* HitComponentForVisuals = nullptr);
 
-
+	UFUNCTION(BlueprintCallable, Category = "Resource")
+	int32 RegisterHISMToGrid(const USAS_ResourceTypeData* ResourceType, const USAS_ResourceClusterComponent* Cluster, UHierarchicalInstancedStaticMeshComponent* HISM);
 
 protected:
 
@@ -88,6 +110,18 @@ private:
 
 	FSAS_ResourceRuntimeState& FindOrAddState_OnModify(const FSAS_ResourceKey& Key, const USAS_ResourceTypeData* TypeData);
 
+	FIntPoint WorldToCell2D(const FVector& World, float CellSize) const;
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Resource")
+	TMap<const USAS_ResourceTypeData*, float> ResourceTypeGridSize;
+
+	TMap<const USAS_ResourceTypeData*, FSAS_SpatialGrid> GridsByType;
+
+	TMap<FSAS_ResourceKey, FSAS_HISMHandle> KeyToHandle;
+
+
 private:
 
 	UPROPERTY()
@@ -95,6 +129,9 @@ private:
 
 	UPROPERTY()
 	TMap<FSAS_ResourceKey, FSAS_ResourceReservationState> Reservations;
+
+
+
 
 
 

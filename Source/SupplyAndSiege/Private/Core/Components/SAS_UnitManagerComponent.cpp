@@ -158,8 +158,7 @@ void USAS_UnitManagerComponent::RightClickReceived(const FHitResult Hit)
 				break;
 			}
 
-			FGuid ClusterGuid = Cluster->ClusterGuid;
-			FSAS_ResourceKey HitResourceKey = FSAS_ResourceKey(ClusterGuid, InstanceIndex);
+			FSAS_ResourceKey HitResourceKey = Cluster->MakeKey(HitComp, InstanceIndex);
 
 			for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitCompPtr : SelectedUnits)
 			{

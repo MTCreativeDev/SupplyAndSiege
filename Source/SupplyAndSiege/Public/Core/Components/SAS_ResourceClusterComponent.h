@@ -18,7 +18,7 @@ class SUPPLYANDSIEGE_API USAS_ResourceClusterComponent : public UActorComponent
 public:	
 	USAS_ResourceClusterComponent();
 
-	FSAS_ResourceKey MakeKey(int32 InstanceIndex) const;
+	FSAS_ResourceKey MakeKey(const UPrimitiveComponent* HISMPrimitiveComponent, int32 InstanceIndex) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Resource")
 	USAS_ResourceTypeData* GetTypeForHitComponent(const UPrimitiveComponent* HitComponent) const;
@@ -37,7 +37,7 @@ protected:
 
 private:
 
-	void EnsureGuid();
+	void EnsureGuid(UHierarchicalInstancedStaticMeshComponent* HISM);
 	const UHierarchicalInstancedStaticMeshComponent* AsHISM(const UPrimitiveComponent* Comp) const;
 	UHierarchicalInstancedStaticMeshComponent* AsHISM(UPrimitiveComponent* Comp) const;
 
@@ -48,9 +48,6 @@ private:
 
 public:	
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
-	FGuid ClusterGuid;
-
 	UPROPERTY(BlueprintReadOnly, Category = "Resource")
 	TMap<TObjectPtr<UHierarchicalInstancedStaticMeshComponent>, TObjectPtr<USAS_ResourceTypeData>> ComponentTypeMap;
 
@@ -60,10 +57,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
 	TObjectPtr<USAS_ResourceTypeData> DefaultTypeData = nullptr;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
+	TMap<TObjectPtr<UHierarchicalInstancedStaticMeshComponent>, FGuid> ClusterGuids;
+
 private:
 
 
 	TMap<TObjectPtr<const UHierarchicalInstancedStaticMeshComponent>, TSet<int32>> DisabledInstancesByComponent;
+
+
+
 
 
 

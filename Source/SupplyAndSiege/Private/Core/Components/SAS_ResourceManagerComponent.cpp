@@ -3,6 +3,7 @@
 #include "Core/Components/SAS_ResourceManagerComponent.h"
 #include "Misc/DataAssets/SAS_ResourceTypeData.h"
 #include "Core/Components/SAS_ResourceClusterComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Engine/World.h"
 
 
@@ -141,11 +142,53 @@ int32 USAS_ResourceManagerComponent::ApplyHarvest(const FSAS_ResourceKey& Key, c
 	return Taken;
 }
 
+int32 USAS_ResourceManagerComponent::RegisterHISMToGrid(const USAS_ResourceTypeData* ResourceType, const USAS_ResourceClusterComponent* Cluster, UHierarchicalInstancedStaticMeshComponent* HISM)
+{
+	if (!ResourceType || !Cluster || !HISM) return 0;
 
+	FSAS_SpatialGrid& Grid = GridsByType.FindOrAdd(ResourceType);
+
+	//Grid size CANNOT be 0. If we find 0 force the default of 500.
+	if (Grid.CellSize <= 0.f)
+	{
+		const float* SizePtr = ResourceTypeGridSize.Find(ResourceType);
+		Grid.CellSize = (SizePtr && *SizePtr > 0.f) ? *SizePtr : 500.f;
+	}
+
+	const int32 Count = HISM->GetInstanceCount();
+	if (Count <= 0) return 0;
+
+	int32 Registered = 0;
+	for (int32 InstanceIndex = 0; InstanceIndex < Count; ++InstanceIndex)
+	{
+		FTransform Xform;
+		if (!HISM->GetInstanceTransform(InstanceIndex, Xform, true)) continue;
+
+		const FVector WorldLoc = Xform.GetLocation();
+		const FSAS_ResourceKey Key = Cluster->MakeKey(HISM, InstanceIndex);
+		if (Key.InstanceIndex == INDEX_NONE || !Key.ClusterGuid.IsValid()) continue;
+		if (KeyToHandle.Contains(Key)) continue;
+
+		const FIntPoint Cell = WorldToCell2D(WorldLoc, Grid.CellSize);
+		Grid.Cells.FindOrAdd(Cell).Add(Key);
+
+		FSAS_HISMHandle Handle;
+		Handle.HISM = HISM;
+		Handle.InstanceIndex = InstanceIndex;
+		Handle.WorldLocation = WorldLoc;
+
+		KeyToHandle.Add(Key, Handle);
+		++Registered;
+	}
+
+	return Registered;
+
+}
 
 void USAS_ResourceManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
+		
 }
 
 double USAS_ResourceManagerComponent::Now() const
@@ -188,5 +231,14 @@ FSAS_ResourceRuntimeState& USAS_ResourceManagerComponent::FindOrAddState_OnModif
 	return ModifiedStates.Add(Key, NewState);
 
 }
+
+FIntPoint USAS_ResourceManagerComponent::WorldToCell2D(const FVector& World, float CellSize) const
+{
+	return FIntPoint(
+	FMath::FloorToInt(World.X / CellSize),
+	FMath::FloorToInt(World.Y / CellSize)
+	);
+}
+
 
 

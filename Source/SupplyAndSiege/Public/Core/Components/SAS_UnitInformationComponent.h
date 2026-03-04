@@ -5,11 +5,13 @@
 #include "Components/ActorComponent.h"
 #include "Core/SAS_Enumerators.h"
 #include "Misc/Structs/SAS_ResourceKey.h"
+#include "Misc/Structs/SAS_UnitOrder.h"
 #include "SAS_UnitInformationComponent.generated.h"
 
 class USAS_UnitManagerComponent;
 class USAS_UnitTypeData;
 class USAS_ResourceTypeData;
+struct FGameplayTag;
 
 
 
@@ -52,6 +54,9 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+private:
+	void SendStateTreeEvent(const FGameplayTag& EventTag);
+
 
 
 public:	
@@ -64,10 +69,15 @@ public:
 	USAS_UnitTypeData* UnitType = nullptr;
 
 
+
+
 protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	USAS_UnitManagerComponent* AssignedUnitManager;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Orders")
+	FSAS_UnitOrder CurrentOrder;
 
 
 

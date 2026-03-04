@@ -87,3 +87,10 @@ enum class ESAS_UnitCategory : uint8
     Pawn_Courier   UMETA(DisplayName = "Courier"),
     Pawn_Military   UMETA(DisplayName = "Military"),
 };
+
+UENUM(BlueprintType)
+enum class ESAS_UnitOrderType : uint8
+{
+    None   UMETA(DisplayName = "None"),
+    Harvest   UMETA(DisplayName = "Harvest")
+};
