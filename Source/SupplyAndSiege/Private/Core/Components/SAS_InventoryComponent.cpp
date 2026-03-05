@@ -1,6 +1,4 @@
 
-
-
 #include "Core/Components/SAS_InventoryComponent.h"
 #include "Misc/DataAssets/SAS_InventoryProfileData.h"
 #include "Misc/DataAssets/ItemDefinitionPrimaryData.h"
@@ -86,6 +84,38 @@ int32 USAS_InventoryComponent::RemoveItem(UItemDefinitionPrimaryData* Item, int3
 		}
 	}
 	return Removed;
+}
+
+int32 USAS_InventoryComponent::HasInventorySpace(UItemDefinitionPrimaryData* Item, int32 Quantity)
+{
+	if (!Item || Quantity <= 0) return Quantity;
+	int32 Remaining = Quantity;
+
+	const int32 MaxStack = GetMaxStack(Item);
+	//Existing Slots
+	for (FSAS_InventorySlot& Slot : Slots)
+	{
+		if (Remaining <= 0) return 0;
+		if (Slot.IsEmpty()) continue;
+		if (Slot.Item != Item) continue;
+
+		const int32 SpaceLeft = FMath::Max(0, MaxStack - Slot.Quantity);
+		if (SpaceLeft <= 0) continue;
+
+		Remaining -= FMath::Min(SpaceLeft, Remaining);
+	}
+
+
+	// Empty Slots
+
+	for (FSAS_InventorySlot& Slot : Slots)
+	{
+		if (Remaining <= 0) return 0;
+		if (!Slot.IsEmpty()) continue;
+
+		Remaining -= FMath::Min(MaxStack, Remaining);
+	}
+	return Remaining;
 }
 
 void USAS_InventoryComponent::BeginPlay()
@@ -209,7 +239,7 @@ int32 USAS_InventoryComponent::AddItem_Internal(UItemDefinitionPrimaryData* Item
 	for (FSAS_InventorySlot& Slot : Slots)
 	{
 		if (Remaining <= 0) break;
-		if (Slot.IsEmpty())
+		if (Slot.IsEmpty()) continue;
 		if (Slot.Item != Item) continue;
 
 		const int32 MaxStack = GetMaxStack(Item);

@@ -158,6 +158,17 @@ void USAS_UnitManagerComponent::RightClickReceived(const FHitResult Hit)
 				break;
 			}
 
+			FTransform InstanceTransform;
+			Cluster->GetInstanceTransform(HitComp, InstanceIndex, InstanceTransform);
+
+			if (!InstanceTransform.IsValid())
+			{
+				if (SelectedUnits.Num() <= 0) break;
+				IssueMoveOrderToSelectedUnits(Hit.ImpactPoint);
+				break;
+			}
+
+
 			FSAS_ResourceKey HitResourceKey = Cluster->MakeKey(HitComp, InstanceIndex);
 
 			for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitCompPtr : SelectedUnits)
@@ -177,7 +188,7 @@ void USAS_UnitManagerComponent::RightClickReceived(const FHitResult Hit)
 
 					case ESAS_UnitCategory::Pawn_Villager:
 					{
-						UnitComp->IssueHarvestOrder(HitResourceType, HitResourceKey, Hit.ImpactPoint);
+						UnitComp->IssueHarvestOrder(HitResourceType, HitResourceKey, InstanceTransform.GetLocation());
 						break;
 					}
 

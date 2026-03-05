@@ -44,10 +44,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int32 RemoveItem(UItemDefinitionPrimaryData* Item, int32 Quantity);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory", meta=(ReturnDisplayName= "Overflow Amount"))
+	int32 HasInventorySpace(UItemDefinitionPrimaryData* Item, int32 Quantity);
+
 	//Dispatchers
 
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FOnInventoryChanged OnInventoryChanged;
+
+
 
 protected:
 
@@ -65,9 +70,9 @@ private:
 	void CreateSlotsFromProfile();
 
 	int32 AddItem_Internal(UItemDefinitionPrimaryData* Item, int32 Quantity);
+
 	int32 RemoveItem_Internal(UItemDefinitionPrimaryData* Item, int32 Quantity);
 
-	//Temporary function until creating stack logic is finished.
 	int32 GetMaxStack(const UItemDefinitionPrimaryData* Item) const;
 
 
