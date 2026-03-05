@@ -26,6 +26,6 @@ public:
 	TObjectPtr<UItemDefinitionPrimaryData> YieldItemDefinition = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
-	TSubclassOf<class ASAS_SelectableBuilding> ResourceDepot = nullptr;
+	TSubclassOf<class ASAS_SB_ResourceDepot> ResourceDepot = nullptr;
 		
 };

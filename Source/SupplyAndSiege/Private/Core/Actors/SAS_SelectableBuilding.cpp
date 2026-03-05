@@ -2,6 +2,7 @@
 #include "Core/Actors/SAS_SelectableBuilding.h"
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 ASAS_SelectableBuilding::ASAS_SelectableBuilding()
 {
@@ -9,8 +10,10 @@ ASAS_SelectableBuilding::ASAS_SelectableBuilding()
 
 	UnitInformationComponent = CreateDefaultSubobject<USAS_UnitInformationComponent>(TEXT("UnitInformationComponent"));
 
+	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
+	SetRootComponent(SceneRoot);
+
 	Box = CreateDefaultSubobject<UBoxComponent>(TEXT("Box"));
-	RootComponent = Box;
 
 	Box->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	//TODO: Need a custom collision channel for this I think.
@@ -18,6 +21,11 @@ ASAS_SelectableBuilding::ASAS_SelectableBuilding()
 	//TODO: This is temporary. Pawns won't really be blocking everything in the finished game. Need to fix later.
 	Box->SetCollisionResponseToAllChannels(ECR_Block);
 	Box->SetSimulatePhysics(false);
+	Box->SetupAttachment(SceneRoot);
+
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetupAttachment(Box);
+
 
 
 }
@@ -30,7 +38,6 @@ void ASAS_SelectableBuilding::BeginPlay()
 	UnitInformationComponent->SetTeam(AssignTeamOnSpawn);
 	
 }
-
 
 void ASAS_SelectableBuilding::DestroySelf()
 {
