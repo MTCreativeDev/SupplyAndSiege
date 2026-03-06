@@ -34,13 +34,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
 	USAS_UnitInformationComponent* UnitInformationComponent;
 
-	UPROPERTY(EditAnywhere, Category = "SAS_Unit")
+	UPROPERTY(EditDefaultsOnly, Category = "SAS_Unit")
 	UBoxComponent* Box;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
 	USceneComponent* SceneRoot;
 
-	UPROPERTY(EditAnywhere, Category = "SAS_Unit")
+	UPROPERTY(EditDefaultsOnly, Category = "SAS_Unit")
 	UStaticMeshComponent* Mesh;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Placement")
