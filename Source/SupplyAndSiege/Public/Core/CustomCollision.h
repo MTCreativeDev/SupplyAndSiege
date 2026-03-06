@@ -11,3 +11,9 @@
 #define Trace_SelectableUnit ECC_GameTraceChannel1
 #define Trace_NavigableArea ECC_GameTraceChannel2
 #define Trace_Interactable ECC_GameTraceChannel3
+
+
+namespace SAS_CollisionProfiles
+{
+	static const FName InventoryCheck(TEXT("InventoryCheck"));
+}
