@@ -130,6 +130,8 @@ Platforms/HoloLens/Config/HoloLensEngine.ini
 .vsconfig
 
 \
+# Local editor preferences
+Config/DefaultEditorSettings.ini
 
 # MacOS Generated System file for metadata in directories etc.
 
