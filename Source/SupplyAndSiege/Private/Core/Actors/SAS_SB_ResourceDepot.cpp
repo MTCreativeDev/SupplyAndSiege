@@ -19,6 +19,11 @@ const TArray<FVector> ASAS_SB_ResourceDepot::GetDropOffLocations() const
 	return DropOffLocations_World;
 }
 
+USAS_InventoryComponent* ASAS_SB_ResourceDepot::GetInputInventory()
+{
+	return Inventory;
+}
+
 void ASAS_SB_ResourceDepot::BeginPlay()
 {
 	Super::BeginPlay();

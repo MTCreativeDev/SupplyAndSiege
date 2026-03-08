@@ -9,6 +9,7 @@
 class USAS_InventoryComponent;
 class UBoxComponent;
 
+
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_SP_InventoryCapable : public ASAS_SelectablePawn
 {
@@ -16,6 +17,14 @@ class SUPPLYANDSIEGE_API ASAS_SP_InventoryCapable : public ASAS_SelectablePawn
 	
 public:
 	ASAS_SP_InventoryCapable();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void BeginLookingForInventory(USAS_InventoryComponent* InTargetInventory);
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void StopLookingForInventory();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	USAS_InventoryComponent* GetInventory() const;
 
 protected:
 
