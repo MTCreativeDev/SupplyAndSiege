@@ -1,0 +1,10 @@
+Trebuchet
+Clicking on them
+“Trebuchet ready!”
+“Ready to fire!”
+“The trebuchet is loaded, Lord!”
+Attacking
+“FIRE!”
+“Bring them down!”
+“Crush them!”
+“Don’t leave anything standing!”

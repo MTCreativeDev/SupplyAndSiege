@@ -1,0 +1,22 @@
+Clicking on them
+“Yes, Lord?”
+“You need me, Lord?”
+“I’ve got kids to look after, you know.”
+Sending to attack
+“Please don’t make me go out there!”
+“I don’t want to die!”
+“Don’t you have soldiers you could send out instead?”
+Moving around
+“I’ll go over here, then.”
+“Let’s see what’s over here.”
+“Fine, fine.”
+Gathering resources
+“Sure thing.” - Generic
+“If you say so.” - Generic
+“Please, no one kill me while I’m doing this.” - Generic
+“Maker, keep me safe.” - Generic
+“I’d hate to cut down such a beautiful tree.” - Gathering Wood
+“You know, I always wanted to be a blacksmith.” - Gathering Metal
+“Oh good, something safe.” - Gathering Berries
+“We should have left these all underground.” - Gathering Crystals
+“Ugh, these stones are so heavy!” - Gathering Stone
