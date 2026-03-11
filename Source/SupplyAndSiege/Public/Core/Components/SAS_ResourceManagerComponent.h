@@ -99,6 +99,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Resource")
 	int32 RegisterHISMToGrid(const USAS_ResourceTypeData* ResourceType, const USAS_ResourceClusterComponent* Cluster, UHierarchicalInstancedStaticMeshComponent* HISM);
 
+	UFUNCTION(BlueprintCallable, Category = "Resource")
+	void GetAvailableResourceLocationsInRadius(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, TArray<FVector>& OutResourceLocations, AActor* Claimer) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Resource")
+	bool TryReserveResourceNearLocation(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, AActor* Claimer, FSAS_ResourceKey& OutKey, FVector& OutResourceLocation, float DurationSeconds =10.f);
+
 protected:
 
 	virtual void BeginPlay() override;

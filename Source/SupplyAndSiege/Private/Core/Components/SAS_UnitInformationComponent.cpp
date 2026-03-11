@@ -129,7 +129,6 @@ void USAS_UnitInformationComponent::IssueMoveOrder(FVector WorldLocation)
 
 void USAS_UnitInformationComponent::IssueHarvestOrder(USAS_ResourceTypeData* TypeData, FSAS_ResourceKey ResourceKey, FVector Location)
 {
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Harvest order received"));
 
 	CurrentOrder.Type = ESAS_UnitOrderType::Harvest;
 	CurrentOrder.ResourceType = TypeData;
@@ -138,6 +137,14 @@ void USAS_UnitInformationComponent::IssueHarvestOrder(USAS_ResourceTypeData* Typ
 
 	SendStateTreeEvent(SASGameplayTags::StateTree_Villager_HarvestOrder);
 	}
+
+bool USAS_UnitInformationComponent::UpdateCurrentOrderKeyAndLocation(FSAS_ResourceKey ResourceKey, FVector TargetLocation)
+{
+	if (CurrentOrder.Type != ESAS_UnitOrderType::Harvest) return false;
+	CurrentOrder.ResourceKey = ResourceKey;
+	CurrentOrder.TargetLocation = TargetLocation;
+	return true;
+}
 
 
 

@@ -185,6 +185,84 @@ int32 USAS_ResourceManagerComponent::RegisterHISMToGrid(const USAS_ResourceTypeD
 
 }
 
+void USAS_ResourceManagerComponent::GetAvailableResourceLocationsInRadius(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, TArray<FVector>& OutResourceLocations, AActor* Claimer) const
+{
+	OutResourceLocations.Reset();
+	if (!ResourceType) return;
+
+	const FSAS_SpatialGrid* Grid = GridsByType.Find(ResourceType);
+	if (!Grid) return;
+
+	if (Grid->CellSize <= 0.f) return;
+
+	const FIntPoint CenterCell = WorldToCell2D(WorldLocation, Grid->CellSize);
+	const int32 CellRadius = FMath::Max(0, FMath::CeilToInt(DesiredSearchRadius / Grid->CellSize));
+
+	for (int32 X = CenterCell.X - CellRadius; X <= CenterCell.X + CellRadius; ++X)
+	{
+		for (int32 Y = CenterCell.Y - CellRadius; Y <= CenterCell.Y + CellRadius; ++Y)
+		{
+			const FIntPoint Cell(X, Y);
+			const TArray<FSAS_ResourceKey>* KeysInCell = Grid->Cells.Find(Cell);
+			if (!KeysInCell) continue;
+
+			for (const FSAS_ResourceKey& Key : *KeysInCell)
+			{
+				const FSAS_HISMHandle* Handle = KeyToHandle.Find(Key);
+				if (!Handle) continue;
+				if (!Handle->HISM.IsValid()) continue;
+				if (Handle->InstanceIndex == INDEX_NONE) continue;
+
+				if (CheckValidity(Key, ResourceType, Claimer) != ESAS_ResourceValidity::Valid) continue;
+				OutResourceLocations.Add(Handle->WorldLocation);
+			}
+		}
+	}
+}
+
+bool USAS_ResourceManagerComponent::TryReserveResourceNearLocation(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, AActor* Claimer, FSAS_ResourceKey& OutKey, FVector& OutResourceLocation, float DurationSeconds)
+{
+	
+	OutKey = FSAS_ResourceKey();
+	OutResourceLocation = FVector::ZeroVector;
+
+	if (!ResourceType || !Claimer) return false;
+
+	CleanupExpiredReservations();
+
+	const FSAS_SpatialGrid* Grid = GridsByType.Find(ResourceType);
+	if (!Grid) return false;
+	if (Grid->CellSize <= 0.f) return false;
+
+	const FIntPoint CenterCell = WorldToCell2D(WorldLocation, Grid->CellSize);
+	const int32 CellRadius = FMath::Max(0, FMath::CeilToInt(DesiredSearchRadius / Grid->CellSize));
+
+	for (int32 X = CenterCell.X - CellRadius; X <= CenterCell.X + CellRadius; ++X)
+	{
+		for (int32 Y = CenterCell.Y - CellRadius; Y <= CenterCell.Y + CellRadius; ++Y)
+		{
+			const FIntPoint Cell(X, Y);
+			const TArray<FSAS_ResourceKey>* KeysInCell = Grid->Cells.Find(Cell);
+			if (!KeysInCell) continue;
+
+			for (const FSAS_ResourceKey& Key : *KeysInCell)
+			{
+				const FSAS_HISMHandle* Handle = KeyToHandle.Find(Key);
+				if (!Handle) continue;
+				if (!Handle->HISM.IsValid()) continue;
+
+				if (CheckValidity(Key, ResourceType, Claimer) != ESAS_ResourceValidity::Valid) continue;
+				if (!TryReserve(Key, Claimer, DurationSeconds)) continue;
+				OutKey = Key;
+				OutResourceLocation = Handle->WorldLocation;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
 void USAS_ResourceManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();

@@ -28,7 +28,7 @@ public:
 	// Sets default values for this component's properties
 	USAS_UnitInformationComponent();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Unit Information")
 	void SetTeam(ESAS_Team NewTeam);
 
 	void RemoveUnitFromGame();
@@ -40,6 +40,9 @@ public:
 	void IssueMoveOrder(FVector WorldLocation);
 
 	void IssueHarvestOrder(USAS_ResourceTypeData* TypeData, FSAS_ResourceKey ResourceKey, FVector Location);
+
+	UFUNCTION(BlueprintCallable, Category = "Unit Information")
+	bool UpdateCurrentOrderKeyAndLocation(FSAS_ResourceKey ResourceKey, FVector TargetLocation);
 
 	//Dispatchers
 	UPROPERTY(BlueprintAssignable)
@@ -67,6 +70,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit Information")
 	USAS_UnitTypeData* UnitType = nullptr;
+
+
+
 
 
 
