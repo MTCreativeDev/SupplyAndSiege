@@ -25,4 +25,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UTexture2D* Icon = nullptr;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText Description;
+
 };
