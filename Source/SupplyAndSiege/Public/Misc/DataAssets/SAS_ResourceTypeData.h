@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Misc/DataAssets/ItemDefinitionPrimaryData.h"
+#include "EnvironmentQuery/EnvQuery.h"
 #include "SAS_ResourceTypeData.generated.h"
 
 /**
@@ -26,6 +27,12 @@ public:
 	TObjectPtr<UItemDefinitionPrimaryData> YieldItemDefinition = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
-	TSubclassOf<class ASAS_SB_ResourceDepot> ResourceDepot = nullptr;
+	UEnvQuery* ResourceIsReachableQuery;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
+	UEnvQuery* LikeKindResourceQuery;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
+	UEnvQuery* ResourceDepotQuery;
 		
 };
