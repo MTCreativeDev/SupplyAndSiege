@@ -94,10 +94,13 @@ void USAS_ResourceClusterComponent::FindActorHISMs()
 
 	for (UHierarchicalInstancedStaticMeshComponent* HISM : HISMs)
 	{
+		//DEBUG
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Register"));
+		//EndDebug
+
 		if (!HISM) continue;
 
-		//TODO: Need to update this so we can have multipe types, but will handle later.
-		USAS_ResourceTypeData* TypeData = DefaultTypeData;
+		USAS_ResourceTypeData* TypeData = CheckComponentForResourceTag(HISM);
 
 		if (!TypeData) continue;
 			
@@ -167,6 +170,18 @@ bool USAS_ResourceClusterComponent::IsDisabled(const UHierarchicalInstancedStati
 	if (!SetPtr) return false;
 
 	return SetPtr->Contains(InstanceIndex);
+}
+
+USAS_ResourceTypeData* USAS_ResourceClusterComponent::CheckComponentForResourceTag(const UPrimitiveComponent* Comp) const
+{
+	if (!Comp) return nullptr;
+
+	for (const TPair<FName, TObjectPtr<USAS_ResourceTypeData>>& Pair : TagToResourceType)
+	{
+		if (Comp->ComponentHasTag(Pair.Key)) return Pair.Value;
+	}
+
+	return nullptr;
 }
 
 

@@ -45,10 +45,11 @@ private:
 	void HideInstance(UHierarchicalInstancedStaticMeshComponent* HISM, int32 InstanceIndex);
 	void DisableInstance(UHierarchicalInstancedStaticMeshComponent* HISM, int32 InstanceIndex);
 	bool IsDisabled(const UHierarchicalInstancedStaticMeshComponent* HISM, int32 InstanceIndex) const;
+	USAS_ResourceTypeData* CheckComponentForResourceTag(const UPrimitiveComponent* Comp) const;
 
 public:	
 
-	UPROPERTY(BlueprintReadOnly, Category = "Resource")
+	UPROPERTY(VisibleAnywhere, Category = "Resource")
 	TMap<TObjectPtr<UHierarchicalInstancedStaticMeshComponent>, TObjectPtr<USAS_ResourceTypeData>> ComponentTypeMap;
 
 protected:
@@ -59,6 +60,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
 	TMap<TObjectPtr<UHierarchicalInstancedStaticMeshComponent>, FGuid> ClusterGuids;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
+	TMap<FName, TObjectPtr<USAS_ResourceTypeData>> TagToResourceType;
 
 private:
 
