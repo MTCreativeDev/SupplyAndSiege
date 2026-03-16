@@ -13,7 +13,7 @@
 class USAS_ResourceTypeData;
 class USAS_ResourceClusterComponent;
 class UPrimitiveComponent;
-class UHierarchicalInstancedStaticMeshComponent;
+class UInstancedStaticMeshComponent;
 
 //I normally like to create a separate class for structs, but I dont think this will be used elsewhere. If it is, I will move it to its own file.
 USTRUCT()
@@ -44,11 +44,11 @@ struct FSAS_ResourceReservationState
 };
 
 USTRUCT()
-struct FSAS_HISMHandle
+struct FSAS_ISMHandle
 {
 	GENERATED_BODY()
 
-	TWeakObjectPtr<UHierarchicalInstancedStaticMeshComponent> HISM;
+	TWeakObjectPtr<UInstancedStaticMeshComponent> ISM;
 	int32 InstanceIndex = INDEX_NONE;
 	FVector WorldLocation = FVector::ZeroVector;
 };
@@ -97,7 +97,7 @@ public:
 	int32 ApplyHarvest(const FSAS_ResourceKey& Key, const USAS_ResourceTypeData* TypeData, int32 RequestedAmount, USAS_ResourceClusterComponent* ClusterForVisuals = nullptr, UPrimitiveComponent* HitComponentForVisuals = nullptr);
 
 	UFUNCTION(BlueprintCallable, Category = "Resource")
-	int32 RegisterHISMToGrid(const USAS_ResourceTypeData* ResourceType, const USAS_ResourceClusterComponent* Cluster, UHierarchicalInstancedStaticMeshComponent* HISM);
+	int32 RegisterISMToGrid(const USAS_ResourceTypeData* ResourceType, const USAS_ResourceClusterComponent* Cluster, UInstancedStaticMeshComponent* ISM);
 
 	UFUNCTION(BlueprintCallable, Category = "Resource")
 	void GetAvailableResourceLocationsInRadius(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, TArray<FVector>& OutResourceLocations, AActor* Claimer) const;
@@ -125,7 +125,7 @@ protected:
 
 	TMap<const USAS_ResourceTypeData*, FSAS_SpatialGrid> GridsByType;
 
-	TMap<FSAS_ResourceKey, FSAS_HISMHandle> KeyToHandle;
+	TMap<FSAS_ResourceKey, FSAS_ISMHandle> KeyToHandle;
 
 
 private:

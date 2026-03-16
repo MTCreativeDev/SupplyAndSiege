@@ -3,7 +3,7 @@
 #include "Core/Components/SAS_ResourceManagerComponent.h"
 #include "Misc/DataAssets/SAS_ResourceTypeData.h"
 #include "Core/Components/SAS_ResourceClusterComponent.h"
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/World.h"
 
 
@@ -142,9 +142,9 @@ int32 USAS_ResourceManagerComponent::ApplyHarvest(const FSAS_ResourceKey& Key, c
 	return Taken;
 }
 
-int32 USAS_ResourceManagerComponent::RegisterHISMToGrid(const USAS_ResourceTypeData* ResourceType, const USAS_ResourceClusterComponent* Cluster, UHierarchicalInstancedStaticMeshComponent* HISM)
+int32 USAS_ResourceManagerComponent::RegisterISMToGrid(const USAS_ResourceTypeData* ResourceType, const USAS_ResourceClusterComponent* Cluster, UInstancedStaticMeshComponent* ISM)
 {
-	if (!ResourceType || !Cluster || !HISM) return 0;
+	if (!ResourceType || !Cluster || !ISM) return 0;
 
 	FSAS_SpatialGrid& Grid = GridsByType.FindOrAdd(ResourceType);
 
@@ -155,25 +155,25 @@ int32 USAS_ResourceManagerComponent::RegisterHISMToGrid(const USAS_ResourceTypeD
 		Grid.CellSize = (SizePtr && *SizePtr > 0.f) ? *SizePtr : 500.f;
 	}
 
-	const int32 Count = HISM->GetInstanceCount();
+	const int32 Count = ISM->GetInstanceCount();
 	if (Count <= 0) return 0;
 
 	int32 Registered = 0;
 	for (int32 InstanceIndex = 0; InstanceIndex < Count; ++InstanceIndex)
 	{
 		FTransform Xform;
-		if (!HISM->GetInstanceTransform(InstanceIndex, Xform, true)) continue;
+		if (!ISM->GetInstanceTransform(InstanceIndex, Xform, true)) continue;
 
 		const FVector WorldLoc = Xform.GetLocation();
-		const FSAS_ResourceKey Key = Cluster->MakeKey(HISM, InstanceIndex);
+		const FSAS_ResourceKey Key = Cluster->MakeKey(ISM, InstanceIndex);
 		if (Key.InstanceIndex == INDEX_NONE || !Key.ClusterGuid.IsValid()) continue;
 		if (KeyToHandle.Contains(Key)) continue;
 
 		const FIntPoint Cell = WorldToCell2D(WorldLoc, Grid.CellSize);
 		Grid.Cells.FindOrAdd(Cell).Add(Key);
 
-		FSAS_HISMHandle Handle;
-		Handle.HISM = HISM;
+		FSAS_ISMHandle Handle;
+		Handle.ISM = ISM;
 		Handle.InstanceIndex = InstanceIndex;
 		Handle.WorldLocation = WorldLoc;
 
@@ -208,9 +208,9 @@ void USAS_ResourceManagerComponent::GetAvailableResourceLocationsInRadius(const 
 
 			for (const FSAS_ResourceKey& Key : *KeysInCell)
 			{
-				const FSAS_HISMHandle* Handle = KeyToHandle.Find(Key);
+				const FSAS_ISMHandle* Handle = KeyToHandle.Find(Key);
 				if (!Handle) continue;
-				if (!Handle->HISM.IsValid()) continue;
+				if (!Handle->ISM.IsValid()) continue;
 				if (Handle->InstanceIndex == INDEX_NONE) continue;
 
 				if (CheckValidity(Key, ResourceType, Claimer) != ESAS_ResourceValidity::Valid) continue;
@@ -247,9 +247,9 @@ bool USAS_ResourceManagerComponent::TryReserveResourceNearLocation(const USAS_Re
 
 			for (const FSAS_ResourceKey& Key : *KeysInCell)
 			{
-				const FSAS_HISMHandle* Handle = KeyToHandle.Find(Key);
+				const FSAS_ISMHandle* Handle = KeyToHandle.Find(Key);
 				if (!Handle) continue;
-				if (!Handle->HISM.IsValid()) continue;
+				if (!Handle->ISM.IsValid()) continue;
 
 				if (CheckValidity(Key, ResourceType, Claimer) != ESAS_ResourceValidity::Valid) continue;
 				if (!TryReserve(Key, Claimer, DurationSeconds)) continue;

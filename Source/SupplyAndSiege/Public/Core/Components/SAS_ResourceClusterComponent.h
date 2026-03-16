@@ -8,7 +8,7 @@
 #include "SAS_ResourceClusterComponent.generated.h"
 
 class USAS_ResourceTypeData;
-class UHierarchicalInstancedStaticMeshComponent;
+class UInstancedStaticMeshComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_ResourceClusterComponent : public UActorComponent
@@ -18,7 +18,7 @@ class SUPPLYANDSIEGE_API USAS_ResourceClusterComponent : public UActorComponent
 public:	
 	USAS_ResourceClusterComponent();
 
-	FSAS_ResourceKey MakeKey(const UPrimitiveComponent* HISMPrimitiveComponent, int32 InstanceIndex) const;
+	FSAS_ResourceKey MakeKey(const UPrimitiveComponent* ISMPrimitiveComponent, int32 InstanceIndex) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Resource")
 	USAS_ResourceTypeData* GetTypeForHitComponent(const UPrimitiveComponent* HitComponent) const;
@@ -33,24 +33,24 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	void FindActorHISMs();
+	void FindActorISMs();
 
 private:
 
-	void EnsureGuid(UHierarchicalInstancedStaticMeshComponent* HISM);
-	const UHierarchicalInstancedStaticMeshComponent* AsHISM(const UPrimitiveComponent* Comp) const;
-	UHierarchicalInstancedStaticMeshComponent* AsHISM(UPrimitiveComponent* Comp) const;
+	void EnsureGuid(UInstancedStaticMeshComponent* ISM);
+	const UInstancedStaticMeshComponent* AsISM(const UPrimitiveComponent* Comp) const;
+	UInstancedStaticMeshComponent* AsISM(UPrimitiveComponent* Comp) const;
 
 	//Will likely always use HideInstance and DisableInstance at the same time, but separate in case we run into edge cases.
-	void HideInstance(UHierarchicalInstancedStaticMeshComponent* HISM, int32 InstanceIndex);
-	void DisableInstance(UHierarchicalInstancedStaticMeshComponent* HISM, int32 InstanceIndex);
-	bool IsDisabled(const UHierarchicalInstancedStaticMeshComponent* HISM, int32 InstanceIndex) const;
+	void HideInstance(UInstancedStaticMeshComponent* ISM, int32 InstanceIndex);
+	void DisableInstance(UInstancedStaticMeshComponent* ISM, int32 InstanceIndex);
+	bool IsDisabled(const UInstancedStaticMeshComponent* ISM, int32 InstanceIndex) const;
 	USAS_ResourceTypeData* CheckComponentForResourceTag(const UPrimitiveComponent* Comp) const;
 
 public:	
 
 	UPROPERTY(VisibleAnywhere, Category = "Resource")
-	TMap<TObjectPtr<UHierarchicalInstancedStaticMeshComponent>, TObjectPtr<USAS_ResourceTypeData>> ComponentTypeMap;
+	TMap<TObjectPtr<UInstancedStaticMeshComponent>, TObjectPtr<USAS_ResourceTypeData>> ComponentTypeMap;
 
 protected:
 
@@ -59,7 +59,7 @@ protected:
 	TObjectPtr<USAS_ResourceTypeData> DefaultTypeData = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
-	TMap<TObjectPtr<UHierarchicalInstancedStaticMeshComponent>, FGuid> ClusterGuids;
+	TMap<TObjectPtr<UInstancedStaticMeshComponent>, FGuid> ClusterGuids;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
 	TMap<FName, TObjectPtr<USAS_ResourceTypeData>> TagToResourceType;
@@ -67,7 +67,7 @@ protected:
 private:
 
 
-	TMap<TObjectPtr<const UHierarchicalInstancedStaticMeshComponent>, TSet<int32>> DisabledInstancesByComponent;
+	TMap<TObjectPtr<const UInstancedStaticMeshComponent>, TSet<int32>> DisabledInstancesByComponent;
 
 
 

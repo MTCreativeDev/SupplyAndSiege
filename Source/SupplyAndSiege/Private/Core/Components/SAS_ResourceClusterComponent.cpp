@@ -2,7 +2,7 @@
 
 
 #include "Core/Components/SAS_ResourceClusterComponent.h"
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
 #include "Core/Components/SAS_ResourceManagerComponent.h"
 #include "GameFramework/GameStateBase.h"
 
@@ -14,14 +14,14 @@ USAS_ResourceClusterComponent::USAS_ResourceClusterComponent()
 
 }
 
-FSAS_ResourceKey USAS_ResourceClusterComponent::MakeKey(const UPrimitiveComponent* HISMPrimitiveComponent, int32 InstanceIndex) const
+FSAS_ResourceKey USAS_ResourceClusterComponent::MakeKey(const UPrimitiveComponent* ISMPrimitiveComponent, int32 InstanceIndex) const
 {
-	if (!HISMPrimitiveComponent) return FSAS_ResourceKey();
+	if (!ISMPrimitiveComponent) return FSAS_ResourceKey();
 
-	const UHierarchicalInstancedStaticMeshComponent* HISM = AsHISM(HISMPrimitiveComponent);
-	if (!HISM) return FSAS_ResourceKey();
+	const UInstancedStaticMeshComponent* ISM = AsISM(ISMPrimitiveComponent);
+	if (!ISM) return FSAS_ResourceKey();
 
-	const FGuid* GuidPtr = ClusterGuids.Find(HISM);
+	const FGuid* GuidPtr = ClusterGuids.Find(ISM);
 	if (!GuidPtr) return FSAS_ResourceKey();
 
 	return FSAS_ResourceKey(*GuidPtr, InstanceIndex);
@@ -29,118 +29,114 @@ FSAS_ResourceKey USAS_ResourceClusterComponent::MakeKey(const UPrimitiveComponen
 
 USAS_ResourceTypeData* USAS_ResourceClusterComponent::GetTypeForHitComponent(const UPrimitiveComponent* HitComponent) const
 {
-	const UHierarchicalInstancedStaticMeshComponent* HISM = AsHISM(HitComponent);
-	if (!HISM) return nullptr;
+	const UInstancedStaticMeshComponent* ISM = AsISM(HitComponent);
+	if (!ISM) return nullptr;
 
-	const TObjectPtr<USAS_ResourceTypeData>* Found = ComponentTypeMap.Find(const_cast<UHierarchicalInstancedStaticMeshComponent*>(HISM));
+	const TObjectPtr<USAS_ResourceTypeData>* Found = ComponentTypeMap.Find(const_cast<UInstancedStaticMeshComponent*>(ISM));
 	return Found ? Found->Get() : nullptr;
 }
 
 bool USAS_ResourceClusterComponent::IsInstanceInteractable(const UPrimitiveComponent* HitComponent, int32 InstanceIndex) const
 {
-	const UHierarchicalInstancedStaticMeshComponent* HISM = AsHISM(HitComponent);
-	if (!HISM) return false;
+	const UInstancedStaticMeshComponent* ISM = AsISM(HitComponent);
+	if (!ISM) return false;
 
 	//In case this request is sent to the wrong component somehow. It should always be registered
-	if (!ComponentTypeMap.Contains(const_cast<UHierarchicalInstancedStaticMeshComponent*>(HISM))) return false;
+	if (!ComponentTypeMap.Contains(const_cast<UInstancedStaticMeshComponent*>(ISM))) return false;
 
-	return !IsDisabled(HISM, InstanceIndex);
+	return !IsDisabled(ISM, InstanceIndex);
 }
 
 void USAS_ResourceClusterComponent::MarkDepleted(UPrimitiveComponent* HitComponent, int32 InstanceIndex)
 {
-	UHierarchicalInstancedStaticMeshComponent* HISM = AsHISM(HitComponent);
-	if (!HISM) return;
+	UInstancedStaticMeshComponent* ISM = AsISM(HitComponent);
+	if (!ISM) return;
 
 	//In case this request is sent to the wrong component somehow. It should always be registered
-	if (!ComponentTypeMap.Contains(HISM)) return;
+	if (!ComponentTypeMap.Contains(ISM)) return;
 
-	DisableInstance(HISM, InstanceIndex);
-	HideInstance(HISM, InstanceIndex);
+	DisableInstance(ISM, InstanceIndex);
+	HideInstance(ISM, InstanceIndex);
 	//TODO: Need to look into the best method to handle the collision using a HISM. We are moving it out of the playable space which should make this fine, but will follow up. Also need to look into updating the NavComponent.
 
 }
 
 bool USAS_ResourceClusterComponent::GetInstanceTransform(const UPrimitiveComponent* HitComponent, int32 InstanceIndex, FTransform& OutWorldTransform) const
 {
-	const UHierarchicalInstancedStaticMeshComponent* HISM = AsHISM(HitComponent);
-	if (!HISM) return false;
+	const UInstancedStaticMeshComponent* ISM = AsISM(HitComponent);
+	if (!ISM) return false;
 	if (InstanceIndex == INDEX_NONE) return false;
 
-	if (IsDisabled(HISM, InstanceIndex)) return false;
+	if (IsDisabled(ISM, InstanceIndex)) return false;
 
-	return HISM->GetInstanceTransform(InstanceIndex, OutWorldTransform, true);
+	return ISM->GetInstanceTransform(InstanceIndex, OutWorldTransform, true);
 }
 
 void USAS_ResourceClusterComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FindActorHISMs();
+	FindActorISMs();
 
 }
 
-void USAS_ResourceClusterComponent::FindActorHISMs()
+void USAS_ResourceClusterComponent::FindActorISMs()
 {
 
 	AActor* Owner = GetOwner();
 	if (!Owner) return;
 
-	TArray<UHierarchicalInstancedStaticMeshComponent*> HISMs;
-	Owner->GetComponents(HISMs);
+	TArray<UInstancedStaticMeshComponent*> ISMs;
+	Owner->GetComponents(ISMs);
 
 	AGameStateBase* GS = GetWorld() ? GetWorld()->GetGameState() : nullptr;
 	USAS_ResourceManagerComponent* RM = GS ? GS->FindComponentByClass<USAS_ResourceManagerComponent>() : nullptr;
 
-	for (UHierarchicalInstancedStaticMeshComponent* HISM : HISMs)
+	for (UInstancedStaticMeshComponent* ISM : ISMs)
 	{
-		//DEBUG
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Register"));
-		//EndDebug
+		if (!ISM) continue;
 
-		if (!HISM) continue;
-
-		USAS_ResourceTypeData* TypeData = CheckComponentForResourceTag(HISM);
+		USAS_ResourceTypeData* TypeData = CheckComponentForResourceTag(ISM);
 
 		if (!TypeData) continue;
 			
-		ComponentTypeMap.FindOrAdd(HISM) = TypeData;
-		EnsureGuid(HISM);
+		ComponentTypeMap.FindOrAdd(ISM) = TypeData;
+		EnsureGuid(ISM);
 
 		if (RM)
 		{
-			RM->RegisterHISMToGrid(TypeData, this, HISM);
+			RM->RegisterISMToGrid(TypeData, this, ISM);
 		}
 	}
 }
 
-void USAS_ResourceClusterComponent::EnsureGuid(UHierarchicalInstancedStaticMeshComponent* HISM)
+void USAS_ResourceClusterComponent::EnsureGuid(UInstancedStaticMeshComponent* ISM)
 {
-	if (!HISM) return;
-	if (!ClusterGuids.Contains(HISM))
+	if (!ISM) return;
+	if (!ClusterGuids.Contains(ISM))
 	{
 		const FGuid NewGuid = FGuid::NewGuid();
-		ClusterGuids.Add(HISM, NewGuid);
+		ClusterGuids.Add(ISM, NewGuid);
 	}
 }
 
-const UHierarchicalInstancedStaticMeshComponent* USAS_ResourceClusterComponent::AsHISM(const UPrimitiveComponent* Comp) const
+const UInstancedStaticMeshComponent* USAS_ResourceClusterComponent::AsISM(const UPrimitiveComponent* Comp) const
 {
-	return Cast<UHierarchicalInstancedStaticMeshComponent>(Comp);
+	return Cast<UInstancedStaticMeshComponent>(Comp);
 }
 
-UHierarchicalInstancedStaticMeshComponent* USAS_ResourceClusterComponent::AsHISM(UPrimitiveComponent* Comp) const
+UInstancedStaticMeshComponent* USAS_ResourceClusterComponent::AsISM(UPrimitiveComponent* Comp) const
 {
-	return Cast<UHierarchicalInstancedStaticMeshComponent>(Comp);
+	return Cast<UInstancedStaticMeshComponent>(Comp);
 }
 
-void USAS_ResourceClusterComponent::HideInstance(UHierarchicalInstancedStaticMeshComponent* HISM, int32 InstanceIndex)
+void USAS_ResourceClusterComponent::HideInstance(UInstancedStaticMeshComponent* ISM, int32 InstanceIndex)
 {
-	if (!HISM) return;
+	if (!ISM) return;
 	if (InstanceIndex == INDEX_NONE) return;
 
 	FTransform Transform;
-	if (!HISM->GetInstanceTransform(InstanceIndex, Transform, true))
+	if (!ISM->GetInstanceTransform(InstanceIndex, Transform, true))
 	{
 		return;
 	}
@@ -150,23 +146,23 @@ void USAS_ResourceClusterComponent::HideInstance(UHierarchicalInstancedStaticMes
 
 	Transform.SetLocation(Loc);
 
-	HISM->UpdateInstanceTransform(InstanceIndex, Transform, true, true, true);
+	ISM->UpdateInstanceTransform(InstanceIndex, Transform, true, true, true);
 }
 
-void USAS_ResourceClusterComponent::DisableInstance(UHierarchicalInstancedStaticMeshComponent* HISM, int32 InstanceIndex)
+void USAS_ResourceClusterComponent::DisableInstance(UInstancedStaticMeshComponent* ISM, int32 InstanceIndex)
 {
-	if (!HISM) return;
+	if (!ISM) return;
 	if (InstanceIndex == INDEX_NONE) return;
 
-	TSet<int32>& SetRef = DisabledInstancesByComponent.FindOrAdd(HISM);
+	TSet<int32>& SetRef = DisabledInstancesByComponent.FindOrAdd(ISM);
 	SetRef.Add(InstanceIndex);
 }
 
-bool USAS_ResourceClusterComponent::IsDisabled(const UHierarchicalInstancedStaticMeshComponent* HISM, int32 InstanceIndex) const
+bool USAS_ResourceClusterComponent::IsDisabled(const UInstancedStaticMeshComponent* ISM, int32 InstanceIndex) const
 {
-	if (!HISM) return true;
+	if (!ISM) return true;
 
-	const TSet<int32>* SetPtr = DisabledInstancesByComponent.Find(HISM);
+	const TSet<int32>* SetPtr = DisabledInstancesByComponent.Find(ISM);
 	if (!SetPtr) return false;
 
 	return SetPtr->Contains(InstanceIndex);
