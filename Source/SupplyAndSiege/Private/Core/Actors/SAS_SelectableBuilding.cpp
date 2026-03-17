@@ -22,11 +22,13 @@ ASAS_SelectableBuilding::ASAS_SelectableBuilding()
 	Box->SetCollisionResponseToAllChannels(ECR_Block);
 	Box->SetSimulatePhysics(false);
 	Box->SetupAttachment(SceneRoot);
+	Box->SetBoxExtent(FVector(200.f, 200.f, 200.f));
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(Box);
 
-
+	MoveToLocationsContainer = CreateDefaultSubobject<USceneComponent>(TEXT("MoveToLocationsContainer"));
+	MoveToLocationsContainer->SetupAttachment(SceneRoot);
 
 }
 
@@ -36,13 +38,35 @@ void ASAS_SelectableBuilding::BeginPlay()
 	Super::BeginPlay();
 
 	UnitInformationComponent->SetTeam(AssignTeamOnSpawn);
+	RebuildMoveToLocations();
 	
+}
+
+void ASAS_SelectableBuilding::RebuildMoveToLocations()
+{
+	MoveToLocations_World.Reset();
+
+	if (!MoveToLocationsContainer) return;
+
+	TArray<USceneComponent*> MoveToChildren;
+	MoveToLocationsContainer->GetChildrenComponents(true, MoveToChildren);
+
+	for (USceneComponent* Child : MoveToChildren)
+	{
+		if (!Child) continue;
+		MoveToLocations_World.Add(Child->GetComponentLocation());
+	}
 }
 
 void ASAS_SelectableBuilding::DestroySelf()
 {
 	UnitInformationComponent->RemoveUnitFromGame();
 	Destroy();
+}
+
+const TArray<FVector> ASAS_SelectableBuilding::GetMoveToLocations() const
+{
+	return MoveToLocations_World;
 }
 
 float ASAS_SelectableBuilding::GetDefaultHalfHeight()

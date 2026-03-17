@@ -21,10 +21,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SAS_Unit")
 	void DestroySelf();
 
+	UFUNCTION(BlueprintCallable, Category = "Selectable_Building")
+	const TArray<FVector> GetMoveToLocations() const;
+
 	float GetDefaultHalfHeight();
 
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource_Depot")
+	bool bShowMoveToLocations = true;
+
+	void RebuildMoveToLocations();
+
+
 
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SAS_Unit")
@@ -48,6 +58,11 @@ protected:
 
 	float GroundTraceUp = 5000.f;
 	float GroundTraceDown = 5000.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Selectable_Building")
+	USceneComponent* MoveToLocationsContainer;
+
+	TArray<FVector> MoveToLocations_World;
 
 
 };
