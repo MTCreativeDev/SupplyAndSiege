@@ -4,6 +4,7 @@
 #include "Core/Actors/SAS_BuildingLayout.h"
 #include "Components/BoxComponent.h"
 #include "Core/CustomCollision.h"
+#include "Misc/DataAssets/SAS_BuildingDefinitionData.h"
 
 ASAS_BuildingLayout::ASAS_BuildingLayout()
 {
@@ -27,6 +28,37 @@ ASAS_BuildingLayout::ASAS_BuildingLayout()
 	MoveToLocationsContainer = CreateDefaultSubobject<USceneComponent>(TEXT("MoveToLocationsContainer"));
 	MoveToLocationsContainer->SetupAttachment(SceneRoot);
 	
+}
+
+#if WITH_EDITOR
+void ASAS_BuildingLayout::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	const FName PropertyName = PropertyChangedEvent.Property ? PropertyChangedEvent.Property->GetFName() : NAME_None;
+
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(ASAS_BuildingLayout, BuildingDefinition))
+	{
+		ApplyDefinitionToComponents();
+	}
+}
+#endif
+
+
+void ASAS_BuildingLayout::ApplyDefinitionToComponents()
+{
+	if (!BuildingDefinition) return;
+	if (!BuildingAreaCollision || !PrimaryMesh || !SecondaryMesh) return;
+
+	BuildingAreaCollision->SetBoxExtent(BuildingDefinition->BuildingAreaCollisionExtents);
+	BuildingAreaCollision->SetRelativeLocation(BuildingDefinition->BuildingAreaCollisionLocation);
+
+	PrimaryMesh->SetStaticMesh(BuildingDefinition->PrimaryMesh);
+	PrimaryMesh->SetRelativeTransform(BuildingDefinition->PrimaryMeshRelativeTransform);
+
+	SecondaryMesh->SetStaticMesh(BuildingDefinition->SecondaryMesh);
+	SecondaryMesh->SetRelativeTransform(BuildingDefinition->SecondaryMeshRelativeTransform);
+
 }
 
 

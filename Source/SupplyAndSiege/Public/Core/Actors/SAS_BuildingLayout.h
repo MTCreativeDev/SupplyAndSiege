@@ -18,7 +18,12 @@ class SUPPLYANDSIEGE_API ASAS_BuildingLayout : public AActor
 public:	
 	ASAS_BuildingLayout();
 
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
 protected:
+	void ApplyDefinitionToComponents();
 
 public:	
 
