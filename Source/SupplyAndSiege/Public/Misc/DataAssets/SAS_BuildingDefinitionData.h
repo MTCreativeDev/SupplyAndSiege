@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "Misc/Structs/SAS_BuildingCost.h"
 #include "SAS_BuildingDefinitionData.generated.h"
 
 class UStaticMesh;
@@ -11,12 +12,21 @@ class UStaticMesh;
  * 
  */
 UCLASS()
-class SUPPLYANDSIEGE_API USAS_BuildingDefinitionData : public UDataAsset
+class SUPPLYANDSIEGE_API USAS_BuildingDefinitionData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	
 public:
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText DisplayName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText Description;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UTexture2D* Icon;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FVector BuildingAreaCollisionExtents = FVector(800.f, 800.f, 200.f);
 	
@@ -37,5 +47,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FVector> MoveToRelativeLocations;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FSAS_BuildingCost BuildingCost;
 
 };

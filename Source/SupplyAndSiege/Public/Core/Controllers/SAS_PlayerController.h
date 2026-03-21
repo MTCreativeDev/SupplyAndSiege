@@ -13,6 +13,7 @@ struct FInputActionValue;
 class ASAS_PlayerPawn;
 class USAS_UnitManagerComponent;
 class USAS_SelectionInventoryViewModel;
+class USAS_BuildingDefinitionData;
 
 
 /**
@@ -54,6 +55,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory Selection View")
 	USAS_SelectionInventoryViewModel* GetSelectionInventoryViewModel();
 
+	void AddSelectionInputBlocker(ESelectionBlocker Blocker);
+	void RemoveSelectionInputBlocker(ESelectionBlocker Blocker);
+	bool IsSelectionInputBlocked() const;
+
+	void StartBuildingPlacement(USAS_BuildingDefinitionData* BuildingToPlace);
+
 protected:
 
 	virtual void SetupInputComponent() override;
@@ -82,9 +89,15 @@ protected:
 	void RightClickStarted();
 	void RightClickCompleted();
 
+
+
+
 private:
 	
 	void InitializeSelectionInventoryViewModel();
+
+	void SetSecondaryAction(ESecondaryControllerAction NewAction);
+	void ClearSecondayrAction();
 
 public:
 
@@ -105,11 +118,17 @@ public:
 
 protected:
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (Bitmask, BitmaskEnum = "/Script/SUPPLYANDSIEGE.ESelectionBlocker"))
+	int32 SelectionBlockerMask = 0;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
 	USAS_UnitManagerComponent* UnitManagerComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller State")
 	EControllerAction CurrentAction = EControllerAction::None;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller State")
+	ESecondaryControllerAction CurrentSecondaryAction = ESecondaryControllerAction::None;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> IMC_PlayerMovement;
@@ -125,7 +144,7 @@ protected:
 	FMouseEdgeResult MouseEdgeResult = FMouseEdgeResult();
 
 	UPROPERTY(EditDefaultsOnly,Category = "Input")
-	FVector2D ScreenMovementBounds = FVector2D(50.f, 50.f);
+	FVector2D ScreenMovementBounds = FVector2D(20.f, 20.f);
 
 	bool OverrideMoveByInputAction = false;
 

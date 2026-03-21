@@ -61,6 +61,8 @@ void ASAS_PlayerController::Tick(float DeltaSeconds)
         break;
     }
 
+
+
     if (bSelecting)
     {
         float MouseX, MouseY;
@@ -319,6 +321,8 @@ void ASAS_PlayerController::Rotate()
 
 void ASAS_PlayerController::SelectionStarted()
 {
+    if (IsSelectionInputBlocked()) return;
+
     bSelecting = true;
     bDragging = false;
 
@@ -506,6 +510,41 @@ void ASAS_PlayerController::RightClickStarted()
 
 void ASAS_PlayerController::RightClickCompleted()
 {
+}
+
+void ASAS_PlayerController::AddSelectionInputBlocker(ESelectionBlocker Blocker)
+{
+    SelectionBlockerMask |= (int32)Blocker;
+    GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Blocked"));
+}
+
+void ASAS_PlayerController::RemoveSelectionInputBlocker(ESelectionBlocker Blocker)
+{
+    SelectionBlockerMask &= ~((int32)Blocker);
+}
+
+bool ASAS_PlayerController::IsSelectionInputBlocked() const
+{
+    return SelectionBlockerMask != 0;
+}
+
+void ASAS_PlayerController::StartBuildingPlacement(USAS_BuildingDefinitionData* BuildingToPlace)
+{
+    if (!BuildingToPlace) return;
+
+}
+
+void ASAS_PlayerController::SetSecondaryAction(ESecondaryControllerAction NewAction)
+{
+    if (CurrentSecondaryAction != ESecondaryControllerAction::None) return;
+    CurrentSecondaryAction = NewAction;
+    return;
+}
+
+void ASAS_PlayerController::ClearSecondayrAction()
+{
+    CurrentSecondaryAction = ESecondaryControllerAction::None;
+    return;
 }
 
 void ASAS_PlayerController::InitializeSelectionInventoryViewModel()
