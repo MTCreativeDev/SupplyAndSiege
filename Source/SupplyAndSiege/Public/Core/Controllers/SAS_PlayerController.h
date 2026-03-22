@@ -14,6 +14,7 @@ class ASAS_PlayerPawn;
 class USAS_UnitManagerComponent;
 class USAS_SelectionInventoryViewModel;
 class USAS_BuildingDefinitionData;
+class ASAS_BL_BuildPlacement;
 
 
 /**
@@ -99,6 +100,11 @@ private:
 	void SetSecondaryAction(ESecondaryControllerAction NewAction);
 	void ClearSecondayrAction();
 
+	void SpawnPlacementActor();
+	void DestroyBuildingPlacementActor();
+
+	bool GetNavigableLocationUnderMouse(FVector& OutLocation);
+
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (Bitmask, BitmaskEnum = "/Script/SUPPLYANDSIEGE.EMovementBlocker"))
@@ -124,11 +130,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
 	USAS_UnitManagerComponent* UnitManagerComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller State")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller_State")
 	EControllerAction CurrentAction = EControllerAction::None;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller State")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller_State")
 	ESecondaryControllerAction CurrentSecondaryAction = ESecondaryControllerAction::None;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller_State")
+	EControllerSelectionMode CurrentControllerSelectionMode = EControllerSelectionMode::Default;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> IMC_PlayerMovement;
@@ -168,13 +177,13 @@ protected:
 
 	float SelectionStartedTime = 0.f;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Selected Inventory")
+	UPROPERTY(BlueprintReadOnly, Category = "Selected_Inventory")
 	USAS_SelectionInventoryViewModel* SelectionInventoryViewModel;
 
-	
+	UPROPERTY(BlueprintReadOnly, Category = "Building_Placement")
+	ASAS_BL_BuildPlacement* BuildingPlacementActor = nullptr;
 
-
-
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building_Placement")
+	TSubclassOf<ASAS_BL_BuildPlacement> BuildingPlacementActorClass;
 
 };

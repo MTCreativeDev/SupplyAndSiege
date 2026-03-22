@@ -61,6 +61,13 @@ enum class ESecondaryControllerAction : uint8
 };
 
 UENUM(BlueprintType)
+enum class EControllerSelectionMode : uint8
+{
+    Default    UMETA(DisplayName = "Default"),
+    BuildingPlacement    UMETA(DisplayName = "Building Placement")
+};
+
+UENUM(BlueprintType)
 enum class ESAS_Team : uint8
 {
     None    UMETA(DisplayName = "None"),

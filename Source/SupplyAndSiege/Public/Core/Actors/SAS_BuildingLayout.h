@@ -18,12 +18,18 @@ class SUPPLYANDSIEGE_API ASAS_BuildingLayout : public AActor
 public:	
 	ASAS_BuildingLayout();
 
+	virtual void ApplyDefinitionToComponents();
+
+	void SetBuildingDefinition(USAS_BuildingDefinitionData* NewBuildingDefinition);
+
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
+
+
 protected:
-	void ApplyDefinitionToComponents();
+
 
 public:	
 
@@ -44,7 +50,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Building")
 	USceneComponent* MoveToLocationsContainer;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SAS_Building")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SAS_Building")
 	TObjectPtr<USAS_BuildingDefinitionData> BuildingDefinition = nullptr;
 
 

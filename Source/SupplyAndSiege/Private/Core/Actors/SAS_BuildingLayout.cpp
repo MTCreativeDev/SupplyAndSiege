@@ -18,6 +18,10 @@ ASAS_BuildingLayout::ASAS_BuildingLayout()
 	BuildingAreaCollision->SetSimulatePhysics(false);
 	BuildingAreaCollision->SetupAttachment(SceneRoot);
 	BuildingAreaCollision->SetBoxExtent(FVector(800.f, 800.f, 400.f));
+	BuildingAreaCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BuildingAreaCollision->SetGenerateOverlapEvents(true);
+	BuildingAreaCollision->SetHiddenInGame(false);
+
 
 	PrimaryMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PrimaryMesh"));
 	PrimaryMesh->SetupAttachment(BuildingAreaCollision);
@@ -59,6 +63,13 @@ void ASAS_BuildingLayout::ApplyDefinitionToComponents()
 	SecondaryMesh->SetStaticMesh(BuildingDefinition->SecondaryMesh);
 	SecondaryMesh->SetRelativeTransform(BuildingDefinition->SecondaryMeshRelativeTransform);
 
+}
+
+void ASAS_BuildingLayout::SetBuildingDefinition(USAS_BuildingDefinitionData* NewBuildingDefinition)
+{
+	if (!NewBuildingDefinition) return;
+	
+	BuildingDefinition = NewBuildingDefinition;
 }
 
 

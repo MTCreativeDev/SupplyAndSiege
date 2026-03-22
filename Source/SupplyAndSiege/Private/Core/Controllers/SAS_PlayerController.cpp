@@ -9,6 +9,7 @@
 #include "Core/CustomCollision.h"
 #include "Core/Components/SAS_UnitManagerComponent.h"
 #include "Core/Objects/SAS_SelectionInventoryViewModel.h"
+#include "Core/Actors/SAS_BL_BuildPlacement.h"
 
 ASAS_PlayerController::ASAS_PlayerController()
 {
@@ -61,7 +62,25 @@ void ASAS_PlayerController::Tick(float DeltaSeconds)
         break;
     }
 
+    switch (CurrentSecondaryAction)
+    {
+    case ESecondaryControllerAction::None:
+        break;
+    case ESecondaryControllerAction::BuildingPlacement:
+        {
+            if (!BuildingPlacementActor) break;
 
+            FVector NewWorldLocation;
+            if (!GetNavigableLocationUnderMouse(NewWorldLocation)) break;
+
+            FHitResult SweepHit;
+            BuildingPlacementActor->SetActorLocation(NewWorldLocation, false, &SweepHit, ETeleportType::None);
+            BuildingPlacementActor->CheckPlacementValidity();
+            break;
+        }
+    default:
+        break;
+    }
 
     if (bSelecting)
     {
@@ -323,29 +342,59 @@ void ASAS_PlayerController::SelectionStarted()
 {
     if (IsSelectionInputBlocked()) return;
 
-    bSelecting = true;
-    bDragging = false;
+    switch(CurrentControllerSelectionMode)
+    {
+    case EControllerSelectionMode::Default:
+    {
+        bSelecting = true;
+        bDragging = false;
 
-    MovementBlockerMask |= static_cast<int64>(EMovementBlocker::Selecting);
-    RotationBlockerMask |= static_cast<int64>(ERotationBlocker::Selecting);
-    CurrentAction = EControllerAction::None;
+        MovementBlockerMask |= static_cast<int64>(EMovementBlocker::Selecting);
+        RotationBlockerMask |= static_cast<int64>(ERotationBlocker::Selecting);
+        CurrentAction = EControllerAction::None;
 
-    
-    if (GetWorld())
-    {
-        SelectionStartedTime = GetWorld()->GetTimeSeconds();
+
+        if (GetWorld())
+        {
+            SelectionStartedTime = GetWorld()->GetTimeSeconds();
+        }
+        else
+        {
+            SelectionStartedTime = 0.f;
+        }
+
+        float MouseX, MouseY;
+        if (GetMousePosition(MouseX, MouseY))
+        {
+            SelectionStartMousePos = FVector2D(MouseX, MouseY);
+            CurrentSelectionMousePos = SelectionStartMousePos;
+        }
+        break;
     }
-    else
-    {
-        SelectionStartedTime = 0.f;
-    }
-    
-    float MouseX, MouseY;
-    if (GetMousePosition(MouseX, MouseY))
-    {
-        SelectionStartMousePos = FVector2D(MouseX, MouseY);
-        CurrentSelectionMousePos = SelectionStartMousePos;
-    }
+
+    case EControllerSelectionMode::BuildingPlacement:
+
+        if (BuildingPlacementActor->GetIsValidPlacement())
+        {
+            if (GEngine)
+            {
+                GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("BuildingPlacement"));
+            }
+        }
+        else
+        {
+            if (GEngine)
+            {
+                GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Invalid"));
+            }
+        }
+
+
+        break;
+
+    default:
+        break;
+    }    
 }
 
 void ASAS_PlayerController::SelectionCompleted()
@@ -515,7 +564,6 @@ void ASAS_PlayerController::RightClickCompleted()
 void ASAS_PlayerController::AddSelectionInputBlocker(ESelectionBlocker Blocker)
 {
     SelectionBlockerMask |= (int32)Blocker;
-    GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Blocked"));
 }
 
 void ASAS_PlayerController::RemoveSelectionInputBlocker(ESelectionBlocker Blocker)
@@ -532,6 +580,16 @@ void ASAS_PlayerController::StartBuildingPlacement(USAS_BuildingDefinitionData* 
 {
     if (!BuildingToPlace) return;
 
+    SpawnPlacementActor();
+    if (!BuildingPlacementActor) return;
+
+    BuildingPlacementActor->SetBuildingDefinition(BuildingToPlace);
+    BuildingPlacementActor->ApplyDefinitionToComponents();
+
+    UnitManagerComponent->ClearAllSelectedUnits();
+    CurrentControllerSelectionMode = EControllerSelectionMode::BuildingPlacement;
+
+    SetSecondaryAction(ESecondaryControllerAction::BuildingPlacement);
 }
 
 void ASAS_PlayerController::SetSecondaryAction(ESecondaryControllerAction NewAction)
@@ -545,6 +603,69 @@ void ASAS_PlayerController::ClearSecondayrAction()
 {
     CurrentSecondaryAction = ESecondaryControllerAction::None;
     return;
+}
+
+void ASAS_PlayerController::SpawnPlacementActor()
+{
+    if (BuildingPlacementActor) return;
+    if (!GetWorld()) return;
+
+    FActorSpawnParameters Params;
+    Params.Owner = this;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    BuildingPlacementActor = GetWorld()->SpawnActor<ASAS_BL_BuildPlacement>(
+        BuildingPlacementActorClass,
+        FVector::ZeroVector,
+        FRotator::ZeroRotator,
+        Params
+        );
+    return;
+}
+
+void ASAS_PlayerController::DestroyBuildingPlacementActor()
+{
+    if (BuildingPlacementActor && IsValid(BuildingPlacementActor))
+    {
+        BuildingPlacementActor->Destroy();
+        BuildingPlacementActor = nullptr;
+    }
+}
+
+bool ASAS_PlayerController::GetNavigableLocationUnderMouse(FVector& OutLocation)
+{
+    OutLocation = FVector::ZeroVector;
+
+    FVector WorldOrigin;
+    FVector WorldDirection;
+
+    float MouseX, MouseY;
+    if (!GetMousePosition(MouseX, MouseY)) return false;
+
+    if (!DeprojectScreenPositionToWorld(MouseX, MouseY, WorldOrigin, WorldDirection)) return false;
+
+    const FVector TraceStart = WorldOrigin;
+    const FVector TraceEnd = WorldOrigin + (WorldDirection * 100000.f);
+
+    FHitResult Hit;
+    FCollisionQueryParams Params;
+    Params.bTraceComplex = true;
+
+    UWorld* World = GetWorld();
+    if (!World) return false;
+
+    const bool bHit = World->LineTraceSingleByChannel(
+        Hit,
+        TraceStart,
+        TraceEnd,
+        Trace_NavigableArea,
+        Params
+    );
+
+    if (!bHit) return false;
+    
+    OutLocation = Hit.ImpactPoint;
+    return true;
 }
 
 void ASAS_PlayerController::InitializeSelectionInventoryViewModel()
