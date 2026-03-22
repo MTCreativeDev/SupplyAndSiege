@@ -129,6 +129,10 @@ Platforms/HoloLens/Config/HoloLensEngine.ini
 
 .vsconfig
 
+/.vscode
+
+SupplyAndSiege.code-workspace
+
 \
 # Local editor preferences
 Config/DefaultEditorSettings.ini
@@ -140,3 +144,4 @@ Config/DefaultEditorSettings.ini
 # Blender backup files
 
 *.blend[0-9]
+
