@@ -118,6 +118,12 @@ int32 USAS_InventoryComponent::HasInventorySpace(UItemDefinitionPrimaryData* Ite
 	return Remaining;
 }
 
+void USAS_InventoryComponent::SetInventoryProfile(USAS_InventoryProfileData* NewProfile)
+{
+	if (!NewProfile) return;
+	InventoryProfile = NewProfile;
+}
+
 void USAS_InventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();

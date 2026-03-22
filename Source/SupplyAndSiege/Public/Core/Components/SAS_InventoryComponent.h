@@ -47,6 +47,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory", meta=(ReturnDisplayName= "Overflow Amount"))
 	int32 HasInventorySpace(UItemDefinitionPrimaryData* Item, int32 Quantity);
 
+	void SetInventoryProfile(USAS_InventoryProfileData* NewProfile);
+
 	//Dispatchers
 
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")

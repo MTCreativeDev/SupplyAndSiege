@@ -15,6 +15,7 @@ class USAS_UnitManagerComponent;
 class USAS_SelectionInventoryViewModel;
 class USAS_BuildingDefinitionData;
 class ASAS_BL_BuildPlacement;
+class ASAS_BL_BuildJob;
 
 
 /**
@@ -105,6 +106,8 @@ private:
 
 	bool GetNavigableLocationUnderMouse(FVector& OutLocation);
 
+	bool AttemptPlaceBuilding();
+
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (Bitmask, BitmaskEnum = "/Script/SUPPLYANDSIEGE.EMovementBlocker"))
@@ -181,9 +184,15 @@ protected:
 	USAS_SelectionInventoryViewModel* SelectionInventoryViewModel;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Building_Placement")
+	USAS_BuildingDefinitionData* CurrentBuildingBeingPlaced = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Building_Placement")
 	ASAS_BL_BuildPlacement* BuildingPlacementActor = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building_Placement")
 	TSubclassOf<ASAS_BL_BuildPlacement> BuildingPlacementActorClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building_Placement")
+	TSubclassOf<ASAS_BL_BuildJob> BuildingUnderConstructionActorClass;
 
 };

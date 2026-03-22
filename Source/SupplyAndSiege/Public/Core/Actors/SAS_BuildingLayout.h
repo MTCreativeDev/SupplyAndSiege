@@ -50,7 +50,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Building")
 	USceneComponent* MoveToLocationsContainer;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SAS_Building")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SAS_Building", meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<USAS_BuildingDefinitionData> BuildingDefinition = nullptr;
 
 

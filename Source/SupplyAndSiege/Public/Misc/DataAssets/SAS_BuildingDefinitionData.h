@@ -8,6 +8,8 @@
 #include "SAS_BuildingDefinitionData.generated.h"
 
 class UStaticMesh;
+class USAS_UnitTypeData;
+class USAS_InventoryProfileData;
 /**
  * 
  */

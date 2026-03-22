@@ -10,6 +10,8 @@
 #include "Core/Components/SAS_UnitManagerComponent.h"
 #include "Core/Objects/SAS_SelectionInventoryViewModel.h"
 #include "Core/Actors/SAS_BL_BuildPlacement.h"
+#include "Core/Actors/SAS_BL_BuildJob.h"
+#include "Kismet/GameplayStatics.h"
 
 ASAS_PlayerController::ASAS_PlayerController()
 {
@@ -374,7 +376,7 @@ void ASAS_PlayerController::SelectionStarted()
 
     case EControllerSelectionMode::BuildingPlacement:
 
-        if (BuildingPlacementActor->GetIsValidPlacement())
+        if (AttemptPlaceBuilding())
         {
             if (GEngine)
             {
@@ -580,6 +582,8 @@ void ASAS_PlayerController::StartBuildingPlacement(USAS_BuildingDefinitionData* 
 {
     if (!BuildingToPlace) return;
 
+    CurrentBuildingBeingPlaced = BuildingToPlace;
+
     SpawnPlacementActor();
     if (!BuildingPlacementActor) return;
 
@@ -665,6 +669,41 @@ bool ASAS_PlayerController::GetNavigableLocationUnderMouse(FVector& OutLocation)
     if (!bHit) return false;
     
     OutLocation = Hit.ImpactPoint;
+    return true;
+}
+
+bool ASAS_PlayerController::AttemptPlaceBuilding()
+{
+    if (CurrentSecondaryAction != ESecondaryControllerAction::BuildingPlacement || !CurrentBuildingBeingPlaced || !BuildingPlacementActor) return false;
+
+    if (!BuildingPlacementActor->GetIsValidPlacement()) return false;
+    const FTransform NewBuildingTransform = BuildingPlacementActor->GetActorTransform();
+    
+    UWorld* World = GetWorld();
+    if (!World) return false;
+
+    FActorSpawnParameters Params;
+    Params.Owner = nullptr;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    ASAS_BL_BuildJob* NewBuildJob;
+
+    NewBuildJob = World->SpawnActorDeferred<ASAS_BL_BuildJob>(
+        BuildingUnderConstructionActorClass,
+        NewBuildingTransform,
+        nullptr,
+        nullptr
+        );
+
+    NewBuildJob->SetBuildingDefinition(CurrentBuildingBeingPlaced);
+    NewBuildJob->ApplyDefinitionToComponents();
+    NewBuildJob->InitializeBuildJob(ESAS_Team::Team1);
+
+
+    UGameplayStatics::FinishSpawningActor(NewBuildJob, NewBuildingTransform);
+    
+    //TODO: Need to turn off building placement attached to the mouse
+
     return true;
 }
 
