@@ -3,6 +3,7 @@
 
 #include "Core/Actors/SAS_BuildingLayout.h"
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Core/CustomCollision.h"
 #include "Misc/DataAssets/SAS_BuildingDefinitionData.h"
 

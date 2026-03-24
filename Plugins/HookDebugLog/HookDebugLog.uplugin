@@ -1,0 +1,18 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Hook Debug Log",
+	"Description": "Debug logging system with on-screen messages, CVars, editor settings, and Blueprint support.",
+	"Category": "Debug",
+	"CreatedBy": "Break Knight Games, LLC",
+	"EnabledByDefault": true,
+	"CanContainContent": false,
+	"Modules": [
+		{
+			"Name": "HookDebugLog",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

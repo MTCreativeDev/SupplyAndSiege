@@ -9,6 +9,7 @@
 void UPlayerScreenWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	HOOK_LOG_QUIET();
 	PlayerController = Cast<ASAS_PlayerController>(GetOwningPlayer());
 	if (!PlayerController) return;
 

@@ -5,6 +5,7 @@
 #include "Misc/DataAssets/SAS_BuildingDefinitionData.h"
 
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Components/ArrowComponent.h"
 
 #if WITH_EDITOR

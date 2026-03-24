@@ -3,6 +3,7 @@
 
 #include "Core/Actors/SAS_BL_BuildPlacement.h"
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 
 
