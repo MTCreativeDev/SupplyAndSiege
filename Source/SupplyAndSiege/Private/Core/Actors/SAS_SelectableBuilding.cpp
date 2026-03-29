@@ -3,6 +3,7 @@
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Misc/DataAssets/SAS_BuildingDefinitionData.h"
 
 ASAS_SelectableBuilding::ASAS_SelectableBuilding()
 {
@@ -25,15 +26,14 @@ void ASAS_SelectableBuilding::RebuildMoveToLocations()
 {
 	MoveToLocations_World.Reset();
 
-	if (!MoveToLocationsContainer) return;
+	if (!BuildingDefinition) return;
+	MoveToLocations_World.Reserve(BuildingDefinition->MoveToRelativeLocations.Num());
 
-	TArray<USceneComponent*> MoveToChildren;
-	MoveToLocationsContainer->GetChildrenComponents(true, MoveToChildren);
+	const FTransform ActorTransform = GetActorTransform();
 
-	for (USceneComponent* Child : MoveToChildren)
+	for (const FVector& LocalLocation : BuildingDefinition->MoveToRelativeLocations)
 	{
-		if (!Child) continue;
-		MoveToLocations_World.Add(Child->GetComponentLocation());
+		MoveToLocations_World.Add(ActorTransform.TransformPosition(LocalLocation));
 	}
 }
 
@@ -45,6 +45,7 @@ void ASAS_SelectableBuilding::DestroySelf()
 
 const TArray<FVector> ASAS_SelectableBuilding::GetMoveToLocations() const
 {
+
 	return MoveToLocations_World;
 }
 
