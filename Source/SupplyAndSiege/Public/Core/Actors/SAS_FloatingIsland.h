@@ -15,14 +15,12 @@ public:
 	// Sets default values for this actor's properties
 	ASAS_FloatingIsland();
 	UFUNCTION(BlueprintCallable, Category = "Island")
-
 	FGuid GetIslandID();
-	static void CleanupGUIDAssignmentQueue();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Island")
+	UPROPERTY(EditAnywhere, Category = "Island")
 	UStaticMeshComponent* FloatingIslandMesh;
 
 public:	
@@ -32,6 +30,5 @@ public:
 private:
 	UPROPERTY()
 	FGuid IslandID;
-	static TArray<TWeakObjectPtr<ASAS_FloatingIsland>> GUIDAssignmentQueue;
 
 };
