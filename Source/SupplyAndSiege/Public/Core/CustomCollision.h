@@ -11,6 +11,7 @@
 
 //Objects
 #define Object_BuildingBounds ECC_GameTraceChannel4;
+#define Object_UnitSight ECC_GameTraceChannel5;
 
 
 namespace SAS_CollisionProfiles
