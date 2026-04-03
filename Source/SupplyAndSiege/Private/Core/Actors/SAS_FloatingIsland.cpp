@@ -42,7 +42,6 @@ FGuid ASAS_FloatingIsland::GetIslandID()
 {
 	if (IslandID.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Added Island %s to GUID assignment queue."), *GetName());
 		return IslandID;
 	}
 

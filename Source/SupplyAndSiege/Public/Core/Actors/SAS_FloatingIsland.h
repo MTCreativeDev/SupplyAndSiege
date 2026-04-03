@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SAS_FloatingISland.generated.h"
+#include "SAS_FloatingIsland.generated.h"
 
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_FloatingIsland : public AActor
