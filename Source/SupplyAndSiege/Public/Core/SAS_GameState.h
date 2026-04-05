@@ -7,6 +7,7 @@
 #include "Core/SAS_Enumerators.h"
 #include "SAS_GameState.generated.h"
 
+class USAS_IslandManagerComponent;
 class USAS_InventoryManagerComponent;
 class USAS_ResourceManagerComponent;
 
@@ -31,5 +32,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
 	USAS_ResourceManagerComponent* ResourceManagerComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Island")
+	USAS_IslandManagerComponent* IslandManagerComponent;
 
 };
