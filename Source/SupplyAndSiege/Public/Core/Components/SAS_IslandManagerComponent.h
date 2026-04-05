@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "SAS_IslandManagerComponent.generated.h"
 
+class USAS_IslandComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_IslandManagerComponent : public UActorComponent
@@ -13,21 +14,34 @@ class SUPPLYANDSIEGE_API USAS_IslandManagerComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	USAS_IslandManagerComponent();
 
-	static void CleanupGUIDAssignmentQueue();
-	FGuid GetIslandID();
+	UFUNCTION(BlueprintCallable, Category = "Island")
+	int GetHealth() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Island")
+	bool IsDepleted() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Island")
+	void AddIslandToQueue(USAS_IslandComponent* IslandComponent);
+
+	UFUNCTION(BlueprintCallable, Category = "Island")
+	void RemoveIslandFromQueue(USAS_IslandComponent* IslandComponent);
+
+	UFUNCTION(BlueprintCallable, Category = "Island")
+	void CleanupIslandQueue();
+	
+	UFUNCTION(BlueprintCallable, Category = "Island")
+	TArray<USAS_IslandComponent*> GetIslandComponents() const;
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	static TArray<TWeakObjectPtr<USAS_IslandManagerComponent>> GUIDAssignmentQueue;
+	UPROPERTY()
+	TArray<TWeakObjectPtr<USAS_IslandComponent>> IslandQueue;
 		
 };
