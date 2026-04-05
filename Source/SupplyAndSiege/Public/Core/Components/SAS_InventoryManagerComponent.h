@@ -9,6 +9,24 @@
 class USAS_InventoryComponent;
 class UItemDefinitionPrimaryData;
 
+USTRUCT(BlueprintType)
+struct FSAS_ItemInventoryPerCategory
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 StockpileAmount = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 TransitAmount = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 RefinerInputAmount = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 Total = 0;
+};
+
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(
 	FOnTeamInventoryChanged,
@@ -53,7 +71,8 @@ protected:
 
 	virtual void BeginPlay() override;
 
-
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	FSAS_ItemInventoryPerCategory GetItemInventoryPerCategory(UItemDefinitionPrimaryData* ItemDefinition) const;
 
 private:
 	
