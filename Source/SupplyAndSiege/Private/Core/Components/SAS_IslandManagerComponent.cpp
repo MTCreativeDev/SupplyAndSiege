@@ -19,17 +19,14 @@ void USAS_IslandManagerComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-// TODO: Add parameters
-int USAS_IslandManagerComponent::GetHealth() const
+int32 USAS_IslandManagerComponent::GetHealth(USAS_IslandComponent* IslandComponent) const
 {
-	// Placeholder, replace this with actual logic to calculate the island's health.
-	return 100;
+	return IslandComponent->GetHealth();
 }
 
-// TODO: Add parameters
-bool USAS_IslandManagerComponent::IsDepleted() const
+bool USAS_IslandManagerComponent::IsDepleted(const int32 islandHealth) const
 {
-	return GetHealth() <= 0;
+	return islandHealth <= 0;
 }
 
 void USAS_IslandManagerComponent::AddIslandToQueue(USAS_IslandComponent* IslandComponent)
@@ -49,6 +46,17 @@ TArray<USAS_IslandComponent*> USAS_IslandManagerComponent::GetIslandComponents()
 		}
 	}
 	return ValidIslands;
+}
+
+void USAS_IslandManagerComponent::CheckIslandHealth(USAS_IslandComponent* IslandComponent)
+{
+	if (!IslandComponent) return;
+	int32 health = GetHealth(IslandComponent); 
+	bool isDepleted = IsDepleted(health);
+	if (isDepleted)
+	{
+		RemoveIslandFromQueue(IslandComponent);
+	}
 }
 
 void USAS_IslandManagerComponent::RemoveIslandFromQueue(USAS_IslandComponent* IslandComponent)

@@ -14,20 +14,22 @@ class SUPPLYANDSIEGE_API USAS_IslandComponent : public UActorComponent
 
 public:	
 	USAS_IslandComponent();
+
 	UFUNCTION(BlueprintCallable, Category = "Island")
-	FGuid GetIslandID();
+	FGuid GetIslandID() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Island")
+	int32 GetHealth() const;
 
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, Category = "Island")
-	UStaticMeshComponent* IslandMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Island")
+	FGuid IslandID;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite,Category = "Island")
+	int32 Health = 100;
 
 public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-private:
-	UPROPERTY()
-	FGuid IslandID;
-		
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;	
 };

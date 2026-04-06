@@ -17,10 +17,10 @@ public:
 	USAS_IslandManagerComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Island")
-	int GetHealth() const;
+	int32 GetHealth(USAS_IslandComponent* IslandComponent) const;
 	
 	UFUNCTION(BlueprintCallable, Category = "Island")
-	bool IsDepleted() const;
+	bool IsDepleted(const int32 islandHealth) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Island")
 	void AddIslandToQueue(USAS_IslandComponent* IslandComponent);
@@ -33,6 +33,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Island")
 	TArray<USAS_IslandComponent*> GetIslandComponents() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Island")
+	void CheckIslandHealth(USAS_IslandComponent* IslandComponent);
 
 protected:
 	virtual void BeginPlay() override;

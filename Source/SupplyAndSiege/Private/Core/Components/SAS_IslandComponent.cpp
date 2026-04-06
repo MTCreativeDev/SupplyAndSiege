@@ -6,7 +6,6 @@
 USAS_IslandComponent::USAS_IslandComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	IslandMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("IslandMesh"));
 }
 
 void USAS_IslandComponent::BeginPlay()
@@ -24,7 +23,13 @@ void USAS_IslandComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-FGuid USAS_IslandComponent::GetIslandID()
+// TODO: Add logic to get health from the island component instead of returning a placeholder value.
+int32 USAS_IslandComponent::GetHealth() const
+{
+	return Health;
+}
+
+FGuid USAS_IslandComponent::GetIslandID() const
 {
 	if (IslandID.IsValid())
 	{
