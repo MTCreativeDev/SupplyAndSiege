@@ -36,7 +36,7 @@ enum class ERotationBlocker : uint8
     Selecting = 1 << 2    UMETA(displayName = "Selecting")
 };
 
-//Enum used as a bitblocker to ensure we are allowed to rotate.
+//Enum used as a bitblocker to ensure we are allowed to select.
 UENUM(BlueprintType, meta = (Bitflags))
 enum class ESelectionBlocker : uint8
 {
