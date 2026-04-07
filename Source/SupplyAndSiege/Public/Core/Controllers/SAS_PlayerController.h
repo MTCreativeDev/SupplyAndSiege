@@ -91,8 +91,8 @@ protected:
 	void RightClickStarted();
 	void RightClickCompleted();
 
-
-
+	UFUNCTION(BlueprintNativeEvent, Category = "UI") 
+	void TogglePaused();
 
 private:
 	
@@ -125,6 +125,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	bool bDragging = false;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool bPaused = false; 
+	
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input", meta = (Bitmask, BitmaskEnum = "/Script/SUPPLYANDSIEGE.ESelectionBlocker"))
@@ -152,6 +155,8 @@ protected:
 	TObjectPtr<UInputAction> IA_Select;
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> IA_RightClick;
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> IA_PauseGame;
 
 	FMouseEdgeResult MouseEdgeResult = FMouseEdgeResult();
 
@@ -194,5 +199,5 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building_Placement")
 	TSubclassOf<ASAS_BL_BuildJob> BuildingUnderConstructionActorClass;
-
+	
 };

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SAS_FloatingISland.generated.h"
+#include "SAS_FloatingIsland.generated.h"
 
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_FloatingIsland : public AActor
@@ -14,24 +14,14 @@ class SUPPLYANDSIEGE_API ASAS_FloatingIsland : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ASAS_FloatingIsland();
-	UFUNCTION(BlueprintCallable, Category = "Island")
-
-	FGuid GetIslandID();
-	static void CleanupGUIDAssignmentQueue();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Island")
-	UStaticMeshComponent* FloatingIslandMesh;
+
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-private:
-	UPROPERTY()
-	FGuid IslandID;
-	static TArray<TWeakObjectPtr<ASAS_FloatingIsland>> GUIDAssignmentQueue;
 
 };

@@ -145,7 +145,6 @@ USAS_SelectionInventoryViewModel* ASAS_PlayerController::GetSelectionInventoryVi
 void ASAS_PlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
-
     UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent);
 
     checkf(EIC, TEXT("ASAS_PlayerController requires Enhanced Input. InputComponent is not UEnhancedInputComponent."));
@@ -153,6 +152,7 @@ void ASAS_PlayerController::SetupInputComponent()
     checkf(IA_Move, TEXT("ASAS_PlayerController: IA_Move is not assigned. Set it in the PlayerController Blueprint defaults."));
     checkf(IA_Select, TEXT("ASAS_PlayerController: IA_Select is not assigned. Set it in the PlayerController Blueprint defaults."));
     checkf(IA_RightClick, TEXT("ASAS_PlayerController: IA_RightClick is not assigned. Set it in the PlayerController Blueprint defaults."));
+    checkf(IA_PauseGame, TEXT("ASAS_PlayerController:IA_PauseGame, is not assigned. Set it in the PlayerController Blueprint defaults."));
 
     EIC->BindAction(IA_ToggleRotate, ETriggerEvent::Started, this, &ASAS_PlayerController::OnRotationToggleStarted);
     EIC->BindAction(IA_ToggleRotate, ETriggerEvent::Completed, this, &ASAS_PlayerController::OnRotationToggleEnded);
@@ -171,6 +171,7 @@ void ASAS_PlayerController::SetupInputComponent()
     EIC->BindAction(IA_RightClick, ETriggerEvent::Completed, this, &ASAS_PlayerController::RightClickCompleted);
     EIC->BindAction(IA_RightClick, ETriggerEvent::Canceled, this, &ASAS_PlayerController::RightClickCompleted);
 
+    EIC->BindAction(IA_PauseGame, ETriggerEvent::Started, this, &ASAS_PlayerController::TogglePaused);
 }
 
 void ASAS_PlayerController::MoveUpdated(const FInputActionValue& Value)
@@ -561,6 +562,24 @@ void ASAS_PlayerController::RightClickStarted()
 
 void ASAS_PlayerController::RightClickCompleted()
 {
+}
+
+void ASAS_PlayerController::TogglePaused_Implementation()
+{
+    
+    if (!bPaused)
+    {
+        MovementBlockerMask = 2; 
+        RotationBlockerMask = 2; 
+        SelectionBlockerMask = 2;
+    }
+    else
+    {
+        MovementBlockerMask = 0;
+        RotationBlockerMask = 0;
+        SelectionBlockerMask = 0;
+    }
+    
 }
 
 void ASAS_PlayerController::AddSelectionInputBlocker(ESelectionBlocker Blocker)

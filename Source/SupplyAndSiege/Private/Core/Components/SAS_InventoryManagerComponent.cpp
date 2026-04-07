@@ -4,6 +4,7 @@
 #include "Core/Components/SAS_InventoryManagerComponent.h"
 #include "Core/Components/SAS_InventoryComponent.h"
 #include "Misc/DataAssets/SAS_InventoryProfileData.h"
+#include "Misc/DataAssets/ItemDefinitionPrimaryData.h"
 
 
 USAS_InventoryManagerComponent::USAS_InventoryManagerComponent()
@@ -15,6 +16,26 @@ void USAS_InventoryManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+}
+
+FSAS_ItemInventoryPerCategory USAS_InventoryManagerComponent::GetItemInventoryPerCategory(UItemDefinitionPrimaryData* ItemDefinition) const
+{
+	FSAS_ItemInventoryPerCategory Result;
+
+	if (!ItemDefinition) return Result;
+
+	const FPrimaryAssetId ItemId = ItemDefinition->GetPrimaryAssetId();
+	if (!ItemId.IsValid()) return Result;
+
+	if (const int32* Found = TeamStockpileTotals.Find(ItemId)) Result.StockpileAmount = *Found;
+
+	if (const int32* Found = TeamTransitTotals.Find(ItemId)) Result.TransitAmount = *Found;
+
+	if (const int32* Found = TeamRefinerInputTotals.Find(ItemId)) Result.RefinerInputAmount = *Found;
+	
+	Result.Total = Result.StockpileAmount + Result.TransitAmount + Result.RefinerInputAmount;
+
+	return Result;
 }
 
 void USAS_InventoryManagerComponent::RegisterTeamInventory(USAS_InventoryComponent* Inventory)
