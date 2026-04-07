@@ -7,6 +7,7 @@
 #include "Core/SAS_Enumerators.h"
 #include "SAS_PlayerController.generated.h"
 
+class USAS_PauseScreenBase;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
@@ -91,7 +92,7 @@ protected:
 	void RightClickStarted();
 	void RightClickCompleted();
 
-	UFUNCTION(BlueprintNativeEvent, Category = "UI") 
+	UFUNCTION(BlueprintCallable) 
 	void TogglePaused();
 
 private:
@@ -200,4 +201,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building_Placement")
 	TSubclassOf<ASAS_BL_BuildJob> BuildingUnderConstructionActorClass;
 	
+	UPROPERTY(EditDefaultsOnly) 
+	TSubclassOf<UUserWidget> PauseScreenWidget;
+	
+	UPROPERTY() 
+	USAS_PauseScreenBase* PauseScreen;
 };
