@@ -117,3 +117,22 @@ enum class ESAS_UnitOrderType : uint8
     None   UMETA(DisplayName = "None"),
     Harvest   UMETA(DisplayName = "Harvest")
 };
+
+UENUM(BlueprintType)
+enum class ESAS_MasterJobType : uint8
+{
+    None   UMETA(DisplayName = "None"),
+    DeliverItem   UMETA(DisplayName = "Deliver Item"),
+    RemoveItem   UMETA(DisplayName = "Remove Item"),
+    Build   UMETA(DisplayName = "Build")
+};
+
+UENUM(BlueprintType)
+enum class ESAS_MasterJobStatus : uint8
+{
+    Pending   UMETA(DisplayName = "Pending"),
+    Active   UMETA(DisplayName = "Active"),
+    Completed   UMETA(DisplayName = "Completed"),
+    Failed   UMETA(DisplayName = "Failed"),
+    Cancelled   UMETA(DisplayName = "Cancelled")
+};

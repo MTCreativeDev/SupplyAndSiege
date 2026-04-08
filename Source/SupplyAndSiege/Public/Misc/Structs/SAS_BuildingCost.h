@@ -16,6 +16,9 @@ struct FSAS_BuildingCost
 	TMap<TObjectPtr<UItemDefinitionPrimaryData>, int32> ResourceCost;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building_Cost")
-	float TimeCost = 10.f;
+	float ConstructionWorkRequired = 10.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building_Cost")
+	int32 MaxConstructionWorkers = 5;
 
 };
