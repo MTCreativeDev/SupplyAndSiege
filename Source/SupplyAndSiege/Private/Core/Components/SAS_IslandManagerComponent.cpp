@@ -6,17 +6,11 @@
 
 USAS_IslandManagerComponent::USAS_IslandManagerComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
 }
 
 void USAS_IslandManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-}
-
-void USAS_IslandManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 int32 USAS_IslandManagerComponent::GetHealth(USAS_IslandComponent* IslandComponent) const

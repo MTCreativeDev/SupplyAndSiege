@@ -33,7 +33,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resource")
 	USAS_ResourceManagerComponent* ResourceManagerComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Island")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Island")
 	USAS_IslandManagerComponent* IslandManagerComponent;
 
 };

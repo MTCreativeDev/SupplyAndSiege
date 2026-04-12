@@ -6,12 +6,14 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "DrawDebugHelpers.h"
+#include "Blueprint/UserWidget.h"
 #include "Core/CustomCollision.h"
 #include "Core/Components/SAS_UnitManagerComponent.h"
 #include "Core/Objects/SAS_SelectionInventoryViewModel.h"
 #include "Core/Actors/SAS_BL_BuildPlacement.h"
 #include "Core/Actors/SAS_BL_BuildJob.h"
 #include "Kismet/GameplayStatics.h"
+#include "Widgets/SAS_PauseScreenBase.h"
 
 ASAS_PlayerController::ASAS_PlayerController()
 {
@@ -564,22 +566,54 @@ void ASAS_PlayerController::RightClickCompleted()
 {
 }
 
-void ASAS_PlayerController::TogglePaused_Implementation()
+void ASAS_PlayerController::TogglePaused()
 {
-    
     if (!bPaused)
     {
-        MovementBlockerMask = 2; 
-        RotationBlockerMask = 2; 
-        SelectionBlockerMask = 2;
+        if (UWorld* World = GetWorld())
+        {
+            UGameplayStatics::SetGamePaused(World, true);
+            if (PauseScreenWidget)
+            {
+                PauseScreen = CreateWidget<USAS_PauseScreenBase>(World, PauseScreenWidget);
+                
+                if (PauseScreen)
+                {
+                    PauseScreen->AddToViewport(); 
+                    
+                    PauseScreen->OnPauseScreenResumeClicked.AddDynamic(this, &ASAS_PlayerController::TogglePaused);
+                }
+            }
+        }
+        
+        MovementBlockerMask &= ~static_cast<int64>(EMovementBlocker::Rotating);
+        MovementBlockerMask &= ~static_cast<int64>(EMovementBlocker::Selecting);
+        RotationBlockerMask &= ~static_cast<int64>(ERotationBlocker::Moving);
+        RotationBlockerMask &= ~static_cast<int64>(ERotationBlocker::Selecting);
+        
+        MovementBlockerMask |= static_cast<int64>(EMovementBlocker::Paused); 
+        RotationBlockerMask |= static_cast<int64>(ERotationBlocker::Paused);
+        
+        bPaused = true;
     }
     else
     {
-        MovementBlockerMask = 0;
-        RotationBlockerMask = 0;
-        SelectionBlockerMask = 0;
+        if (PauseScreen)
+        {
+            PauseScreen->OnPauseScreenResumeClicked.RemoveAll(this);
+            PauseScreen->RemoveFromParent(); 
+        }
+        
+        if (UWorld* World = GetWorld())
+        {
+            UGameplayStatics::SetGamePaused(World, false);
+        }
+        
+        MovementBlockerMask &= ~static_cast<int64>(EMovementBlocker::Paused);
+        RotationBlockerMask &= ~static_cast<int64>(ERotationBlocker::Paused);
+        
+        bPaused = false;
     }
-    
 }
 
 void ASAS_PlayerController::AddSelectionInputBlocker(ESelectionBlocker Blocker)
