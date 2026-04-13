@@ -1,6 +1,4 @@
 # UE file types
-
 # Raw Content types
-
-
 # Libraries and executables
+*.spp filter=lfs diff=lfs merge=lfs -text
