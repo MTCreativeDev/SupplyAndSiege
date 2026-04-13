@@ -19,9 +19,7 @@ class ASAS_BL_BuildPlacement;
 class ASAS_BL_BuildJob;
 
 
-/**
- * 
- */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FExitBuildingPlacement);
 
 //Struct used to return the MousePosition and the MovementAxis
 USTRUCT(BlueprintType)
@@ -63,6 +61,11 @@ public:
 	bool IsSelectionInputBlocked() const;
 
 	void StartBuildingPlacement(USAS_BuildingDefinitionData* BuildingToPlace);
+	void EndBuildingPlacement();
+
+	//Dispatchers
+	UPROPERTY(BlueprintAssignable, Category = "Building_Placement")
+	FExitBuildingPlacement OnExitBuildingPlacement;
 
 protected:
 
@@ -100,7 +103,7 @@ private:
 	void InitializeSelectionInventoryViewModel();
 
 	void SetSecondaryAction(ESecondaryControllerAction NewAction);
-	void ClearSecondayrAction();
+	void ClearSecondaryAction();
 
 	void SpawnPlacementActor();
 	void DestroyBuildingPlacementActor();

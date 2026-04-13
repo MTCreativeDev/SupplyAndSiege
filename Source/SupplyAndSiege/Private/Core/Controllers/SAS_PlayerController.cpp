@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Core/Controllers/SAS_PlayerController.h"
@@ -381,10 +380,7 @@ void ASAS_PlayerController::SelectionStarted()
 
         if (AttemptPlaceBuilding())
         {
-            if (GEngine)
-            {
-                GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("BuildingPlacement"));
-            }
+            EndBuildingPlacement();
         }
         else
         {
@@ -649,6 +645,16 @@ void ASAS_PlayerController::StartBuildingPlacement(USAS_BuildingDefinitionData* 
     SetSecondaryAction(ESecondaryControllerAction::BuildingPlacement);
 }
 
+void ASAS_PlayerController::EndBuildingPlacement()
+{
+    CurrentControllerSelectionMode = EControllerSelectionMode::Default;
+    ClearSecondaryAction();
+    
+    DestroyBuildingPlacementActor();
+    
+    OnExitBuildingPlacement.Broadcast();
+}
+
 void ASAS_PlayerController::SetSecondaryAction(ESecondaryControllerAction NewAction)
 {
     if (CurrentSecondaryAction != ESecondaryControllerAction::None) return;
@@ -656,7 +662,7 @@ void ASAS_PlayerController::SetSecondaryAction(ESecondaryControllerAction NewAct
     return;
 }
 
-void ASAS_PlayerController::ClearSecondayrAction()
+void ASAS_PlayerController::ClearSecondaryAction()
 {
     CurrentSecondaryAction = ESecondaryControllerAction::None;
     return;
@@ -684,6 +690,7 @@ void ASAS_PlayerController::DestroyBuildingPlacementActor()
 {
     if (BuildingPlacementActor && IsValid(BuildingPlacementActor))
     {
+
         BuildingPlacementActor->Destroy();
         BuildingPlacementActor = nullptr;
     }
@@ -754,9 +761,6 @@ bool ASAS_PlayerController::AttemptPlaceBuilding()
 
 
     UGameplayStatics::FinishSpawningActor(NewBuildJob, NewBuildingTransform);
-    
-    //TODO: Need to turn off building placement attached to the mouse
-
     return true;
 }
 

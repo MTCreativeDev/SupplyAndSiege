@@ -8,7 +8,8 @@
 #include "SAS_LogisticsMasterJob.generated.h"
 
 class USAS_LogisticsManagerComponent;
-class USAS_LogisticsWorkerAssignment; //Need to create
+class USAS_LogisticsWorkerAssignment;
+struct FSAS_WA_FailureContext;
 
 UCLASS()
 class SUPPLYANDSIEGE_API USAS_LogisticsMasterJob : public UObject
@@ -29,7 +30,7 @@ public:
 	virtual void NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignment* Assignment);
 
 	UFUNCTION(BlueprintCallable, Category = "Logistics Master Job")
-	virtual void NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment);
+	virtual void NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment, FSAS_WA_FailureContext FailureContext);
 
 	UFUNCTION(BlueprintCallable, Category = "Logistics Master Job")
 	virtual void MarkCancelled();

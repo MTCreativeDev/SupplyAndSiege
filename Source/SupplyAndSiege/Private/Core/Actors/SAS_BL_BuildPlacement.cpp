@@ -9,6 +9,8 @@
 
 void ASAS_BL_BuildPlacement::BeginPlay()
 {
+	Super::BeginPlay();
+
 	CheckPlacementValidity();
 	UpdateMeshMaterials();
 }

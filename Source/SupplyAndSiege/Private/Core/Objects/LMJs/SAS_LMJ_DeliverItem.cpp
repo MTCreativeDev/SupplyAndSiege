@@ -5,6 +5,7 @@
 #include "Core/Components/SAS_LogisticsManagerComponent.h"
 #include "Core/Objects/SAS_LogisticsWorkerAssignment.h" //Will likely want to replace with the specific child that handles deliveries
 #include "Misc/DataAssets/ItemDefinitionPrimaryData.h"
+#include "Misc/Structs/SAS_WA_FailureContext.h"
 
 void USAS_LMJ_DeliverItem::InitializeDeliverItemJob(USAS_LogisticsManagerComponent* InOwningLM, AActor* InRequestingActor, UItemDefinitionPrimaryData* InItemDefinition, int32 InRequestedAmount, int32 InPriority)
 {
@@ -51,7 +52,7 @@ void USAS_LMJ_DeliverItem::NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignm
 	//Likely need to update need
 }
 
-void USAS_LMJ_DeliverItem::NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment)
+void USAS_LMJ_DeliverItem::NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment, FSAS_WA_FailureContext FailureContext)
 {
 	if (!Assignment) return;
 

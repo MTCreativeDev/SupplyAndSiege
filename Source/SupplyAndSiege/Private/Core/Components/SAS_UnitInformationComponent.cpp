@@ -4,6 +4,7 @@
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "Core/Components/SAS_UnitManagerComponent.h"
 #include "AIController.h"
+#include "GameFramework/PlayerController.h"
 #include "Components/StateTreeComponent.h"
 #include "Misc/DataAssets/SAS_ResourceTypeData.h"
 #include "GameplayTagContainer.h"
@@ -145,6 +146,3 @@ bool USAS_UnitInformationComponent::UpdateCurrentOrderKeyAndLocation(FSAS_Resour
 	CurrentOrder.TargetLocation = TargetLocation;
 	return true;
 }
-
-
-

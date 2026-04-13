@@ -4,6 +4,7 @@
 #include "Core/Objects/SAS_LogisticsMasterJob.h"
 #include "Core/Components/SAS_LogisticsManagerComponent.h"
 #include "Core/Objects/SAS_LogisticsWorkerAssignment.h"
+#include "Misc/Structs/SAS_WA_FailureContext.h"
 
 void USAS_LogisticsMasterJob::InitializeJob(USAS_LogisticsManagerComponent* InOwningLM, ESAS_MasterJobType InJobType, int32 InPriority, AActor* InRequestingActor)
 {
@@ -43,7 +44,7 @@ void USAS_LogisticsMasterJob::NotifyAssignmentCancelled(USAS_LogisticsWorkerAssi
 	//Will need to re-post assignment
 }
 
-void USAS_LogisticsMasterJob::NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment)
+void USAS_LogisticsMasterJob::NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment, FSAS_WA_FailureContext FailureContext)
 {
 	RemoveAssignment(Assignment);
 	//Will need to re-post assignment and log failure / failure reason

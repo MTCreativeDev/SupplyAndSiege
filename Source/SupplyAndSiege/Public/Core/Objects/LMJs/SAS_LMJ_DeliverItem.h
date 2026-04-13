@@ -23,7 +23,7 @@ public:
 	virtual void AddAssignment(USAS_LogisticsWorkerAssignment* Assignment) override;
 	virtual void NotifyAssignmentCompleted(USAS_LogisticsWorkerAssignment* Assignment) override;
 	virtual void NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignment* Assignment) override;
-	virtual void NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment) override;
+	virtual void NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment, FSAS_WA_FailureContext FailureContext) override;
 
 	UFUNCTION(BlueprintPure, Category = "Logistics Master Job")
 	int32 GetRemainingAmount() const;

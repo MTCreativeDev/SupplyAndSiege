@@ -136,3 +136,48 @@ enum class ESAS_MasterJobStatus : uint8
     Failed   UMETA(DisplayName = "Failed"),
     Cancelled   UMETA(DisplayName = "Cancelled")
 };
+
+UENUM(BlueprintType)
+enum class ESAS_WorkerAssignmentType : uint8
+{
+    None   UMETA(DisplayName = "None"),
+    TransportItems   UMETA(DisplayName = "Deliver Item"),
+    Build   UMETA(DisplayName = "Build"),
+    DepositInventory   UMETA(DisplayName = "Deposit Inventory")
+};
+
+UENUM(BlueprintType)
+enum class ESAS_WorkerAssignmentStatus : uint8
+{
+    Pending   UMETA(DisplayName = "Pending"),
+    Active   UMETA(DisplayName = "Active"),
+    Completed   UMETA(DisplayName = "Completed"),
+    Failed   UMETA(DisplayName = "Failed"),
+    Cancelled   UMETA(DisplayName = "Cancelled")
+};
+
+UENUM(BlueprintType)
+enum class ESAS_PlayerScreenMode : uint8
+{
+    Default UMETA(DisplayName = "Default"),
+    SelectingBuildingToPlace UMETA(DisplayName = "Selecting Building to Place"),
+    Hidden UMETA(DisplayName = "Hidden")
+};
+
+UENUM(BlueprintType)
+enum class ESAS_WorkerAssignmentFailureReason: uint8
+{
+    None   UMETA(DisplayName = "None"),
+    InvlidWorker    UMETA(DisplayName = "Invalid Worker"),
+    InvalidSourceActor    UMETA(DisplayName = "Invalid Source Actor"),
+    InvlidTargetActor    UMETA(DisplayName = "Invalid Target Actor"),
+    InvalidItemDefinition    UMETA(DisplayName = "Invalid Item Definition"),
+    InvalidItemAmount   UMETA(DisplayName = "Invalid Item Amount"),
+    UnableToNavigateToSourceActor    UMETA(DisplayName = "Unable to Navigate to Source Actor"),
+    UnableToNavigateToTargetActor    UMETA(DisplayName = "Unable to Navigate to Target Actor"),
+    SourceInventoryMissing  UMETA(DisplayName = "Source Actor Inventory Missing"),
+    TargetInventoryMissing  UMETA(DisplayName = "Target Actor Inventory Missing"),
+    FailedReservationOutbound   UMETA(DisplayName = "Failed to create Outbound Inventory Reservation"),
+    FailedReservationInbound   UMETA(DisplayName = "Failed to create Inbound Inventory Reservation"),
+    Unknown UMETA(DisplayName = "Unknown")
+};

@@ -5,6 +5,7 @@
 #include "Core/Components/SAS_ResourceManagerComponent.h"
 #include "Core/Components/SAS_InventoryManagerComponent.h"
 #include "Core/Components/SAS_IslandManagerComponent.h"
+#include "Core/Components/SAS_LogisticsManagerComponent.h"
 
 ASAS_GameState::ASAS_GameState()
 {
@@ -19,6 +20,8 @@ ASAS_GameState::ASAS_GameState()
 	ResourceManagerComponent = CreateDefaultSubobject<USAS_ResourceManagerComponent>(TEXT("ResourceManagerComponent"));
 
 	IslandManagerComponent = CreateDefaultSubobject<USAS_IslandManagerComponent>(TEXT("IslandManagerComponent"));
+
+	LogisticsManagerComponent = CreateDefaultSubobject<USAS_LogisticsManagerComponent>(TEXT("LogisticsManagerComponent"));
 
 }
 
