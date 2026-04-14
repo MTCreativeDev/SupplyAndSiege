@@ -15,7 +15,7 @@ struct FSAS_LogisticsJobWidgetInfo;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnLogisticsMasterJobUpdated, USAS_LogisticsMasterJob*);
 
-UCLASS()
+UCLASS(BlueprintType)
 class SUPPLYANDSIEGE_API USAS_LogisticsMasterJob : public UObject
 {
 	GENERATED_BODY()

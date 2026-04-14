@@ -7,11 +7,16 @@
 
 void USAS_LogisticsDebugWidget::NativeConstruct()
 {
-	Super::NativeConstruct();
 
 	UWorld* World = GetWorld();
-	if (!World) return;
+	if (!World)
+	{
+		Super::NativeConstruct();
+		return;
+	}
 
 	AGameStateBase* GS = World->GetGameState();
 	LogisticsManagerComponent = GS->FindComponentByClass< USAS_LogisticsManagerComponent>();
+
+	Super::NativeConstruct();
 }

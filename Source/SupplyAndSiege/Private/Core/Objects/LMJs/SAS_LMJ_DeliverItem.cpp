@@ -92,7 +92,7 @@ FSAS_LogisticsJobWidgetInfo USAS_LMJ_DeliverItem::GetJobInfoForWidget() const
 	WidgetInfo.ReservedAmount = RequestedAmount - GetUnreservedAmount();
 	WidgetInfo.DeliveredAmount = RequestedAmount - GetRemainingAmount();
 	
-	return FSAS_LogisticsJobWidgetInfo();
+	return WidgetInfo;
 }
 
 int32 USAS_LMJ_DeliverItem::GetRemainingAmount() const

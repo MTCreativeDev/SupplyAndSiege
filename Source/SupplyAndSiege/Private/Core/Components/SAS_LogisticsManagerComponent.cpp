@@ -38,6 +38,8 @@ void USAS_LogisticsManagerComponent::CreateBuildSiteResourceDeliveryJob(const FS
 		NewJob->InitializeDeliverItemJob(this, ResourceDeliveryInformation.BuildSite, Pair.Key, Pair.Value, ResourceDeliveryInformation.Priority);
 		NewJob->OnLogisticsMasterJobUpdated.AddUObject(this, &USAS_LogisticsManagerComponent::HandleLogisticsMasterJobUpdated);
 		ActiveJobs.Add(NewJob);
+		NotifyLogisticsMasterJobUpdated.Broadcast(NewJob);
+
 	}
 }
 
