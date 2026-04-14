@@ -6,6 +6,7 @@
 #include "Core/Objects/SAS_LogisticsWorkerAssignment.h" //Will likely want to replace with the specific child that handles deliveries
 #include "Misc/DataAssets/ItemDefinitionPrimaryData.h"
 #include "Misc/Structs/SAS_WA_FailureContext.h"
+#include "Misc/Structs/SAS_LogisticsJobWidgetInfo.h"
 
 void USAS_LMJ_DeliverItem::InitializeDeliverItemJob(USAS_LogisticsManagerComponent* InOwningLM, AActor* InRequestingActor, UItemDefinitionPrimaryData* InItemDefinition, int32 InRequestedAmount, int32 InPriority)
 {
@@ -15,6 +16,24 @@ void USAS_LMJ_DeliverItem::InitializeDeliverItemJob(USAS_LogisticsManagerCompone
 	RequestedAmount = FMath::Max(0, InRequestedAmount);
 	DeliveredAmount = 0;
 	ReservedAmount = 0;
+
+	//debug
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			3.f,
+			FColor::Green,
+			FString::Printf(
+				TEXT("Item: %s | Requested: %d | Delivered: %d | Reserved: %d"),
+				ItemDefinition ? *ItemDefinition->GetName() : TEXT("None"),
+				RequestedAmount,
+				DeliveredAmount,
+				ReservedAmount
+			)
+		);
+	}
 }
 
 void USAS_LMJ_DeliverItem::AddAssignment(USAS_LogisticsWorkerAssignment* Assignment)
@@ -62,6 +81,18 @@ void USAS_LMJ_DeliverItem::NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment
 
 	//Likely need to update need
 	//Want to log the failure. This should be visible in UI
+}
+
+FSAS_LogisticsJobWidgetInfo USAS_LMJ_DeliverItem::GetJobInfoForWidget() const
+{
+	FSAS_LogisticsJobWidgetInfo WidgetInfo = Super::GetJobInfoForWidget();
+
+	WidgetInfo.RequestedAmount = RequestedAmount;
+	WidgetInfo.ItemDefinition = ItemDefinition;
+	WidgetInfo.ReservedAmount = RequestedAmount - GetUnreservedAmount();
+	WidgetInfo.DeliveredAmount = RequestedAmount - GetRemainingAmount();
+	
+	return FSAS_LogisticsJobWidgetInfo();
 }
 
 int32 USAS_LMJ_DeliverItem::GetRemainingAmount() const

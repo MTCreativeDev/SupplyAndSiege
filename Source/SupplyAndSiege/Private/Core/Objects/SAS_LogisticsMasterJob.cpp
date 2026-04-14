@@ -5,6 +5,7 @@
 #include "Core/Components/SAS_LogisticsManagerComponent.h"
 #include "Core/Objects/SAS_LogisticsWorkerAssignment.h"
 #include "Misc/Structs/SAS_WA_FailureContext.h"
+#include "Misc/Structs/SAS_LogisticsJobWidgetInfo.h"
 
 void USAS_LogisticsMasterJob::InitializeJob(USAS_LogisticsManagerComponent* InOwningLM, ESAS_MasterJobType InJobType, int32 InPriority, AActor* InRequestingActor)
 {
@@ -64,6 +65,17 @@ void USAS_LogisticsMasterJob::MarkCancelled()
 bool USAS_LogisticsMasterJob::IsFinished() const
 {
 	return MasterJobStatus == ESAS_MasterJobStatus::Completed || MasterJobStatus == ESAS_MasterJobStatus::Failed || MasterJobStatus == ESAS_MasterJobStatus::Cancelled;
+}
+
+FSAS_LogisticsJobWidgetInfo USAS_LogisticsMasterJob::GetJobInfoForWidget() const
+{
+	FSAS_LogisticsJobWidgetInfo WidgetInfo;
+	
+	WidgetInfo.RequestingActor = RequestingActor;
+	WidgetInfo.JobType = MasterJobType;
+	WidgetInfo.JobStatus = MasterJobStatus;
+	
+	return WidgetInfo;
 }
 
 void USAS_LogisticsMasterJob::RemoveAssignment(USAS_LogisticsWorkerAssignment* Assignment)

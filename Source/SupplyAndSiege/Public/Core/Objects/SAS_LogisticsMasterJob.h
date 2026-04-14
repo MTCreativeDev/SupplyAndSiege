@@ -10,6 +10,10 @@
 class USAS_LogisticsManagerComponent;
 class USAS_LogisticsWorkerAssignment;
 struct FSAS_WA_FailureContext;
+struct FSAS_LogisticsJobWidgetInfo;
+
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnLogisticsMasterJobUpdated, USAS_LogisticsMasterJob*);
 
 UCLASS()
 class SUPPLYANDSIEGE_API USAS_LogisticsMasterJob : public UObject
@@ -37,6 +41,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Logistics Master Job")
 	bool IsFinished() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Logistics Master Job")
+	virtual FSAS_LogisticsJobWidgetInfo GetJobInfoForWidget() const;
+
+	//Dispatchers
+
+	FOnLogisticsMasterJobUpdated OnLogisticsMasterJobUpdated;
 
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Logistics Master Job")

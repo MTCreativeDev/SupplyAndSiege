@@ -13,6 +13,18 @@ struct FSAS_ResourceDeliveryRequest
 {
 	GENERATED_BODY()
 
+	bool IsValid() const
+	{
+		if (!BuildSite) return false;
+		if (ResourceCost.IsEmpty()) return false;
+		for (const TPair<TObjectPtr<UItemDefinitionPrimaryData>, int32>& Pair : ResourceCost)
+		{
+			if (!Pair.Key) return false;
+			if (Pair.Value <= 0) return false;
+		}
+		return true;
+	}
+
 	UPROPERTY(BlueprintReadOnly, Category = "Logistics")
 	TObjectPtr<ASAS_BL_BuildJob> BuildSite = nullptr;
 

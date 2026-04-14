@@ -10,6 +10,7 @@
 class USAS_UnitInformationComponent;
 class USAS_InventoryComponent;
 class USAS_InventoryProfileData;
+class USAS_LogisticsMasterJob;
 
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_BL_BuildJob : public ASAS_BuildingLayout
@@ -20,6 +21,10 @@ public:
 	ASAS_BL_BuildJob();
 
 	void InitializeBuildJob(ESAS_Team NewAssignedTeam);
+
+
+private:
+	void RequestResourceDeliveryJobs();
 
 protected:
 
@@ -34,5 +39,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Building_Construction")
 	TObjectPtr<UMaterialInterface> BuildingUnderConstructionMaterial;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Building_Construction")
+	TArray<TObjectPtr<USAS_LogisticsMasterJob>>ItemDeliveryJobs;
 
 };

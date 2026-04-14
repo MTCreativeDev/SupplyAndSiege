@@ -25,6 +25,8 @@ public:
 	virtual void NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignment* Assignment) override;
 	virtual void NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment, FSAS_WA_FailureContext FailureContext) override;
 
+	virtual FSAS_LogisticsJobWidgetInfo GetJobInfoForWidget() const override;
+
 	UFUNCTION(BlueprintPure, Category = "Logistics Master Job")
 	int32 GetRemainingAmount() const;
 

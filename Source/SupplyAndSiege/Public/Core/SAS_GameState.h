@@ -22,7 +22,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	USAS_InventoryManagerComponent* GetInventoryManagerForTeam(ESAS_Team Team) const;
-
+	
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
