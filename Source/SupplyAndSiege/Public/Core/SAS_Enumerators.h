@@ -61,6 +61,20 @@ enum class ESecondaryControllerAction : uint8
 };
 
 UENUM(BlueprintType)
+enum class ERightClickAction : uint8
+{
+    None    UMETA(DisplayName = "None"),
+    UnitAction  UMETA(DisplayName = "Unit Action")
+};
+
+UENUM(BlueprintType)
+enum class EEscapeAction : uint8
+{
+    PauseGame    UMETA(DisplayName = "PauseGame"),
+    GoBack  UMETA(DisplayName = "GoBack")
+};
+
+UENUM(BlueprintType)
 enum class EControllerSelectionMode : uint8
 {
     Default    UMETA(DisplayName = "Default"),
@@ -161,7 +175,8 @@ enum class ESAS_PlayerScreenMode : uint8
 {
     Default UMETA(DisplayName = "Default"),
     SelectingBuildingToPlace UMETA(DisplayName = "Selecting Building to Place"),
-    Hidden UMETA(DisplayName = "Hidden")
+    Hidden UMETA(DisplayName = "Hidden"),
+    ViewingLogistics UMETA(DisplayName = "Viewing Logistics")
 };
 
 UENUM(BlueprintType)

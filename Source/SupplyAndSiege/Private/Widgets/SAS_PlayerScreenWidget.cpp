@@ -81,3 +81,15 @@ void UPlayerScreenWidget::BP_OnSelectionInventoryChanged_Implementation(ESAS_Sel
 {
 	//handled in BP
 }
+
+void UPlayerScreenWidget::NotifyControllerCurrentlyInSubMenu()
+{
+	if (!PlayerController) return;
+	PlayerController->UpdateEscapeAction(EEscapeAction::GoBack);
+}
+
+void UPlayerScreenWidget::NotifyControllerNotInSubMenu()
+{
+	if (!PlayerController) return;
+	PlayerController->UpdateEscapeAction(EEscapeAction::PauseGame);
+}

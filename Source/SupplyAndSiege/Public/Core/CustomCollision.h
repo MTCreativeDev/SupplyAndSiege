@@ -18,5 +18,6 @@ namespace SAS_CollisionProfiles
 {
 	static const FName InventoryCheck(TEXT("InventoryCheck"));
 	static const FName BuildingBounds(TEXT("BuildingBounds"));
+	static const FName BuildingMesh(TEXT("BuildingMesh"));
 	static const FName IslandBounds(TEXT("IslandBounds"));
 }

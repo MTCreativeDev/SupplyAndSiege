@@ -20,6 +20,7 @@ class ASAS_BL_BuildJob;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FExitBuildingPlacement);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGoBackPressed);
 
 //Struct used to return the MousePosition and the MovementAxis
 USTRUCT(BlueprintType)
@@ -63,9 +64,14 @@ public:
 	void StartBuildingPlacement(USAS_BuildingDefinitionData* BuildingToPlace);
 	void EndBuildingPlacement();
 
+	void UpdateEscapeAction(EEscapeAction NewAction);
+
 	//Dispatchers
 	UPROPERTY(BlueprintAssignable, Category = "Building_Placement")
 	FExitBuildingPlacement OnExitBuildingPlacement;
+
+	UPROPERTY(BlueprintAssignable, Category = "Player_UI")
+	FOnGoBackPressed OnGoBackPressed;
 
 protected:
 
@@ -94,6 +100,8 @@ protected:
 
 	void RightClickStarted();
 	void RightClickCompleted();
+
+	void EscapeButtonPressed();
 
 	UFUNCTION(BlueprintCallable) 
 	void TogglePaused();
@@ -148,6 +156,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller_State")
 	EControllerSelectionMode CurrentControllerSelectionMode = EControllerSelectionMode::Default;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller_State")
+	ERightClickAction CurrentRightClickAction = ERightClickAction::None;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller_State")
+	EEscapeAction CurrentEscapeAction = EEscapeAction::PauseGame;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> IMC_PlayerMovement;

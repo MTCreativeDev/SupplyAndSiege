@@ -42,6 +42,11 @@ protected:
 	void BP_OnSelectionInventoryChanged(ESAS_SelectionInventoryMode Mode, const TMap<FPrimaryAssetId, int32>& Totals);
 	virtual void BP_OnSelectionInventoryChanged_Implementation(ESAS_SelectionInventoryMode Mode, const TMap<FPrimaryAssetId, int32>& Totals);
 
+	UFUNCTION(BlueprintCallable, Category = "Player_UI")
+	void NotifyControllerCurrentlyInSubMenu();
+	UFUNCTION(BlueprintCallable, Category = "Player_UI")
+	void NotifyControllerNotInSubMenu();
+
 private:
 
 

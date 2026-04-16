@@ -172,7 +172,7 @@ void ASAS_PlayerController::SetupInputComponent()
     EIC->BindAction(IA_RightClick, ETriggerEvent::Completed, this, &ASAS_PlayerController::RightClickCompleted);
     EIC->BindAction(IA_RightClick, ETriggerEvent::Canceled, this, &ASAS_PlayerController::RightClickCompleted);
 
-    EIC->BindAction(IA_PauseGame, ETriggerEvent::Started, this, &ASAS_PlayerController::TogglePaused);
+    EIC->BindAction(IA_PauseGame, ETriggerEvent::Started, this, &ASAS_PlayerController::EscapeButtonPressed);
 }
 
 void ASAS_PlayerController::MoveUpdated(const FInputActionValue& Value)
@@ -445,6 +445,7 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
     //TODO: Set up the logic to check if the player is trying to select additional units instead of only select. E.g. holding shift or something like that.
     if (!UnitManagerComponent) return;
     UnitManagerComponent->ClearAllSelectedUnits();
+    CurrentRightClickAction = ERightClickAction::None;
 
     FVector WorldOrigin;
     FVector WorldDirection;
@@ -474,6 +475,7 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
         if (!UnitInformationComponent) return;
     
         UnitManagerComponent->AddSelectedUnit(UnitInformationComponent);
+        CurrentRightClickAction = ERightClickAction::UnitAction;
 
     }
 
@@ -487,6 +489,7 @@ void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const 
     if (!IsInputKeyDown(EKeys::LeftShift) && !IsInputKeyDown(EKeys::RightShift))
     {
         UnitManagerComponent->ClearAllSelectedUnits();
+        CurrentRightClickAction = ERightClickAction::None;
     }
     
     const float MinX = FMath::Min(SelectionStartMousePos.X, CurrentSelectionMousePos.X);
@@ -510,6 +513,8 @@ void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const 
         if (!InfoComponent) continue;
 
         UnitManagerComponent->AddSelectedUnit(InfoComponent);
+        CurrentRightClickAction = ERightClickAction::UnitAction;
+        //TODO: Have the right click action get updated after all of this rather than each time.
         //TODO: Set up a process to only have the unit manager broadcast an update after all of the selected units are complete. Right now this will cause the UI to update x amount of times based on units selected.
     }
 }
@@ -517,49 +522,91 @@ void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const 
 void ASAS_PlayerController::RightClickStarted()
 {
 
-    float MouseX, MouseY;
-    if (!GetMousePosition(MouseX, MouseY)) return;
-
-    FVector WorldOrigin;
-    FVector WorldDirection;
-
-    if (!DeprojectScreenPositionToWorld(MouseX, MouseY, WorldOrigin, WorldDirection)) return;
-
-    const FVector TraceStart = WorldOrigin;
-    const FVector TraceEnd = WorldOrigin + (WorldDirection * 100000.f);
-
-    FHitResult Hit;
-    FCollisionQueryParams Params;
-    Params.bTraceComplex = true;
-
-    const bool bHit = GetWorld()->LineTraceSingleByChannel(
-        Hit,
-        TraceStart,
-        TraceEnd,
-        Trace_Interactable,
-        Params
-    );
-
-    //Debug line trace to show where we clicked
-    DrawDebugLine(
-        GetWorld(),
-        TraceStart,
-        TraceEnd,
-        FColor::Blue,
-        false,
-        2.f,
-        0,
-        .1
-    );
-
-    if (bHit && Hit.GetActor())
+    switch (CurrentRightClickAction)
     {
-        UnitManagerComponent->RightClickReceived(Hit);
+    case ERightClickAction::None:
+    {
+        break;
+    }
+    case ERightClickAction::UnitAction:
+    {
+        float MouseX, MouseY;
+        if (!GetMousePosition(MouseX, MouseY)) return;
+
+        FVector WorldOrigin;
+        FVector WorldDirection;
+
+        if (!DeprojectScreenPositionToWorld(MouseX, MouseY, WorldOrigin, WorldDirection)) return;
+
+        const FVector TraceStart = WorldOrigin;
+        const FVector TraceEnd = WorldOrigin + (WorldDirection * 100000.f);
+
+        FHitResult Hit;
+        FCollisionQueryParams Params;
+        Params.bTraceComplex = true;
+
+        const bool bHit = GetWorld()->LineTraceSingleByChannel(
+            Hit,
+            TraceStart,
+            TraceEnd,
+            Trace_Interactable,
+            Params
+        );
+
+        //Debug line trace to show where we clicked
+        DrawDebugLine(
+            GetWorld(),
+            TraceStart,
+            TraceEnd,
+            FColor::Blue,
+            false,
+            2.f,
+            0,
+            .1
+        );
+
+        if (bHit && Hit.GetActor())
+        {
+            UnitManagerComponent->RightClickReceived(Hit);
+        }
+        break;
+
+    }
+
+    default:
+    {
+        break;
+    }
+
     }
 }
 
 void ASAS_PlayerController::RightClickCompleted()
 {
+}
+
+void ASAS_PlayerController::EscapeButtonPressed()
+{
+    switch (CurrentEscapeAction)
+    {
+    case EEscapeAction::PauseGame:
+        TogglePaused();
+        break;
+
+    case EEscapeAction::GoBack:
+        OnGoBackPressed.Broadcast();
+
+        if (CurrentSecondaryAction == ESecondaryControllerAction::BuildingPlacement)
+        {
+
+            EndBuildingPlacement();
+        }
+
+        break;
+
+    default:
+        break;
+    }
 }
 
 void ASAS_PlayerController::TogglePaused()
@@ -653,6 +700,11 @@ void ASAS_PlayerController::EndBuildingPlacement()
     DestroyBuildingPlacementActor();
     
     OnExitBuildingPlacement.Broadcast();
+}
+
+void ASAS_PlayerController::UpdateEscapeAction(EEscapeAction NewAction)
+{
+    CurrentEscapeAction = NewAction;
 }
 
 void ASAS_PlayerController::SetSecondaryAction(ESecondaryControllerAction NewAction)
