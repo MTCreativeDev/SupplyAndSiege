@@ -13,14 +13,19 @@ void USAS_IslandManagerComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-int32 USAS_IslandManagerComponent::GetHealth(USAS_IslandComponent* IslandComponent) const
+int32 USAS_IslandManagerComponent::GetCaeliumDeposits(USAS_IslandComponent* IslandComponent) const
 {
-	return IslandComponent->GetHealth();
+	return IslandComponent->GetCaeliumDeposits();
 }
 
-bool USAS_IslandManagerComponent::IsDepleted(const int32 islandHealth) const
+bool USAS_IslandManagerComponent::IsDepleted(const int32 IslandCaelium) const
 {
-	return islandHealth <= 0;
+	return IslandCaelium <= 0;
+}
+
+bool USAS_IslandManagerComponent::CanIslandFloat(const int32 IslandCaelium) const
+{
+	return IslandCaelium >= MinCaeliumToFloat;
 }
 
 void USAS_IslandManagerComponent::AddIslandToQueue(USAS_IslandComponent* IslandComponent)
@@ -42,12 +47,13 @@ TArray<USAS_IslandComponent*> USAS_IslandManagerComponent::GetIslandComponents()
 	return ValidIslands;
 }
 
-void USAS_IslandManagerComponent::CheckIslandHealth(USAS_IslandComponent* IslandComponent)
+void USAS_IslandManagerComponent::CheckIslandCaeliumDeposits(USAS_IslandComponent* IslandComponent)
 {
 	if (!IslandComponent) return;
-	int32 health = GetHealth(IslandComponent); 
-	bool isDepleted = IsDepleted(health);
-	if (isDepleted)
+	int32 Caelium = GetCaeliumDeposits(IslandComponent); 
+	bool IsCaeliumDepleted = IsDepleted(Caelium);
+	bool EnoughCaelium = CanIslandFloat(Caelium);
+	if (IsCaeliumDepleted || !EnoughCaelium)
 	{
 		RemoveIslandFromQueue(IslandComponent);
 	}
@@ -57,6 +63,11 @@ void USAS_IslandManagerComponent::RemoveIslandFromQueue(USAS_IslandComponent* Is
 {
 	if (!IslandComponent) return;
 	IslandQueue.Remove(TWeakObjectPtr<USAS_IslandComponent>(IslandComponent));
+	if (AActor* IslandActor = IslandComponent->GetOwner())
+	{
+		IslandComponent->PlayFallAnimation();
+		IslandActor->Destroy();
+	}
 }
 
 void USAS_IslandManagerComponent::CleanupIslandQueue()

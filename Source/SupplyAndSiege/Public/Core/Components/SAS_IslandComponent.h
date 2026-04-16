@@ -19,7 +19,13 @@ public:
 	FGuid GetIslandID() const;
 
 	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
-	int32 GetHealth() const;
+	int32 GetCaeliumDeposits() const;
+
+	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
+	int32 MineCaeliumDeposits();
+
+	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
+	void PlayFallAnimation();
 
 protected:
 	virtual void BeginPlay() override;
@@ -27,9 +33,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Island")
 	FGuid IslandID;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite,Category = "SAS_Island")
-	int32 Health = 100;
-
 public:	
+	// TODO - Update to finalized value for starting Caelium of an Island
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SAS_Island")
+	int32 CaeliumRemaining = 100;
 
+	// TODO - Update with finalized value of how much caelium should be removed when being mined.
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SAS_Island")
+	int32 CaeliumMined = 1;
 };

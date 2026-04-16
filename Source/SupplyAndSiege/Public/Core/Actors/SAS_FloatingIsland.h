@@ -23,6 +23,8 @@ public:
 	void SetIslandDefinition(USAS_IslandDefinitionData* NewIslandDefinition);
 
 protected:
+	virtual void BeginPlay() override;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Island")
 	USceneComponent* SceneRoot;
 
