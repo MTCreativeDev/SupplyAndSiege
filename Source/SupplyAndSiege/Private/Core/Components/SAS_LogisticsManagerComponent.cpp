@@ -43,5 +43,15 @@ void USAS_LogisticsManagerComponent::CreateBuildSiteResourceDeliveryJob(const FS
 	}
 }
 
+void USAS_LogisticsManagerComponent::RegisterAvailableWorker(USAS_WorkerControlComponent* Worker)
+{
+	AvailableWorkers.Add(Worker);
+}
+
+void USAS_LogisticsManagerComponent::UnregisterAvailableWorker(USAS_WorkerControlComponent* Worker)
+{
+	AvailableWorkers.Remove(Worker);
+}
+
 
 
