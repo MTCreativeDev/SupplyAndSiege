@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "Misc/Structs/SAS_IslandHealth.h"
 #include "SAS_IslandDefinitionData.generated.h"
 
 class UStaticMesh;
@@ -26,8 +25,12 @@ class SUPPLYANDSIEGE_API USAS_IslandDefinitionData : public UPrimaryDataAsset
 		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		UTexture2D* Icon;
 
-		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		FSAS_IslandHealth IslandHealth;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 CaeliumDeposits = 100;
+
+		// FOR DEBUGGING
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool CanFloat;
 
 		// TODO - Update FVector values with real numbers
 		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

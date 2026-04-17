@@ -31,9 +31,20 @@ ASAS_FloatingIsland::ASAS_FloatingIsland()
 	IslandLogic = CreateDefaultSubobject<USAS_IslandComponent>(TEXT("IslandLogic"));
 }
 
+void ASAS_FloatingIsland::BeginPlay()
+{
+	Super::BeginPlay();
+	ApplyDefinitionToComponents();
+}
+
 void ASAS_FloatingIsland::ApplyDefinitionToComponents()
 {
 	if (!IslandDefinition) return;
+	if (!IslandDefinition->IslandMesh)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Island %s has no mesh!"), *GetName());
+		return;
+	}
 	if (!IslandAreaCollision || !IslandMesh) return;
 
 	IslandAreaCollision->SetBoxExtent(IslandDefinition->IslandAreaCollisionExtents);
@@ -41,6 +52,8 @@ void ASAS_FloatingIsland::ApplyDefinitionToComponents()
 
 	IslandMesh->SetStaticMesh(IslandDefinition->IslandMesh);
 	IslandMesh->SetRelativeTransform(IslandDefinition->IslandMeshRelativeTransform);
+
+	IslandLogic->CaeliumRemaining = IslandDefinition->CaeliumDeposits;
 }
 
 void ASAS_FloatingIsland::SetIslandDefinition(USAS_IslandDefinitionData* NewIslandDefinition)

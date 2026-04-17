@@ -17,10 +17,10 @@ public:
 	USAS_IslandManagerComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
-	int32 GetHealth(USAS_IslandComponent* IslandComponent) const;
+	int32 GetCaeliumDeposits(USAS_IslandComponent* IslandComponent) const;
 	
 	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
-	bool IsDepleted(const int32 islandHealth) const;
+	bool IsDepleted(const int32 IslandCaelium) const;
 
 	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
 	void AddIslandToQueue(USAS_IslandComponent* IslandComponent);
@@ -35,12 +35,17 @@ public:
 	TArray<USAS_IslandComponent*> GetIslandComponents() const;
 
 	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
-	void CheckIslandHealth(USAS_IslandComponent* IslandComponent);
+	void CheckIslandCaeliumDeposits(USAS_IslandComponent* IslandComponent);
+
+	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
+	bool CanIslandFloat(const int32 IslandCaelium) const;
 	
 protected:
 	virtual void BeginPlay() override;
 
 public:	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SAS_Island")
+	int32 MinCaeliumToFloat = 10;
 
 private:
 	UPROPERTY()
