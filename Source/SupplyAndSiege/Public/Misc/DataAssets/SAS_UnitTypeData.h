@@ -9,6 +9,7 @@
 
 
 class UTexture2D;
+class USAS_HealthDefinitionData;
 /**
  * 
  */
@@ -30,5 +31,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UTexture2D* Icon = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	USAS_HealthDefinitionData* HealthDefinition = nullptr;
 
 };
