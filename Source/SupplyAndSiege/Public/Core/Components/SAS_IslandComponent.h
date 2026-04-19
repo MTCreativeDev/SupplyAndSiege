@@ -33,6 +33,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Island")
 	FGuid IslandID;
 
+private:
+	UPROPERTY()
+    AActor* IslandActor = nullptr;
+
+	UPROPERTY()
+	class USAS_IslandManagerComponent* IslandManager = nullptr;
+
 public:	
 	// TODO - Update to finalized value for starting Caelium of an Island
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SAS_Island")

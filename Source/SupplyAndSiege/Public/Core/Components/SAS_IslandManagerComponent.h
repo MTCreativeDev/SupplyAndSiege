@@ -40,12 +40,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
 	bool CanIslandFloat(const int32 IslandCaelium) const;
 	
+	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
+	void UpdateIslandStatuses();
+
 protected:
 	virtual void BeginPlay() override;
 
 public:	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SAS_Island")
 	int32 MinCaeliumToFloat = 10;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SAS_Island")
+	FTimerHandle IslandCheckTimerHandle;
 
 private:
 	UPROPERTY()
