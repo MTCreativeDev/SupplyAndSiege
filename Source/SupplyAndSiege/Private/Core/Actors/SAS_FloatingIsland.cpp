@@ -54,6 +54,7 @@ void ASAS_FloatingIsland::ApplyDefinitionToComponents()
 	IslandMesh->SetRelativeTransform(IslandDefinition->IslandMeshRelativeTransform);
 
 	IslandLogic->CaeliumRemaining = IslandDefinition->CaeliumDeposits;
+	UE_LOG(LogTemp, Display, TEXT("Island display name %s - %s"), *GetName(), *IslandDefinition->DisplayName.ToString());
 }
 
 void ASAS_FloatingIsland::SetIslandDefinition(USAS_IslandDefinitionData* NewIslandDefinition)
