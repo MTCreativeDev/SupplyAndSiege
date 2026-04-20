@@ -5,5 +5,6 @@
 
 namespace SASGameplayTags
 {
-	UE_DEFINE_GAMEPLAY_TAG(StateTree_Villager_HarvestOrder, "StateTree.Villager.HarvestOrder");
+	UE_DEFINE_GAMEPLAY_TAG(StateTree_Pawn_MoveOrder, "StateTree.Pawn.MoveOrder");
+	UE_DEFINE_GAMEPLAY_TAG(StateTree_Worker_HarvestOrder, "StateTree.Worker.HarvestOrder");
 }

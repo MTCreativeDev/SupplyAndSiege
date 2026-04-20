@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Core/SAS_Enumerators.h"
 #include "Misc/Structs/SAS_ResourceKey.h"
 #include "SAS_WorkerControlComponent.generated.h"
 
@@ -11,6 +12,7 @@ class USAS_LogisticsManagerComponent;
 class USAS_LogisticsWorkerAssignment;
 class USAS_UnitInformationComponent;
 class USAS_ResourceTypeData;
+struct FGameplayTag;
 
 
 UENUM(BlueprintType)
@@ -58,7 +60,10 @@ public:
 	virtual void NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignment* CancelledAssignment);
 
 	UFUNCTION(BlueprintCallable, Category = "Worker Control")
-	ESAS_WorkerControlState GetCurrentControlState() const { return CurrentControlState; }
+	ESAS_WorkerControlState GetCurrentWorkerControlState() const { return CurrentWorkerControlState; }
+
+	UFUNCTION(BlueprintCallable, Category = "Worker Control")
+	bool UpdateCurrentHarvestKeyAndLocation(FSAS_ResourceKey ResourceKey, FVector TargetLocation);
 
 protected:
 
@@ -71,6 +76,9 @@ protected:
 
 	virtual void BeginManualMove_Internal(const FVector& WorldLocation);
 	virtual void BeginManualHarvest_Internal(USAS_ResourceTypeData* ResourceType, FSAS_ResourceKey ResourceKey, const FVector& ResourceLocation);
+
+	void SendStateTreeEvent(const FGameplayTag& EventTag);
+
 
 public:	
 
@@ -85,7 +93,16 @@ protected:
 	TObjectPtr<USAS_LogisticsWorkerAssignment> ActiveAssignment = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Worker Control")
-	ESAS_WorkerControlState CurrentControlState = ESAS_WorkerControlState::Idle;
+	ESAS_WorkerControlState CurrentWorkerControlState = ESAS_WorkerControlState::Idle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Worker Control")
+	USAS_ResourceTypeData* CurrentHarvestResourceType = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Worker Control")
+	FSAS_ResourceKey CurrentHarvestResourceKey;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Worker Control")
+	FVector CurrentHarvestTargetLocation = FVector::ZeroVector;
 
 		
 };

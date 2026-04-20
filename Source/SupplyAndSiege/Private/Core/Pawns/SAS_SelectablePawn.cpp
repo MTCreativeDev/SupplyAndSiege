@@ -5,6 +5,7 @@
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "Core/Components/SAS_UnitControlComponent.h"
 
 
 ASAS_SelectablePawn::ASAS_SelectablePawn()
@@ -41,6 +42,22 @@ void ASAS_SelectablePawn::BeginPlay()
 	Super::BeginPlay();
 
 	UnitInformationComponent->SetTeam(AssignTeamOnSpawn);
+
+	USAS_UnitControlComponent* ControlComp = FindComponentByClass<USAS_UnitControlComponent>();
+	if (!ControlComp)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				5.f,
+				FColor::Red,
+				FString::Printf(TEXT("%s is missing UnitControlComponent"), *GetNameSafe(GetOwner()))
+			);
+		}
+
+		ensureMsgf(false, TEXT("%s is missing UnitControlComponent"), *GetNameSafe(GetOwner()));
+	}
 	
 }
 

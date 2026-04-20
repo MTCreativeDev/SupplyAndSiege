@@ -5,7 +5,11 @@
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "Core/Objects/SAS_LogisticsWorkerAssignment.h"
 #include "Core/Components/SAS_LogisticsManagerComponent.h"
+#include "Core/SAS_GameplayTagContainer.h"
+#include "Components/StateTreeComponent.h"
+#include "AIController.h"
 #include "GameFramework/GameStateBase.h"
+#include "GameFramework/Pawn.h"
 
 USAS_WorkerControlComponent::USAS_WorkerControlComponent()
 {
@@ -16,7 +20,7 @@ USAS_WorkerControlComponent::USAS_WorkerControlComponent()
 ESAS_WorkerRequestResult USAS_WorkerControlComponent::RequestManualMove(const FVector& WorldLocation)
 {
 	if (!UnitInformation) return ESAS_WorkerRequestResult::Rejected;
-	if (CurrentControlState == ESAS_WorkerControlState::Transition) return ESAS_WorkerRequestResult::Rejected;
+	if (CurrentWorkerControlState == ESAS_WorkerControlState::Transition) return ESAS_WorkerRequestResult::Rejected;
 	if (!ExitLmControlForPlayerOverride()) return ESAS_WorkerRequestResult::Rejected;
 
 	BeginManualMove_Internal(WorldLocation);
@@ -27,7 +31,7 @@ ESAS_WorkerRequestResult USAS_WorkerControlComponent::RequestManualMove(const FV
 ESAS_WorkerRequestResult USAS_WorkerControlComponent::RequestManualHarvest(USAS_ResourceTypeData* ResourceType, FSAS_ResourceKey ResourceKey, const FVector& ResourceLocation)
 {
 	if (!UnitInformation || !ResourceType) return ESAS_WorkerRequestResult::Rejected;
-	if (CurrentControlState == ESAS_WorkerControlState::Transition) return ESAS_WorkerRequestResult::Rejected;
+	if (CurrentWorkerControlState == ESAS_WorkerControlState::Transition) return ESAS_WorkerRequestResult::Rejected;
 	if (!ExitLmControlForPlayerOverride()) return ESAS_WorkerRequestResult::Rejected;
 
 	BeginManualHarvest_Internal(ResourceType, ResourceKey, ResourceLocation);
@@ -36,8 +40,8 @@ ESAS_WorkerRequestResult USAS_WorkerControlComponent::RequestManualHarvest(USAS_
 
 ESAS_WorkerRequestResult USAS_WorkerControlComponent::RequestEnterLmQueue()
 {
-	if (CurrentControlState == ESAS_WorkerControlState::Transition) return ESAS_WorkerRequestResult::Rejected;
-	if (CurrentControlState == ESAS_WorkerControlState::LMQueue) return ESAS_WorkerRequestResult::Accepted;
+	if (CurrentWorkerControlState == ESAS_WorkerControlState::Transition) return ESAS_WorkerRequestResult::Rejected;
+	if (CurrentWorkerControlState == ESAS_WorkerControlState::LMQueue) return ESAS_WorkerRequestResult::Accepted;
 
 	if (CanEnterLmQueueImmediately())
 	{
@@ -52,7 +56,7 @@ ESAS_WorkerRequestResult USAS_WorkerControlComponent::RequestEnterLmQueue()
 bool USAS_WorkerControlComponent::TryAcceptAssignment(USAS_LogisticsWorkerAssignment* NewAssignment)
 {
 	if (!NewAssignment) return false;
-	if (CurrentControlState != ESAS_WorkerControlState::LMQueue) return false;
+	if (CurrentWorkerControlState != ESAS_WorkerControlState::LMQueue) return false;
 	if (ActiveAssignment) return false;
 
 	ActiveAssignment = NewAssignment;
@@ -78,6 +82,17 @@ void USAS_WorkerControlComponent::NotifyAssignmentCancelled(USAS_LogisticsWorker
 }
 
 
+bool USAS_WorkerControlComponent::UpdateCurrentHarvestKeyAndLocation(FSAS_ResourceKey ResourceKey, FVector TargetLocation)
+{
+	if (CurrentWorkerControlState != ESAS_WorkerControlState::ManualPersistent) return false;
+	if (!CurrentHarvestResourceType) return false;
+
+	CurrentHarvestResourceKey = ResourceKey;
+	CurrentHarvestTargetLocation = TargetLocation;
+
+	return true;
+}
+
 void USAS_WorkerControlComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -100,7 +115,7 @@ void USAS_WorkerControlComponent::BeginPlay()
 
 bool USAS_WorkerControlComponent::ExitLmControlForPlayerOverride()
 {
-	if (CurrentControlState != ESAS_WorkerControlState::LMQueue) return true;
+	if (CurrentWorkerControlState != ESAS_WorkerControlState::LMQueue) return true;
 	if (ActiveAssignment)
 	{
 		ActiveAssignment->CancelAssignment();
@@ -109,22 +124,20 @@ bool USAS_WorkerControlComponent::ExitLmControlForPlayerOverride()
 	if (LogisticsManager)
 	{
 		LogisticsManager->UnregisterAvailableWorker(this);
-			//TODO: Need to create this functionality in the LM
 	}
 
-	CurrentControlState = ESAS_WorkerControlState::Idle;
+	CurrentWorkerControlState = ESAS_WorkerControlState::Idle;
 	return true;
 }
 
 bool USAS_WorkerControlComponent::CanEnterLmQueueImmediately() const
 {
 	return true;
-	//This will be updated in the child components
 }
 
 void USAS_WorkerControlComponent::StartTransitionIntoLmQueue()
 {
-	CurrentControlState = ESAS_WorkerControlState::Transition;
+	CurrentWorkerControlState = ESAS_WorkerControlState::Transition;
 }
 
 void USAS_WorkerControlComponent::FinishEnterLmQueue()
@@ -132,24 +145,37 @@ void USAS_WorkerControlComponent::FinishEnterLmQueue()
 	if (LogisticsManager)
 	{
 		LogisticsManager->RegisterAvailableWorker(this);
-		//TODO Need to implement this function
 	}
 
-	CurrentControlState = ESAS_WorkerControlState::LMQueue;
+	CurrentWorkerControlState = ESAS_WorkerControlState::LMQueue;
 }
 
 void USAS_WorkerControlComponent::BeginManualMove_Internal(const FVector& WorldLocation)
 {
-	CurrentControlState = ESAS_WorkerControlState::ManualSingle;
-	UnitInformation->IssueMoveOrder(WorldLocation);
-	//TODO This should be handled via the state tree I think. Will likely remove any functions like the move order out of the UIC. This should likely be in the UnitControlComponent since it isnt exclusive to villagers/couriers.
+	CurrentWorkerControlState = ESAS_WorkerControlState::ManualSingle;
+
 }
 
 void USAS_WorkerControlComponent::BeginManualHarvest_Internal(USAS_ResourceTypeData* ResourceType, FSAS_ResourceKey ResourceKey, const FVector& ResourceLocation)
 {
-	CurrentControlState = ESAS_WorkerControlState::ManualPersistent;
-	UnitInformation->IssueHarvestOrder(ResourceType, ResourceKey, ResourceLocation);
-	//TODO this should be handled in the state tree as well.
+	CurrentWorkerControlState = ESAS_WorkerControlState::ManualPersistent;
+	CurrentHarvestResourceType = ResourceType;
+	CurrentHarvestResourceKey = ResourceKey;
+	CurrentHarvestTargetLocation = ResourceLocation;
+
+	SendStateTreeEvent(SASGameplayTags::StateTree_Worker_HarvestOrder);
 }
 
+void USAS_WorkerControlComponent::SendStateTreeEvent(const FGameplayTag& EventTag)
+{
+	APawn* Pawn = Cast<APawn>(GetOwner());
+	if (!Pawn) return;
 
+	AAIController* AI = Cast<AAIController>(Pawn->GetController());
+	if (!AI) return;
+
+	UStateTreeComponent* ST = AI->FindComponentByClass<UStateTreeComponent>();
+	if (!ST) return;
+
+	ST->SendStateTreeEvent(FStateTreeEvent(EventTag));
+}

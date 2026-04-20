@@ -11,19 +11,29 @@ USAS_UnitControlComponent::USAS_UnitControlComponent()
 
 }
 
-ESAS_CommandHandlingResult USAS_UnitControlComponent::HandleGroundRightClick(const FVector& WorldLocation)
+bool USAS_UnitControlComponent::GroundSelectIsMove() const
 {
-	return ESAS_CommandHandlingResult::Ignored;
+	return true;
 }
 
-ESAS_CommandHandlingResult USAS_UnitControlComponent::HandleResourceRightClick(USAS_ResourceTypeData* ResourceType, FSAS_ResourceKey ResourceKey, const FVector& ResourceLocation)
+void USAS_UnitControlComponent::HandleGroundRightClick(const FVector& WorldLocation)
 {
-	return ESAS_CommandHandlingResult::Ignored;
+	return;
 }
 
-ESAS_CommandHandlingResult USAS_UnitControlComponent::HandleActorRightClick(AActor* TargetActor, const FVector& ClickLocation)
+bool USAS_UnitControlComponent::ResourceSelectIsMove(USAS_ResourceTypeData* ResourceType) const
 {
-	return ESAS_CommandHandlingResult::Ignored;
+	return false;
+}
+
+void USAS_UnitControlComponent::HandleResourceRightClick(USAS_ResourceTypeData* ResourceType, FSAS_ResourceKey ResourceKey, const FVector& ResourceLocation)
+{
+	return;
+}
+
+void USAS_UnitControlComponent::HandleActorRightClick(AActor* TargetActor, const FVector& ClickLocation)
+{
+	return;
 }
 
 bool USAS_UnitControlComponent::CanReceivePlayerCommands() const

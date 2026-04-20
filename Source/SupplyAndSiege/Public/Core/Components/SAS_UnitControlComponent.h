@@ -10,14 +10,7 @@
 class USAS_UnitInformationComponent;
 class USAS_ResourceTypeData;
 
-UENUM(BlueprintType)
-enum class ESAS_CommandHandlingResult : uint8
-{
-	Ignored	UMETA(DisplayName = "Ignored"),
-	Handled UMETA(DisplayName = "Handled")
-};
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS()
 class SUPPLYANDSIEGE_API USAS_UnitControlComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -27,13 +20,19 @@ public:
 	USAS_UnitControlComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Unit Control")
-	virtual ESAS_CommandHandlingResult HandleGroundRightClick(const FVector& WorldLocation);
+	virtual bool GroundSelectIsMove() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Unit Control")
-	virtual ESAS_CommandHandlingResult HandleResourceRightClick(USAS_ResourceTypeData* ResourceType, FSAS_ResourceKey ResourceKey, const FVector& ResourceLocation);
+	virtual void HandleGroundRightClick(const FVector& WorldLocation);
 
 	UFUNCTION(BlueprintCallable, Category = "Unit Control")
-	virtual ESAS_CommandHandlingResult HandleActorRightClick(AActor* TargetActor, const FVector& ClickLocation);
+	virtual bool ResourceSelectIsMove(USAS_ResourceTypeData* ResourceType) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Unit Control")
+	virtual void HandleResourceRightClick(USAS_ResourceTypeData* ResourceType, FSAS_ResourceKey ResourceKey, const FVector& ResourceLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "Unit Control")
+	virtual void HandleActorRightClick(AActor* TargetActor, const FVector& ClickLocation);
 
 	UFUNCTION(BlueprintCallable, Category = "Unit Control")
 	virtual bool CanReceivePlayerCommands() const;
@@ -42,14 +41,10 @@ protected:
 
 	virtual void BeginPlay() override;
 
-
-
 public:	
 
 protected:
 	UPROPERTY()
 	TObjectPtr<USAS_UnitInformationComponent> UnitInformation = nullptr;
-
-
-		
+			
 };

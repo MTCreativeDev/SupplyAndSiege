@@ -5,10 +5,8 @@
 #include "Core/Components/SAS_UnitManagerComponent.h"
 #include "AIController.h"
 #include "GameFramework/PlayerController.h"
-#include "Components/StateTreeComponent.h"
 #include "Misc/DataAssets/SAS_ResourceTypeData.h"
-#include "GameplayTagContainer.h"
-#include "Core/SAS_GameplayTagContainer.h"
+
 
 
 USAS_UnitInformationComponent::USAS_UnitInformationComponent()
@@ -21,23 +19,6 @@ void USAS_UnitInformationComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-}
-
-void USAS_UnitInformationComponent::SendStateTreeEvent(const FGameplayTag& EventTag)
-{
-	APawn* Pawn = Cast<APawn>(GetOwner());
-	if (!Pawn) return;
-
-
-	if (AAIController* AI = Cast<AAIController>(Pawn->GetController()))
-	{
-		if (UStateTreeComponent* ST = AI->FindComponentByClass<UStateTreeComponent>())
-		{
-			ST->SendStateTreeEvent(FStateTreeEvent(EventTag));
-						
-			return;
-		}
-	}
 }
 
 void USAS_UnitInformationComponent::SetTeam(ESAS_Team NewTeam)
@@ -54,8 +35,6 @@ void USAS_UnitInformationComponent::SetTeam(ESAS_Team NewTeam)
 		AssignedUnitManager->RemoveSelectableUnit(Owner);
 		AssignedUnitManager = nullptr;
 	}
-
-
 
 	switch (NewTeam)
 	{
@@ -117,32 +96,4 @@ void USAS_UnitInformationComponent::NotifyDeselected(ESAS_Team DeselectedByTeam)
 	//Warning: This only works for a single player game. Essentially only the player will be team 1 so no other de-selections needs to show the ring.
 	if (DeselectedByTeam == ESAS_Team::Team1) ToggleSelectionRing.Broadcast(false);
 
-}
-
-void USAS_UnitInformationComponent::IssueMoveOrder(FVector WorldLocation)
-{
-	APawn* Pawn = Cast<APawn>(GetOwner());
-	AAIController* AI = Pawn ? Cast<AAIController>(Pawn->GetController()) : nullptr;
-	if (!AI) return;
-
-	AI->MoveToLocation(WorldLocation);
-}
-
-void USAS_UnitInformationComponent::IssueHarvestOrder(USAS_ResourceTypeData* TypeData, FSAS_ResourceKey ResourceKey, FVector Location)
-{
-
-	CurrentOrder.Type = ESAS_UnitOrderType::Harvest;
-	CurrentOrder.ResourceType = TypeData;
-	CurrentOrder.ResourceKey = ResourceKey;
-	CurrentOrder.TargetLocation = Location;
-
-	SendStateTreeEvent(SASGameplayTags::StateTree_Villager_HarvestOrder);
-	}
-
-bool USAS_UnitInformationComponent::UpdateCurrentOrderKeyAndLocation(FSAS_ResourceKey ResourceKey, FVector TargetLocation)
-{
-	if (CurrentOrder.Type != ESAS_UnitOrderType::Harvest) return false;
-	CurrentOrder.ResourceKey = ResourceKey;
-	CurrentOrder.TargetLocation = TargetLocation;
-	return true;
 }

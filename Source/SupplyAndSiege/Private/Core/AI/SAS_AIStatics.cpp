@@ -28,8 +28,8 @@ TArray<AActor*> USAS_AIStatics::GetSelectableUnits(USAS_UnitManagerComponent* Un
 
 void USAS_AIStatics::RightClickReceived(USAS_UnitManagerComponent* UnitManagerComp, FVector WorldLocation) 
 {
-	//This is a temporary solution. We will want to make a more refined enemy AI process.
-	UnitManagerComp->IssueMoveOrderToSelectedUnits(WorldLocation);
+	//TODO:
+
 }
 
 void USAS_AIStatics::AddSelectedUnit(USAS_UnitManagerComponent* UnitManagerComp, AActor* Unit) 

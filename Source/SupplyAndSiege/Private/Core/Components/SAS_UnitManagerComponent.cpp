@@ -5,6 +5,7 @@
 #include "Core/Interfaces/SAS_ClickTarget.h"
 #include "Core/Components/SAS_ResourceClusterComponent.h"
 #include "Misc/DataAssets/SAS_UnitTypeData.h"
+#include "Core/Components/SAS_UnitControlComponent.h"
 
 
 // Sets default values for this component's properties
@@ -104,146 +105,49 @@ void USAS_UnitManagerComponent::ClearAllSelectedUnits()
 
 void USAS_UnitManagerComponent::RightClickReceived(const FHitResult Hit)
 {
-
-
-	AActor* HitActor = Hit.GetActor();
-	if (!HitActor) return;
-
-	if (HitActor->GetClass()->ImplementsInterface(USAS_ClickTarget::StaticClass()))
-	{
-		ESAS_ClickTargetType HitActorType = ISAS_ClickTarget::Execute_GetClickTargetType(HitActor);
+	if (SelectedUnits.Num() == 0) return;
 	
-		TArray<TWeakObjectPtr<USAS_UnitInformationComponent>> MoveOnlyUnits;
-		MoveOnlyUnits.Reserve(SelectedUnits.Num());
-
-		switch (HitActorType)
-		{
-		case ESAS_ClickTargetType::Ground:
-			if (SelectedUnits.Num() <= 0) break;
-			IssueMoveOrderToSelectedUnits(Hit.ImpactPoint);
-			//Arguably should filter out buildings, but they won't have any functionality for a move order anyway.
-			break;
-
-		case ESAS_ClickTargetType::Resource:
-		{
-			UPrimitiveComponent* HitComp = Hit.GetComponent();
-			const int32 InstanceIndex = Hit.Item;
-
-			if (InstanceIndex == INDEX_NONE)
-			{
-				if (SelectedUnits.Num() > 0)
-				{
-					IssueMoveOrderToSelectedUnits(Hit.ImpactPoint);
-				}
-				break;
-			}
-
-			USAS_ResourceClusterComponent* Cluster = HitActor->FindComponentByClass<USAS_ResourceClusterComponent>();
-
-			//If we run into an issue just move to location
-			if (!Cluster)
-			{
-				if (SelectedUnits.Num() <= 0) break;
-				IssueMoveOrderToSelectedUnits(Hit.ImpactPoint);
-				break;
-			}
-
-			USAS_ResourceTypeData* HitResourceType = Cluster->GetTypeForHitComponent(HitComp);
-
-			//If we run into an issue just move to location
-			if (!HitResourceType)
-			{
-				if (SelectedUnits.Num() <= 0) break;
-				IssueMoveOrderToSelectedUnits(Hit.ImpactPoint);
-				break;
-			}
-
-			FTransform InstanceTransform;
-			Cluster->GetInstanceTransform(HitComp, InstanceIndex, InstanceTransform);
-
-			if (!InstanceTransform.IsValid())
-			{
-				if (SelectedUnits.Num() <= 0) break;
-				IssueMoveOrderToSelectedUnits(Hit.ImpactPoint);
-				break;
-			}
-
-
-			FSAS_ResourceKey HitResourceKey = Cluster->MakeKey(HitComp, InstanceIndex);
-
-			for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitCompPtr : SelectedUnits)
-			{
-				if (!UnitCompPtr.IsValid()) continue;
-				USAS_UnitInformationComponent* UnitComp = UnitCompPtr.Get();
-				if (!UnitComp) continue;
-
-				const USAS_UnitTypeData* UnitType = UnitComp->UnitType;
-				if (!UnitType) continue;
-
-				const ESAS_UnitCategory CurrentUnitCategory = UnitType->UnitCategory;
-
-				switch (CurrentUnitCategory)
-				{
-					case ESAS_UnitCategory::None: break;
-
-					case ESAS_UnitCategory::Pawn_Villager:
-					{
-						UnitComp->IssueHarvestOrder(HitResourceType, HitResourceKey, InstanceTransform.GetLocation());
-						break;
-					}
-
-					case ESAS_UnitCategory::Pawn_Courier:
-						MoveOnlyUnits.Add(UnitCompPtr);
-						break;
-
-					case ESAS_UnitCategory::Pawn_Military: 
-						MoveOnlyUnits.Add(UnitCompPtr);
-						break;
-
-					default: break;
-				}
-
-			}
-
-			if (MoveOnlyUnits.Num() > 0)
-			{
-				IssueMoveOrderToUnits(MoveOnlyUnits, Hit.ImpactPoint);
-			}
-
-			break;
-		}
-
-		case ESAS_ClickTargetType::Unit:
-			//TODO
-			if (SelectedUnits.Num() <= 0) break;
-			IssueMoveOrderToSelectedUnits(Hit.ImpactPoint);
-			//Arguably should filter out buildings, but they won't have any functionality for a move order anyway.
-			break;
-
-		default: 
-			//TODO:
-			if (SelectedUnits.Num() <= 0) break;
-			IssueMoveOrderToSelectedUnits(Hit.ImpactPoint);
-			//Arguably should filter out buildings, but they won't have any functionality for a move order anyway.
-			break;
-		}
-	}
-	else
+	AActor* HitActor = Hit.GetActor();
+	if (!HitActor)
 	{
-		if (SelectedUnits.Num() >0)
-		{
-			IssueMoveOrderToSelectedUnits(Hit.ImpactPoint);
-		}
+		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+		return;
 	}
+
+	if (!HitActor->GetClass()->ImplementsInterface(USAS_ClickTarget::StaticClass()))
+	{
+		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+		return;
+	}
+
+	const ESAS_ClickTargetType HitActorType = ISAS_ClickTarget::Execute_GetClickTargetType(HitActor);
+
+	switch (HitActorType)
+	{
+	case ESAS_ClickTargetType::Ground:
+		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+		break;
+	case ESAS_ClickTargetType::Resource:
+		HandleResourceRightClickForSelectedUnits(Hit);
+		break;
+
+	default:
+		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+		break;
+	}
+
 }
 
-void USAS_UnitManagerComponent::IssueMoveOrderToUnits(const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>& UnitsToMove, const FVector& WorldLocation)
+void USAS_UnitManagerComponent::IssueMoveOrderToUnits(const TArray<TWeakObjectPtr<USAS_UnitControlComponent>>& UnitsToMove, const FVector& WorldLocation)
 {
 	if (UnitsToMove.Num() == 0) return;
 
 	if (UnitsToMove.Num() == 1)
 	{
-		UnitsToMove[0]->IssueMoveOrder(WorldLocation);
+		if (UnitsToMove[0].IsValid())
+		{
+			UnitsToMove[0]->HandleGroundRightClick(WorldLocation);
+		}
 		return;
 	}
 
@@ -268,10 +172,6 @@ void USAS_UnitManagerComponent::IssueMoveOrderToUnits(const TArray<TWeakObjectPt
 }
 
 UE_DISABLE_OPTIMIZATION
-void USAS_UnitManagerComponent::IssueMoveOrderToSelectedUnits(FVector WorldLocation)
-{
-	IssueMoveOrderToUnits(SelectedUnits, WorldLocation);
-}
 
 void USAS_UnitManagerComponent::OnFormationQueryComplete(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
 {
@@ -283,13 +183,19 @@ void USAS_UnitManagerComponent::OnFormationQueryComplete(UEnvQueryInstanceBluepr
 
 
 	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
+	if (Locations.Num() == 0)
+	{
+		PendingFormationUnits.Empty();
+		return;
+	}
+
 	int32 LocIndex = 0;
 
-	for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitCompPtr : PendingFormationUnits)
+	for (const TWeakObjectPtr<USAS_UnitControlComponent>& UnitCompPtr : PendingFormationUnits)
 	{
 		if (UnitCompPtr.IsValid())
 		{
-			UnitCompPtr->IssueMoveOrder(Locations[LocIndex]);
+			UnitCompPtr->HandleGroundRightClick(Locations[LocIndex]);
 			LocIndex = (LocIndex + 1) % Locations.Num();
 		}
 	}
@@ -297,3 +203,109 @@ void USAS_UnitManagerComponent::OnFormationQueryComplete(UEnvQueryInstanceBluepr
 	PendingFormationUnits.Empty();
 }
 UE_ENABLE_OPTIMIZATION
+
+USAS_UnitControlComponent* USAS_UnitManagerComponent::GetUnitControlFromInfo(USAS_UnitInformationComponent* UnitInfo) const
+{
+	if (!UnitInfo) return nullptr;
+
+	AActor* Owner = UnitInfo->GetOwner();
+	if (!Owner) return nullptr;
+
+	return Owner->FindComponentByClass<USAS_UnitControlComponent>();
+}
+
+void USAS_UnitManagerComponent::HandleGroundRightClickForSelectedUnits(const FVector& WorldLocation)
+{
+	TArray<TWeakObjectPtr<USAS_UnitControlComponent>> UnitsRequiringMove;
+	UnitsRequiringMove.Reserve(SelectedUnits.Num());
+
+	for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitInfoPtr : SelectedUnits)
+	{
+		if (!UnitInfoPtr.IsValid()) continue;
+
+		USAS_UnitControlComponent* UnitControl = GetUnitControlFromInfo(UnitInfoPtr.Get());
+		if (!UnitControl) continue;
+
+		if (UnitControl->GroundSelectIsMove())
+		{
+			UnitsRequiringMove.Add(UnitControl);
+		}
+		else
+		{
+			UnitControl->HandleGroundRightClick(WorldLocation);
+		}
+	}
+	if (UnitsRequiringMove.Num() > 0)
+	{
+		IssueMoveOrderToUnits(UnitsRequiringMove, WorldLocation);
+	}
+}
+
+void USAS_UnitManagerComponent::HandleResourceRightClickForSelectedUnits(const FHitResult& Hit)
+{
+	AActor* HitActor = Hit.GetActor();
+	if (!HitActor)
+	{
+		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+		return;
+	}
+
+	UPrimitiveComponent* HitComp = Hit.GetComponent();
+	const int32 InstanceIndex = Hit.Item;
+
+	if (InstanceIndex == INDEX_NONE)
+	{
+		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+		return;
+	}
+
+	USAS_ResourceClusterComponent* Cluster = HitActor->FindComponentByClass<USAS_ResourceClusterComponent>();
+	if (!Cluster)
+	{
+		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+		return;
+	}
+
+	USAS_ResourceTypeData* HitResourceType = Cluster->GetTypeForHitComponent(HitComp);
+	if (!HitResourceType)
+	{
+		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+		return;
+	}
+
+	FTransform InstanceTransform;
+	Cluster->GetInstanceTransform(HitComp, InstanceIndex, InstanceTransform);
+	if (!InstanceTransform.IsValid())
+	{
+		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+		return;
+	}
+	const FSAS_ResourceKey HitResourceKey = Cluster->MakeKey(HitComp, InstanceIndex);
+
+	TArray<TWeakObjectPtr<USAS_UnitControlComponent>> UnitsRequiringMove;
+	UnitsRequiringMove.Reserve(SelectedUnits.Num());
+
+	for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitInfoPtr : SelectedUnits)
+	{
+		if (!UnitInfoPtr.IsValid()) continue;
+
+		USAS_UnitControlComponent* UnitControl = GetUnitControlFromInfo(UnitInfoPtr.Get());
+		if (!UnitControl) continue;
+
+		if (UnitControl->ResourceSelectIsMove(HitResourceType))
+		{
+			UnitsRequiringMove.Add(UnitControl);
+		}
+		else
+		{
+			UnitControl->HandleResourceRightClick(HitResourceType, HitResourceKey, InstanceTransform.GetLocation());
+		}
+	}
+
+	if (UnitsRequiringMove.Num() > 0)
+	{
+		IssueMoveOrderToUnits(UnitsRequiringMove, InstanceTransform.GetLocation());
+	}
+
+}
+

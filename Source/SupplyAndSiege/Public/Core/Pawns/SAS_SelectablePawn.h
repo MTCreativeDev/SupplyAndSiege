@@ -44,4 +44,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UFloatingPawnMovement* MovementComponent;
 
+
+
 };

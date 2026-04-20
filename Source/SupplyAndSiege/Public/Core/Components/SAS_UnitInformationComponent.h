@@ -10,7 +10,6 @@
 
 class USAS_UnitManagerComponent;
 class USAS_UnitTypeData;
-class USAS_ResourceTypeData;
 struct FGameplayTag;
 
 
@@ -37,13 +36,6 @@ public:
 
 	void NotifyDeselected(ESAS_Team DeselectedByTeam);
 
-	void IssueMoveOrder(FVector WorldLocation);
-
-	void IssueHarvestOrder(USAS_ResourceTypeData* TypeData, FSAS_ResourceKey ResourceKey, FVector Location);
-
-	UFUNCTION(BlueprintCallable, Category = "Unit Information")
-	bool UpdateCurrentOrderKeyAndLocation(FSAS_ResourceKey ResourceKey, FVector TargetLocation);
-
 	//Dispatchers
 	UPROPERTY(BlueprintAssignable)
 	FToggleSelectionRing ToggleSelectionRing;
@@ -58,8 +50,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	void SendStateTreeEvent(const FGameplayTag& EventTag);
-
 
 
 public:	
@@ -71,19 +61,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Unit Information")
 	USAS_UnitTypeData* UnitType = nullptr;
 
-
-
-
-
-
-
 protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	USAS_UnitManagerComponent* AssignedUnitManager;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Orders")
-	FSAS_UnitOrder CurrentOrder;
 
 
 

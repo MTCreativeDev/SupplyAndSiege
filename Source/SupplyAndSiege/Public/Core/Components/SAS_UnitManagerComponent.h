@@ -10,6 +10,7 @@
 #include "SAS_UnitManagerComponent.generated.h"
 
 class UEnvQuery;
+class USAS_UnitControlComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitSelectionChange, const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>&, SelectedUnits);
 
@@ -27,8 +28,7 @@ public:
 	void RemoveSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation);
 	void ClearAllSelectedUnits();
 	void RightClickReceived(const FHitResult Hit);
-	void IssueMoveOrderToUnits(const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>& UnitsToMove, const FVector& WorldLocation);
-	void IssueMoveOrderToSelectedUnits(FVector WorldLocation);
+	void IssueMoveOrderToUnits(const TArray<TWeakObjectPtr<USAS_UnitControlComponent>>& UnitsToMove, const FVector& WorldLocation);
 	const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>& GetSelectedUnits() const { return SelectedUnits; }
 
 	//Dispatchers
@@ -42,6 +42,15 @@ protected:
 
 	UFUNCTION()
 	void OnFormationQueryComplete(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+
+
+private:
+	
+	USAS_UnitControlComponent* GetUnitControlFromInfo(USAS_UnitInformationComponent* UnitInfo) const;
+
+	void HandleGroundRightClickForSelectedUnits(const FVector& WorldLocation);
+	void HandleResourceRightClickForSelectedUnits(const FHitResult& Hit);
 
 public:
 	//This is the array of all available units to this player. Units include buildings, pawns etc. Anything that the player can select.
@@ -65,6 +74,6 @@ protected:
 
 private:
 
-	TArray<TWeakObjectPtr<USAS_UnitInformationComponent>> PendingFormationUnits;
+	TArray<TWeakObjectPtr<USAS_UnitControlComponent>> PendingFormationUnits;
 
 };

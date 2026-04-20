@@ -521,7 +521,6 @@ void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const 
 
 void ASAS_PlayerController::RightClickStarted()
 {
-
     switch (CurrentRightClickAction)
     {
     case ERightClickAction::None:

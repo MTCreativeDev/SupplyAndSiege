@@ -5,5 +5,6 @@
 
 namespace SASGameplayTags
 {
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StateTree_Villager_HarvestOrder);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StateTree_Pawn_MoveOrder);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StateTree_Worker_HarvestOrder);
 }
