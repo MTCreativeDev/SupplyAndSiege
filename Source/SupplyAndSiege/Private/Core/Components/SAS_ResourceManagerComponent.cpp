@@ -41,26 +41,31 @@ bool USAS_ResourceManagerComponent::TryReserve(const FSAS_ResourceKey& Key, AAct
 	FSAS_ResourceReservationState* Existing = Reservations.Find(Key);
 	if (!Existing)
 	{
+		ReleaseAllReservationsForClaimer(Claimer, FSAS_ResourceKey(), false);
 		FSAS_ResourceReservationState NewRes;
 		NewRes.Claimer = Claimer;
 		NewRes.ExpiresAtSeconds = Exp;
 		Reservations.Add(Key, NewRes);
+		
 		return true;
 	}
 
 	if (Existing->Claimer.IsValid() && Existing->Claimer.Get() == Claimer)
 	{
-		//In case the claimer re-claims, update to the new time
 		Existing->ExpiresAtSeconds = Exp;
 		return true;
 	}
 
 	const double T = Now();
-	if (Existing->Claimer.IsValid() && (Existing->ExpiresAtSeconds == 00 || Existing->ExpiresAtSeconds > T)) return false;
+	if (Existing->Claimer.IsValid() && (Existing->ExpiresAtSeconds == 0.0 || Existing->ExpiresAtSeconds > T)) return false;
 
 	//If the existing claimer is no longer valid or the time has expired.
+
+	ReleaseAllReservationsForClaimer(Claimer, FSAS_ResourceKey(), false);
+
 	Existing->Claimer = Claimer;
 	Existing->ExpiresAtSeconds = Exp;
+
 	return true;
 
 }
@@ -220,7 +225,7 @@ void USAS_ResourceManagerComponent::GetAvailableResourceLocationsInRadius(const 
 	}
 }
 
-bool USAS_ResourceManagerComponent::TryReserveResourceNearLocation(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, AActor* Claimer, FSAS_ResourceKey& OutKey, FVector& OutResourceLocation, float DurationSeconds)
+bool USAS_ResourceManagerComponent::TryReserveResourceFromEQSLocation(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, AActor* Claimer, FSAS_ResourceKey& OutKey, FVector& OutResourceLocation, float DurationSeconds)
 {
 	
 	OutKey = FSAS_ResourceKey();
@@ -262,6 +267,42 @@ bool USAS_ResourceManagerComponent::TryReserveResourceNearLocation(const USAS_Re
 	return false;
 }
 
+bool USAS_ResourceManagerComponent::GetResourceTransform(const FSAS_ResourceKey& Key, FTransform& OutWorldTransform)
+{
+	if (!Key.IsValid()) return false;
+
+	const FSAS_ISMHandle* Handle = KeyToHandle.Find(Key);
+	if (!Handle) return false;
+	if (!Handle->ISM.IsValid()) return false;
+
+	return Handle->ISM->GetInstanceTransform(Handle->InstanceIndex, OutWorldTransform, true);
+
+}
+
+void USAS_ResourceManagerComponent::ReleaseAllReservationsForClaimer(AActor* Claimer, const FSAS_ResourceKey& KeyToKeep, bool bHasKeyToKeep)
+{
+	if (!Claimer) return;
+
+	TArray<FSAS_ResourceKey> KeysToRemove;
+	KeysToRemove.Reserve(Reservations.Num());
+
+	for (const TPair<FSAS_ResourceKey, FSAS_ResourceReservationState>& Pair : Reservations)
+	{
+		const FSAS_ResourceKey& ExistingKey = Pair.Key;
+		const FSAS_ResourceReservationState& Res = Pair.Value;
+
+		if (!Res.Claimer.IsValid()) continue;
+		if (Res.Claimer.Get() != Claimer) continue;
+
+		if (bHasKeyToKeep && ExistingKey == KeyToKeep) continue;
+
+		KeysToRemove.Add(ExistingKey);
+	}
+	for (const FSAS_ResourceKey& Key : KeysToRemove)
+	{
+		Reservations.Remove(Key);
+	}
+}
 
 void USAS_ResourceManagerComponent::BeginPlay()
 {

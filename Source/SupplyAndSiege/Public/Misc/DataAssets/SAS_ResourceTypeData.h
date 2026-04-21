@@ -30,7 +30,13 @@ public:
 	UEnvQuery* ResourceIsReachableQuery;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
+	TArray<FVector> ResourceIsReachableQueryLocations;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
 	UEnvQuery* LikeKindResourceQuery;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
+	float LikeKindSearchRadius = 500.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
 	UEnvQuery* ResourceDepotQuery;

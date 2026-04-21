@@ -103,7 +103,13 @@ public:
 	void GetAvailableResourceLocationsInRadius(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, TArray<FVector>& OutResourceLocations, AActor* Claimer) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Resource")
-	bool TryReserveResourceNearLocation(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, AActor* Claimer, FSAS_ResourceKey& OutKey, FVector& OutResourceLocation, float DurationSeconds =10.f);
+	bool TryReserveResourceFromEQSLocation(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, AActor* Claimer, FSAS_ResourceKey& OutKey, FVector& OutResourceLocation, float DurationSeconds =10.f);
+
+	UFUNCTION(BlueprintCallable, Category = "Resource")
+	bool GetResourceTransform(const FSAS_ResourceKey& Key, FTransform& OutWorldTransform);
+
+	UFUNCTION(BlueprintCallable, Category = "Resource")
+	void ReleaseAllReservationsForClaimer(AActor* Claimer, const FSAS_ResourceKey& KeyToKeep, bool bHasKeyToKeep);
 
 protected:
 
