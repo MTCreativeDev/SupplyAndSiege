@@ -274,12 +274,12 @@ void USAS_UnitManagerComponent::HandleResourceRightClickForSelectedUnits(const F
 	}
 
 	FTransform InstanceTransform;
-	Cluster->GetInstanceTransform(HitComp, InstanceIndex, InstanceTransform);
-	if (!InstanceTransform.IsValid())
+	if (!Cluster->GetInstanceTransform(HitComp, InstanceIndex, InstanceTransform))
 	{
 		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
 		return;
 	}
+
 	const FSAS_ResourceKey HitResourceKey = Cluster->MakeKey(HitComp, InstanceIndex);
 
 	TArray<TWeakObjectPtr<USAS_UnitControlComponent>> UnitsRequiringMove;

@@ -48,9 +48,10 @@ struct FSAS_ISMHandle
 {
 	GENERATED_BODY()
 
+	TWeakObjectPtr<USAS_ResourceClusterComponent> Cluster;
 	TWeakObjectPtr<UInstancedStaticMeshComponent> ISM;
 	int32 InstanceIndex = INDEX_NONE;
-	FVector WorldLocation = FVector::ZeroVector;
+	FTransform WorldTransform = FTransform::Identity;
 };
 
 USTRUCT()
@@ -92,21 +93,20 @@ public:
 
 	ESAS_ResourceValidity CheckValidity(const FSAS_ResourceKey& Key, const USAS_ResourceTypeData* TypeData, AActor* Claimer) const;
 
-
 	UFUNCTION(BlueprintCallable, Category = "Resource")
-	int32 ApplyHarvest(const FSAS_ResourceKey& Key, const USAS_ResourceTypeData* TypeData, int32 RequestedAmount, USAS_ResourceClusterComponent* ClusterForVisuals = nullptr, UPrimitiveComponent* HitComponentForVisuals = nullptr);
+	int32 ApplyHarvest(const FSAS_ResourceKey& Key, const USAS_ResourceTypeData* TypeData, int32 RequestedAmount);
 
 	UFUNCTION(BlueprintCallable, Category = "Resource")
 	int32 RegisterISMToGrid(const USAS_ResourceTypeData* ResourceType, const USAS_ResourceClusterComponent* Cluster, UInstancedStaticMeshComponent* ISM);
 
 	UFUNCTION(BlueprintCallable, Category = "Resource")
-	void GetAvailableResourceLocationsInRadius(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, TArray<FVector>& OutResourceLocations, AActor* Claimer) const;
+	void GetAvailableResourceTransformsInRadius(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, TArray<FTransform>& OutResourceTransforms, AActor* Claimer) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Resource")
 	bool TryReserveResourceFromEQSLocation(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, AActor* Claimer, FSAS_ResourceKey& OutKey, FVector& OutResourceLocation, float DurationSeconds =10.f);
 
 	UFUNCTION(BlueprintCallable, Category = "Resource")
-	bool GetResourceTransform(const FSAS_ResourceKey& Key, FTransform& OutWorldTransform);
+	bool GetResourceTransform(const FSAS_ResourceKey& Key, FTransform& OutWorldTransform) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Resource")
 	void ReleaseAllReservationsForClaimer(AActor* Claimer, const FSAS_ResourceKey& KeyToKeep, bool bHasKeyToKeep);

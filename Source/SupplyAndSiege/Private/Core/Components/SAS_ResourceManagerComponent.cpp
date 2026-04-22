@@ -34,6 +34,14 @@ bool USAS_ResourceManagerComponent::TryReserve(const FSAS_ResourceKey& Key, AAct
 {
 	if (!Key.IsValid() || !Claimer) return false;
 
+	if (const FSAS_ResourceRuntimeState* State = ModifiedStates.Find(Key))
+	{
+		if (State->bDepleted || State->Remaining <= 0)
+		{
+			return false;
+		}
+	}
+
 	CleanupExpiredReservations();
 
 	const double Exp = (DurationSeconds > 0.f) ? (Now() + DurationSeconds) : 0.0;
@@ -119,10 +127,8 @@ ESAS_ResourceValidity USAS_ResourceManagerComponent::CheckValidity(const FSAS_Re
 
 }
 
-int32 USAS_ResourceManagerComponent::ApplyHarvest(const FSAS_ResourceKey& Key, const USAS_ResourceTypeData* TypeData, int32 RequestedAmount, USAS_ResourceClusterComponent* ClusterForVisuals, UPrimitiveComponent* HitComponentForVisuals)
+int32 USAS_ResourceManagerComponent::ApplyHarvest(const FSAS_ResourceKey& Key, const USAS_ResourceTypeData* TypeData, int32 RequestedAmount)
 {
-	//TODO: Should probably move the requested amount to something in the Resource TypeData
-
 	if (!Key.IsValid() || !TypeData) return 0;
 	if (RequestedAmount <= 0) return 0;
 
@@ -138,10 +144,17 @@ int32 USAS_ResourceManagerComponent::ApplyHarvest(const FSAS_ResourceKey& Key, c
 
 	if (State.bDepleted)
 	{
-		Reservations.Remove(Key);
-		if (ClusterForVisuals && HitComponentForVisuals)
+		if (GEngine)
 		{
-			ClusterForVisuals->MarkDepleted(HitComponentForVisuals, Key.InstanceIndex);
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Terminate Reservation"));
+		}
+
+		Reservations.Remove(Key);
+
+		const FSAS_ISMHandle* Handle = KeyToHandle.Find(Key);
+		if (Handle && Handle->Cluster.IsValid() && Handle->ISM.IsValid())
+		{
+			Handle->Cluster->MarkDepleted(Handle->ISM.Get(), Handle->InstanceIndex);
 		}
 	}
 	return Taken;
@@ -178,9 +191,10 @@ int32 USAS_ResourceManagerComponent::RegisterISMToGrid(const USAS_ResourceTypeDa
 		Grid.Cells.FindOrAdd(Cell).Add(Key);
 
 		FSAS_ISMHandle Handle;
+		Handle.Cluster = const_cast<USAS_ResourceClusterComponent*>(Cluster);
 		Handle.ISM = ISM;
 		Handle.InstanceIndex = InstanceIndex;
-		Handle.WorldLocation = WorldLoc;
+		Handle.WorldTransform = Xform;
 
 		KeyToHandle.Add(Key, Handle);
 		++Registered;
@@ -190,9 +204,9 @@ int32 USAS_ResourceManagerComponent::RegisterISMToGrid(const USAS_ResourceTypeDa
 
 }
 
-void USAS_ResourceManagerComponent::GetAvailableResourceLocationsInRadius(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, TArray<FVector>& OutResourceLocations, AActor* Claimer) const
+void USAS_ResourceManagerComponent::GetAvailableResourceTransformsInRadius(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, TArray<FTransform>& OutResourceTransforms, AActor* Claimer) const
 {
-	OutResourceLocations.Reset();
+	OutResourceTransforms.Reset();
 	if (!ResourceType) return;
 
 	const FSAS_SpatialGrid* Grid = GridsByType.Find(ResourceType);
@@ -219,7 +233,8 @@ void USAS_ResourceManagerComponent::GetAvailableResourceLocationsInRadius(const 
 				if (Handle->InstanceIndex == INDEX_NONE) continue;
 
 				if (CheckValidity(Key, ResourceType, Claimer) != ESAS_ResourceValidity::Valid) continue;
-				OutResourceLocations.Add(Handle->WorldLocation);
+
+				OutResourceTransforms.Add(Handle->WorldTransform);
 			}
 		}
 	}
@@ -227,7 +242,6 @@ void USAS_ResourceManagerComponent::GetAvailableResourceLocationsInRadius(const 
 
 bool USAS_ResourceManagerComponent::TryReserveResourceFromEQSLocation(const USAS_ResourceTypeData* ResourceType, const FVector WorldLocation, float DesiredSearchRadius, AActor* Claimer, FSAS_ResourceKey& OutKey, FVector& OutResourceLocation, float DurationSeconds)
 {
-	
 	OutKey = FSAS_ResourceKey();
 	OutResourceLocation = FVector::ZeroVector;
 
@@ -239,8 +253,16 @@ bool USAS_ResourceManagerComponent::TryReserveResourceFromEQSLocation(const USAS
 	if (!Grid) return false;
 	if (Grid->CellSize <= 0.f) return false;
 
+	const TArray<FVector>& QueryOffsets = ResourceType->ResourceIsReachableQueryLocations;
+	if (QueryOffsets.Num() <= 0) return false;
+
 	const FIntPoint CenterCell = WorldToCell2D(WorldLocation, Grid->CellSize);
 	const int32 CellRadius = FMath::Max(0, FMath::CeilToInt(DesiredSearchRadius / Grid->CellSize));
+
+	bool bFoundMatch = false;
+	float BestMatchDistSq = TNumericLimits<float>::Max();
+	FSAS_ResourceKey BestKey;
+	FVector BestResourceLocation = FVector::ZeroVector;
 
 	for (int32 X = CenterCell.X - CellRadius; X <= CenterCell.X + CellRadius; ++X)
 	{
@@ -255,19 +277,51 @@ bool USAS_ResourceManagerComponent::TryReserveResourceFromEQSLocation(const USAS
 				const FSAS_ISMHandle* Handle = KeyToHandle.Find(Key);
 				if (!Handle) continue;
 				if (!Handle->ISM.IsValid()) continue;
+				if (Handle->InstanceIndex == INDEX_NONE) continue;
 
 				if (CheckValidity(Key, ResourceType, Claimer) != ESAS_ResourceValidity::Valid) continue;
-				if (!TryReserve(Key, Claimer, DurationSeconds)) continue;
-				OutKey = Key;
-				OutResourceLocation = Handle->WorldLocation;
-				return true;
+
+				const FTransform& InstanceTransform = Handle->WorldTransform;
+				const FVector ResourceCenter = InstanceTransform.GetLocation();
+
+				// check against max distance before checking against each individual location. This is a cheaper filter than running an exact location check against all 8 offsets. However we still check distance of all 8.
+				float MaxScaledOffsetDistSq = 0.f;
+				for (const FVector& LocalOffset : QueryOffsets)
+				{
+					const FVector CandidatePoint = InstanceTransform.TransformPosition(LocalOffset);
+					const float DistSqFromCenter = FVector::DistSquared(ResourceCenter, CandidatePoint);
+					MaxScaledOffsetDistSq = FMath::Max(MaxScaledOffsetDistSq, DistSqFromCenter);
+				}
+
+				const float DistSqToCenter = FVector::DistSquared(WorldLocation, ResourceCenter);
+				const float MatchTolerance = 10.f;
+				if (DistSqToCenter > MaxScaledOffsetDistSq + FMath::Square(MatchTolerance)) continue;
+
+				for (const FVector& LocalOffset : QueryOffsets)
+				{
+					const FVector CandidatePoint = InstanceTransform.TransformPosition(LocalOffset);
+					const float MatchDistSq = FVector::DistSquared(WorldLocation, CandidatePoint);
+
+					if (MatchDistSq < BestMatchDistSq)
+					{
+						BestMatchDistSq = MatchDistSq;
+						BestKey = Key;
+						BestResourceLocation = ResourceCenter;
+						bFoundMatch = true;
+					}
+				}
 			}
 		}
 	}
-	return false;
+	if (!bFoundMatch) return false;
+	if (!TryReserve(BestKey, Claimer, DurationSeconds)) return false;
+
+	OutKey = BestKey;
+	OutResourceLocation = BestResourceLocation;
+	return true;
 }
 
-bool USAS_ResourceManagerComponent::GetResourceTransform(const FSAS_ResourceKey& Key, FTransform& OutWorldTransform)
+bool USAS_ResourceManagerComponent::GetResourceTransform(const FSAS_ResourceKey& Key, FTransform& OutWorldTransform) const
 {
 	if (!Key.IsValid()) return false;
 
@@ -275,8 +329,8 @@ bool USAS_ResourceManagerComponent::GetResourceTransform(const FSAS_ResourceKey&
 	if (!Handle) return false;
 	if (!Handle->ISM.IsValid()) return false;
 
-	return Handle->ISM->GetInstanceTransform(Handle->InstanceIndex, OutWorldTransform, true);
-
+	OutWorldTransform = Handle->WorldTransform;
+	return true;
 }
 
 void USAS_ResourceManagerComponent::ReleaseAllReservationsForClaimer(AActor* Claimer, const FSAS_ResourceKey& KeyToKeep, bool bHasKeyToKeep)
