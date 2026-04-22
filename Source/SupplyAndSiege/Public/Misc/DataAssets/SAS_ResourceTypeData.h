@@ -25,20 +25,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
 	TObjectPtr<UItemDefinitionPrimaryData> YieldItemDefinition = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
-	UEnvQuery* ResourceIsReachableQuery;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
 	TArray<FVector> ResourceIsReachableQueryLocations;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
-	UEnvQuery* LikeKindResourceQuery;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
-	float LikeKindSearchRadius = 500.f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
-	UEnvQuery* ResourceDepotQuery;
-		
+	float LikeKindSearchRadius = 500.f;		
 };
