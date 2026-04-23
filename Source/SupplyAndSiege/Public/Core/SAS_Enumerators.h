@@ -196,3 +196,11 @@ enum class ESAS_WorkerAssignmentFailureReason: uint8
     FailedReservationInbound   UMETA(DisplayName = "Failed to create Inbound Inventory Reservation"),
     Unknown UMETA(DisplayName = "Unknown")
 };
+
+UENUM(BlueprintType)
+enum class ESAS_WorkerType : uint8
+{
+    Unspecified	UMETA(DisplayName = "Unspecified"),
+    Villager	UMETA(DisplayName = "Villager"),
+    Courier	UMETA(DisplayName = "Courier"),
+};

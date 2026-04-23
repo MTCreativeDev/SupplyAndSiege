@@ -1,6 +1,3 @@
-
-
-
 #include "Core/Components/SAS_WorkerControlComponent.h"
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "Core/Objects/SAS_LogisticsWorkerAssignment.h"
@@ -40,6 +37,7 @@ ESAS_WorkerRequestResult USAS_WorkerControlComponent::RequestManualHarvest(USAS_
 
 ESAS_WorkerRequestResult USAS_WorkerControlComponent::RequestEnterLmQueue()
 {
+	if (!LogisticsManager) return ESAS_WorkerRequestResult::Rejected;
 	if (CurrentWorkerControlState == ESAS_WorkerControlState::Transition) return ESAS_WorkerRequestResult::Rejected;
 	if (CurrentWorkerControlState == ESAS_WorkerControlState::LMQueue) return ESAS_WorkerRequestResult::Accepted;
 
@@ -81,7 +79,6 @@ void USAS_WorkerControlComponent::NotifyAssignmentCancelled(USAS_LogisticsWorker
 	}
 }
 
-
 bool USAS_WorkerControlComponent::UpdateCurrentHarvestKeyAndLocation(FSAS_ResourceKey ResourceKey, FVector TargetLocation)
 {
 	if (CurrentWorkerControlState != ESAS_WorkerControlState::ManualPersistent) return false;
@@ -91,6 +88,53 @@ bool USAS_WorkerControlComponent::UpdateCurrentHarvestKeyAndLocation(FSAS_Resour
 	CurrentHarvestTargetLocation = TargetLocation;
 
 	return true;
+}
+
+int32 USAS_WorkerControlComponent::GetBaseScoreForJob(const ESAS_MasterJobType JobType) const
+{
+	if (ActiveAssignment) return 0;
+	if (JobType == ESAS_MasterJobType::None) return 0;
+
+	switch (WorkerType)
+	{
+	case ESAS_WorkerType::Unspecified:
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Worker Assignment Type not assigned in WorkerControlComponent"));
+		return 0;
+
+	case ESAS_WorkerType::Villager:
+		switch (JobType)
+		{
+		case ESAS_MasterJobType::DeliverItem:
+			return 1;
+
+		case ESAS_MasterJobType::RemoveItem:
+			return 1;
+
+		case ESAS_MasterJobType::Build:
+			return 5;
+
+		default:
+			return 0;
+
+		}
+	case ESAS_WorkerType::Courier:
+		switch (JobType)
+		{
+		case ESAS_MasterJobType::DeliverItem:
+			return 5;
+
+		case ESAS_MasterJobType::RemoveItem:
+			return 5;
+			
+		case ESAS_MasterJobType::Build:
+			return 0;
+
+		default:
+			return 0;
+		}
+	}
+
+	return 0;
 }
 
 void USAS_WorkerControlComponent::BeginPlay()
@@ -144,10 +188,11 @@ void USAS_WorkerControlComponent::FinishEnterLmQueue()
 {
 	if (LogisticsManager)
 	{
+		CurrentWorkerControlState = ESAS_WorkerControlState::LMQueue;
 		LogisticsManager->RegisterAvailableWorker(this);
 	}
 
-	CurrentWorkerControlState = ESAS_WorkerControlState::LMQueue;
+
 }
 
 void USAS_WorkerControlComponent::BeginManualMove_Internal(const FVector& WorldLocation)

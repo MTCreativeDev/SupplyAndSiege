@@ -8,7 +8,7 @@
 #include "SAS_SB_ResourceDepot.generated.h"
 
 
-class USAS_InventoryComponent;
+class USAS_IC_ResourceDepot;
 /**
  * 
  */
@@ -28,6 +28,6 @@ protected:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
-	USAS_InventoryComponent* Inventory;
+	USAS_IC_ResourceDepot* Inventory;
 		
 };

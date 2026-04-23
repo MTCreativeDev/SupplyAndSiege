@@ -13,6 +13,7 @@
 #include "Core/Actors/SAS_BL_BuildJob.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widgets/SAS_PauseScreenBase.h"
+#include"Core/Components/SAS_WorkerControlComponent.h"
 
 ASAS_PlayerController::ASAS_PlayerController()
 {
@@ -141,6 +142,15 @@ USAS_SelectionInventoryViewModel* ASAS_PlayerController::GetSelectionInventoryVi
         InitializeSelectionInventoryViewModel();
     }
     return SelectionInventoryViewModel;
+}
+
+void ASAS_PlayerController::RequestAddWorkersToLMQueue(const TArray<USAS_WorkerControlComponent*>& InWorkers)
+{
+    for (USAS_WorkerControlComponent* Worker : InWorkers)
+    {
+        if (!IsValid(Worker)) continue;
+        Worker->RequestEnterLmQueue();
+    }
 }
 
 void ASAS_PlayerController::SetupInputComponent()

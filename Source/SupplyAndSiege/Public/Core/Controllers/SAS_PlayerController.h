@@ -73,6 +73,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Player_UI")
 	FOnGoBackPressed OnGoBackPressed;
 
+	UFUNCTION(BlueprintCallable, Category = "Logistics")
+	void RequestAddWorkersToLMQueue(const TArray<USAS_WorkerControlComponent*>& InWorkers);
+
 protected:
 
 	virtual void SetupInputComponent() override;

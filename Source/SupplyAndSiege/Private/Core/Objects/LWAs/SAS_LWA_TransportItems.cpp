@@ -22,9 +22,11 @@ void USAS_LWA_TransportItems::InitializeTransportAssignment(USAS_LogisticsMaster
 
 void USAS_LWA_TransportItems::StartAssignment()
 {
+	if (IsFinished()) return;
+
 	Super::StartAssignment();
 
-	if (IsFinished()) return;
+
 
 	//TODO: Any starting logic for this job type.
 	AdvanceAssignment();
@@ -159,21 +161,25 @@ void USAS_LWA_TransportItems::AdvanceAssignment()
 	case ESAS_TransportAssignmentPhase::MovingToSource:
 	{
 		//TODO
+		break;
 	}
 
 	case ESAS_TransportAssignmentPhase::PickingUp:
 	{
 		//TODO:
+		break;
 	}
 
 	case ESAS_TransportAssignmentPhase::MovingToTarget:
 	{
 		//TODO:
+		break;
 	}
 
 	case ESAS_TransportAssignmentPhase::DroppingOff:
 	{
 		//TODO:
+		break;
 	}
 
 	default:

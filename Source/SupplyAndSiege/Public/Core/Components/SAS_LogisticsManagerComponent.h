@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Misc/Structs/SAS_ResourceDeliveryRequest.h"
+#include "Misc/Structs/SAS_LogisticsOffering.h"
 #include "SAS_LogisticsManagerComponent.generated.h"
 
 class USAS_LogisticsMasterJob;
@@ -33,11 +34,16 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Logistics")
 	FNotifyLogisticsMasterJobUpdated NotifyLogisticsMasterJobUpdated;
 
+	UFUNCTION(BlueprintCallable, Category = "Logistics")
+	void UpdateInventoryOfferings(USAS_InventoryComponent* SourceInventory, const TArray<FSAS_LogisticsOffering>& NewOfferings);
+
 protected:
 	virtual void BeginPlay() override;
 
 private:
 	void HandleLogisticsMasterJobUpdated(USAS_LogisticsMasterJob* LogisticsMasterJob);
+
+	void TryAssignJobs();
 
 public:	
 
@@ -48,6 +54,7 @@ protected:
 	TArray<TObjectPtr<USAS_LogisticsMasterJob>> ActiveJobs;
 	TArray<TObjectPtr<USAS_WorkerControlComponent>> AvailableWorkers;
 
-
+	UPROPERTY()
+	TArray<FSAS_LogisticsOffering> ActiveOfferings;
 
 };

@@ -4,6 +4,7 @@
 #include "Misc/DataAssets/ItemDefinitionPrimaryData.h"
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "Core/Components/SAS_InventoryManagerComponent.h"
+#include "Misc/Structs/SAS_InventoryReservationHandle.h"
 #include "Core/SAS_GameState.h"
 
 
@@ -40,7 +41,14 @@ void USAS_InventoryComponent::GetAllItemTotals(TMap<FPrimaryAssetId, int32>& Out
 
 int32 USAS_InventoryComponent::AddItem(UItemDefinitionPrimaryData* Item, int32 Quantity)
 {
-	const int32 Added = AddItem_Internal(Item, Quantity);
+	if (!Item || Quantity <= 0) return 0;
+
+	const int32 Overflow = GetReservationAwareOverflow(Item, Quantity);
+	const int32 SafeQuantityToAdd = Quantity - Overflow;
+
+	if (SafeQuantityToAdd <= 0) return 0;
+
+	const int32 Added = AddItem_Internal(Item, SafeQuantityToAdd);
 
 	if (Added > 0)
 	{
@@ -71,6 +79,60 @@ int32 USAS_InventoryComponent::GetMaxStack(const UItemDefinitionPrimaryData* Ite
 	return FMath::Max(0, InventoryProfile->DefaultMaxPerSlot);
 }
 
+bool USAS_InventoryComponent::CreateReservationRecord(ESAS_InventoryReservationType ReservationType, UItemDefinitionPrimaryData* Item, int32 Quantity, UObject* Claimer, FSAS_InventoryReservationHandle& OutHandle)
+{
+	OutHandle.Reset();
+
+	if (!Item || Quantity <= 0 || ReservationType == ESAS_InventoryReservationType::None)
+	{
+		return false;
+	}
+
+	FSAS_InventoryReservationRecord NewRecord;
+	NewRecord.ReservationID = FGuid::NewGuid();
+	NewRecord.ReservationType = ReservationType;
+	NewRecord.Item = Item;
+	NewRecord.Quantity = Quantity;
+	NewRecord.Claimer = Claimer;
+
+	if (!NewRecord.IsValid())
+	{
+		return false;
+	}
+
+	ActiveReservations.Add(NewRecord.ReservationID, NewRecord);
+	OutHandle.ReservationID = NewRecord.ReservationID;
+
+	return true;
+}
+
+bool USAS_InventoryComponent::GetReservationRecord(FSAS_InventoryReservationHandle Handle, FSAS_InventoryReservationRecord*& OutRecord)
+{
+	OutRecord = nullptr;
+
+	if (!Handle.IsValid())
+	{
+		return false;
+	}
+
+	FSAS_InventoryReservationRecord* FoundRecord = ActiveReservations.Find(Handle.ReservationID);
+	if (!FoundRecord || !FoundRecord->IsValid())
+	{
+		return false;
+	}
+
+	OutRecord = FoundRecord;
+	return true;
+}
+
+int32 USAS_InventoryComponent::GetReservationAwareOverflow(UItemDefinitionPrimaryData* Item, int32 Quantity) const
+{
+	if (!Item || Quantity <= 0) return Quantity;
+
+	const int32 AvailableCapacity = GetAvailableInboundCapacity(Item, Quantity);
+	return FMath::Max(0, Quantity - AvailableCapacity);
+}
+
 int32 USAS_InventoryComponent::RemoveItem(UItemDefinitionPrimaryData* Item, int32 Quantity)
 {
 	const int32 Removed = RemoveItem_Internal(Item,Quantity);
@@ -86,14 +148,14 @@ int32 USAS_InventoryComponent::RemoveItem(UItemDefinitionPrimaryData* Item, int3
 	return Removed;
 }
 
-int32 USAS_InventoryComponent::HasInventorySpace(UItemDefinitionPrimaryData* Item, int32 Quantity)
+int32 USAS_InventoryComponent::GetPhysicalOverflow(UItemDefinitionPrimaryData* Item, int32 Quantity) const
 {
 	if (!Item || Quantity <= 0) return Quantity;
 	int32 Remaining = Quantity;
 
 	const int32 MaxStack = GetMaxStack(Item);
 	//Existing Slots
-	for (FSAS_InventorySlot& Slot : Slots)
+	for (const FSAS_InventorySlot& Slot : Slots)
 	{
 		if (Remaining <= 0) return 0;
 		if (Slot.IsEmpty()) continue;
@@ -108,7 +170,7 @@ int32 USAS_InventoryComponent::HasInventorySpace(UItemDefinitionPrimaryData* Ite
 
 	// Empty Slots
 
-	for (FSAS_InventorySlot& Slot : Slots)
+	for (const FSAS_InventorySlot& Slot : Slots)
 	{
 		if (Remaining <= 0) return 0;
 		if (!Slot.IsEmpty()) continue;
@@ -122,6 +184,208 @@ void USAS_InventoryComponent::SetInventoryProfile(USAS_InventoryProfileData* New
 {
 	if (!NewProfile) return;
 	InventoryProfile = NewProfile;
+}
+
+int32 USAS_InventoryComponent::GetTotalItemAmount(UItemDefinitionPrimaryData* Item) const
+{
+	if (!Item) return 0;
+
+	int32 Total = 0;
+	for (const FSAS_InventorySlot& Slot : Slots)
+	{
+		if (Slot.IsEmpty()) continue;
+		if (Slot.Item != Item) continue;
+
+		Total += Slot.Quantity;
+	}
+	return Total;
+}
+
+int32 USAS_InventoryComponent::GetReservedOutboundAmount(UItemDefinitionPrimaryData* Item) const
+{
+	if (!Item) return 0;
+
+	int32 Total = 0;
+
+	for (const TPair<FGuid, FSAS_InventoryReservationRecord>& Pair : ActiveReservations)
+	{
+		const FSAS_InventoryReservationRecord& Record = Pair.Value;
+		if (!Record.IsValid()) continue;
+		if (Record.ReservationType != ESAS_InventoryReservationType::Outbound) continue;
+		if (Record.Item != Item) continue;
+
+		Total += Record.Quantity;
+	}
+	return Total;
+}
+
+int32 USAS_InventoryComponent::GetReservedInboundAmount(UItemDefinitionPrimaryData* Item) const
+{
+	if (!Item) return 0;
+
+	int32 Total = 0;
+
+	for (const TPair<FGuid, FSAS_InventoryReservationRecord>& Pair : ActiveReservations)
+	{
+		const FSAS_InventoryReservationRecord& Record = Pair.Value;
+		if (!Record.IsValid()) continue;
+		if (Record.ReservationType != ESAS_InventoryReservationType::Inbound) continue;
+		if (Record.Item != Item) continue;
+
+		Total += Record.Quantity;
+	}
+
+	return Total;
+}
+
+int32 USAS_InventoryComponent::GetUnreservedItemAmount(UItemDefinitionPrimaryData* Item) const
+{
+	if (!Item) return 0;
+
+	const int32 PhysicalAmount = GetTotalItemAmount(Item);
+	const int32 ReservedOutbound = GetReservedOutboundAmount(Item);
+
+	return FMath::Max(0, PhysicalAmount - ReservedOutbound);
+}
+
+int32 USAS_InventoryComponent::GetAvailableInboundCapacity(UItemDefinitionPrimaryData* Item, int32 RequestedQuantity) const
+{
+	if (!Item || RequestedQuantity <= 0) return 0;
+
+	const int32 Overflow = GetPhysicalOverflow(Item, RequestedQuantity);
+	const int32 PhysicalCapacityForRequested = RequestedQuantity - Overflow;
+	const int32 ReservedInbound = GetReservedInboundAmount(Item);
+
+	return FMath::Max(0, PhysicalCapacityForRequested - ReservedInbound);
+}
+
+bool USAS_InventoryComponent::ReserveOutbound(UItemDefinitionPrimaryData* Item, int32 RequestedQuantity, UObject* Claimer, FSAS_InventoryReservationHandle& OutHandle, int32& OutReservedQuantity)
+{
+	OutHandle.Reset();
+	OutReservedQuantity = 0;
+
+	if (!Item || RequestedQuantity <= 0)
+	{
+		return false;
+	}
+
+	const int32 AvailableAmount = GetUnreservedItemAmount(Item);
+	const int32 QuantityToReserve = FMath::Min(RequestedQuantity, AvailableAmount);
+
+	if (QuantityToReserve <= 0)
+	{
+		return false;
+	}
+
+	if (!CreateReservationRecord(ESAS_InventoryReservationType::Outbound, Item, QuantityToReserve, Claimer, OutHandle))
+	{
+		return false;
+	}
+
+	OutReservedQuantity = QuantityToReserve;
+	return true;
+}
+
+bool USAS_InventoryComponent::ReserveInbound(UItemDefinitionPrimaryData* Item, int32 RequestedQuantity, UObject* Claimer, FSAS_InventoryReservationHandle& OutHandle, int32& OutReservedQuantity)
+{
+	OutHandle.Reset();
+	OutReservedQuantity = 0;
+
+	if (!Item || RequestedQuantity <= 0)
+	{
+		return false;
+	}
+
+	const int32 AvailableCapacity = GetAvailableInboundCapacity(Item, RequestedQuantity);
+	const int32 QuantityToReserve = FMath::Min(RequestedQuantity, AvailableCapacity);
+
+	if (QuantityToReserve <= 0)
+	{
+		return false;
+	}
+
+	if (!CreateReservationRecord(ESAS_InventoryReservationType::Inbound, Item, QuantityToReserve, Claimer, OutHandle))
+	{
+		return false;
+	}
+
+	OutReservedQuantity = QuantityToReserve;
+	return true;
+}
+
+bool USAS_InventoryComponent::ReleaseReservation(FSAS_InventoryReservationHandle Handle)
+{
+	if (!Handle.IsValid())
+	{
+		return false;
+	}
+
+	return ActiveReservations.Remove(Handle.ReservationID) > 0;
+}
+
+bool USAS_InventoryComponent::FinalizeOutboundPickup(FSAS_InventoryReservationHandle Handle, int32& OutRemovedQuantity)
+{
+	OutRemovedQuantity = 0;
+
+	FSAS_InventoryReservationRecord* Record = nullptr;
+	if (!GetReservationRecord(Handle, Record) || !Record)
+	{
+		return false;
+	}
+
+	if (Record->ReservationType != ESAS_InventoryReservationType::Outbound)
+	{
+		return false;
+	}
+
+	const int32 Removed = RemoveItem(Record->Item, Record->Quantity);
+	if (Removed <= 0)
+	{
+		return false;
+	}
+
+	OutRemovedQuantity = Removed;
+	ActiveReservations.Remove(Handle.ReservationID);
+	return true;
+}
+
+bool USAS_InventoryComponent::FinalizeInboundDropoff(FSAS_InventoryReservationHandle Handle, int32 QuantityToDeliver, int32& OutAddedQuantity)
+{
+	OutAddedQuantity = 0;
+
+	FSAS_InventoryReservationRecord* Record = nullptr;
+	if (!GetReservationRecord(Handle, Record) || !Record)
+	{
+		return false;
+	}
+
+	if (Record->ReservationType != ESAS_InventoryReservationType::Inbound)
+	{
+		return false;
+	}
+
+	if (QuantityToDeliver <= 0)
+	{
+		return false;
+	}
+
+	const int32 QuantityToAdd = FMath::Min(QuantityToDeliver, Record->Quantity);
+	const int32 Added = AddItem_Internal(Record->Item, QuantityToAdd);
+
+	if (Added <= 0)
+	{
+		return false;
+	}
+
+	const FPrimaryAssetId ItemId = Record->Item->GetPrimaryAssetId();
+	if (ItemId.IsValid())
+	{
+		OnInventoryChanged.Broadcast(this, ItemId, Added);
+	}
+
+	OutAddedQuantity = Added;
+	ActiveReservations.Remove(Handle.ReservationID);
+	return true;
 }
 
 void USAS_InventoryComponent::BeginPlay()
@@ -140,6 +404,8 @@ void USAS_InventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		UnitInfoComponent->NotifyTeamChange.RemoveDynamic(this, &USAS_InventoryComponent::HandleTeamChanged);
 	}
+
+	ActiveReservations.Reset();
 
 	Super::EndPlay(EndPlayReason);
 }

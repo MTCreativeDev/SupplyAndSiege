@@ -33,6 +33,9 @@ enum class ESAS_WorkerRequestResult :uint8
 	StartedTransition	UMETA(DisplayName = "Started Transition")
 };
 
+
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_WorkerControlComponent : public UActorComponent
 {
@@ -64,6 +67,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Worker Control")
 	bool UpdateCurrentHarvestKeyAndLocation(FSAS_ResourceKey ResourceKey, FVector TargetLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "Worker Control")
+	int32 GetBaseScoreForJob(const ESAS_MasterJobType JobType) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Worker Control")
+	ESAS_WorkerType GetWorkerType() const { return WorkerType; }
 
 protected:
 
@@ -103,6 +112,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Worker Control")
 	FVector CurrentHarvestTargetLocation = FVector::ZeroVector;
+
+	UPROPERTY(EditDefaultsOnly, Category = "WorkerControl")
+	ESAS_WorkerType WorkerType = ESAS_WorkerType::Unspecified;
 
 		
 };
