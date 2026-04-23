@@ -36,16 +36,38 @@ void USAS_LogisticsManagerComponent::UpdateInventoryOfferings(USAS_InventoryComp
 	}
 
 	//DEBUG
-	if (GEngine)
-	{
-		const FString SourceName = SourceInventory->GetOwner() ? SourceInventory->GetOwner()->GetName() : TEXT("NoOwner");
+	TMap<UItemDefinitionPrimaryData*, int32> TotalPerItem;
+	TMap<UItemDefinitionPrimaryData*, int32> LocationCount;
 
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			3.f,
-			FColor::Green,
-			FString::Printf(TEXT("Updating Offerings | Source: %s | New Count: %d"), *SourceName, NewOfferings.Num())
-		);
+	for (const FSAS_LogisticsOffering& Offer : ActiveOfferings)
+	{
+		if (!IsValid(Offer.Item) || !IsValid(Offer.SourceInventory)) continue;
+
+		TotalPerItem.FindOrAdd(Offer.Item) += Offer.Quantity;
+		LocationCount.FindOrAdd(Offer.Item) += 1;
+	}
+
+	for (const TPair<UItemDefinitionPrimaryData*, int32>& Pair : TotalPerItem)
+	{
+		UItemDefinitionPrimaryData* Item = Pair.Key;
+		const int32 TotalQuantity = Pair.Value;
+		const int32 NumLocations = LocationCount.Contains(Item) ? LocationCount[Item] : 0;
+
+		const FString ItemName = Item ? Item->GetName() : TEXT("None");
+
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				3.f,
+				FColor::Green,
+				FString::Printf(TEXT("Resource: %s | Total: %d | Locations: %d"),
+					*ItemName,
+					TotalQuantity,
+					NumLocations
+				)
+			);
+		}
 	}
 
 }
