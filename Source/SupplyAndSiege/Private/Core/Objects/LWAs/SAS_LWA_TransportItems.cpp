@@ -7,7 +7,7 @@
 #include "Misc/DataAssets/ItemDefinitionPrimaryData.h"
 #include "Misc/Structs/SAS_WA_FailureContext.h"
 
-void USAS_LWA_TransportItems::InitializeTransportAssignment(USAS_LogisticsMasterJob* InParentMasterJob, USAS_UnitInformationComponent* InAssignedWorker, UItemDefinitionPrimaryData* InItemDefinition, int32 InAssignedAmount, AActor* InSourceActor, AActor* InTargetActor)
+void USAS_LWA_TransportItems::InitializeTransportAssignment(USAS_LogisticsMasterJob* InParentMasterJob, USAS_WorkerControlComponent* InAssignedWorker, UItemDefinitionPrimaryData* InItemDefinition, int32 InAssignedAmount, AActor* InSourceActor, AActor* InTargetActor)
 {
 	InitializeAssignment(InParentMasterJob, InAssignedWorker, ESAS_WorkerAssignmentType::TransportItems);
 	ItemDefinition = InItemDefinition;

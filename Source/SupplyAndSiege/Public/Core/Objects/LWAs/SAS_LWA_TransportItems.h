@@ -28,7 +28,7 @@ class SUPPLYANDSIEGE_API USAS_LWA_TransportItems : public USAS_LogisticsWorkerAs
 	GENERATED_BODY()
 public:
 	
-	void InitializeTransportAssignment(USAS_LogisticsMasterJob* InParentMasterJob, USAS_UnitInformationComponent* InAssignedWorker, UItemDefinitionPrimaryData* InItemDefinition, int32 InAssignedAmount, AActor* InSourceActor, AActor* InTargetActor);
+	void InitializeTransportAssignment(USAS_LogisticsMasterJob* InParentMasterJob, USAS_WorkerControlComponent* InAssignedWorker, UItemDefinitionPrimaryData* InItemDefinition, int32 InAssignedAmount, AActor* InSourceActor, AActor* InTargetActor);
 
 	virtual void StartAssignment() override;
 	virtual void CancelAssignment() override;

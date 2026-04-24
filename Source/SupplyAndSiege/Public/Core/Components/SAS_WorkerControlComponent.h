@@ -74,6 +74,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Worker Control")
 	ESAS_WorkerType GetWorkerType() const { return WorkerType; }
 
+	UFUNCTION(BlueprintCallable, Category = "Worker Control")
+	int32 GetCarryCapacityForItem(UItemDefinitionPrimaryData* Item) const;
+
 protected:
 
 	virtual void BeginPlay() override;

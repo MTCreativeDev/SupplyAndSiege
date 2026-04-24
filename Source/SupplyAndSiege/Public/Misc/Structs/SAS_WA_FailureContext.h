@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/SAS_Enumerators.h"
-#include "Core/Components/SAS_UnitInformationComponent.h"
+#include "Core/Components/SAS_WorkerControlComponent.h"
 #include "SAS_WA_FailureContext.generated.h"
 
 USTRUCT(BlueprintType)
@@ -18,7 +18,7 @@ public:
 	ESAS_WorkerAssignmentFailureReason Reason = ESAS_WorkerAssignmentFailureReason::None;
 
 	UPROPERTY(BlueprintReadOnly)
-	TWeakObjectPtr<USAS_UnitInformationComponent> Worker = nullptr;
+	TWeakObjectPtr<USAS_WorkerControlComponent> Worker = nullptr;
 
 	UPROPERTY(BlueprintReadOnly)
 	TWeakObjectPtr<AActor> SourceActor = nullptr;

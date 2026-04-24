@@ -10,7 +10,7 @@
 class AActor;
 class UItemDefinitionPrimaryData;
 class USAS_LogisticsMasterJob;
-class USAS_UnitInformationComponent;
+class USAS_WorkerControlComponent;
 struct FSAS_WA_FailureContext;
 
 UCLASS()
@@ -19,7 +19,7 @@ class SUPPLYANDSIEGE_API USAS_LogisticsWorkerAssignment : public UObject
 	GENERATED_BODY()
 
 public:
-	void InitializeAssignment(USAS_LogisticsMasterJob* InParentMasterJob, USAS_UnitInformationComponent* InAssignedWorker, ESAS_WorkerAssignmentType InAssignmentType);
+	void InitializeAssignment(USAS_LogisticsMasterJob* InParentMasterJob, USAS_WorkerControlComponent* InAssignedWorker, ESAS_WorkerAssignmentType InAssignmentType);
 
 	virtual void StartAssignment();
 	virtual void CancelAssignment();
@@ -60,7 +60,7 @@ public:
 	TObjectPtr<USAS_LogisticsMasterJob> ParentMasterJob = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Logistics Worker Assignment")
-	TObjectPtr<USAS_UnitInformationComponent> AssignedWorker = nullptr;
+	TObjectPtr<USAS_WorkerControlComponent> AssignedWorker = nullptr;
 
 	
 };

@@ -1,5 +1,6 @@
 #include "Core/Components/SAS_WorkerControlComponent.h"
 #include "Core/Components/SAS_UnitInformationComponent.h"
+#include "Core/Components/SAS_InventoryComponent.h"
 #include "Core/Objects/SAS_LogisticsWorkerAssignment.h"
 #include "Core/Components/SAS_LogisticsManagerComponent.h"
 #include "Core/SAS_GameplayTagContainer.h"
@@ -135,6 +136,20 @@ int32 USAS_WorkerControlComponent::GetBaseScoreForJob(const ESAS_MasterJobType J
 	}
 
 	return 0;
+}
+
+int32 USAS_WorkerControlComponent::GetCarryCapacityForItem(UItemDefinitionPrimaryData* Item) const
+{
+	if (!IsValid(Item)) return 0;
+
+	AActor* Owner = GetOwner();
+	if (!IsValid(Owner)) return 0;
+
+	USAS_InventoryComponent* Inventory = Owner->FindComponentByClass<USAS_InventoryComponent>();
+	if (!IsValid(Inventory)) return 0;
+
+	return Inventory->GetAvailableInboundCapacity(Item, MAX_int32);
+
 }
 
 void USAS_WorkerControlComponent::BeginPlay()

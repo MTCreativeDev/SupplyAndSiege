@@ -22,6 +22,11 @@ public:
 
 	void SetBuildingDefinition(USAS_BuildingDefinitionData* NewBuildingDefinition);
 
+	UFUNCTION(BlueprintCallable, Category = "Building")
+	FVector GetBestMoveToWorldLocation(const FVector& FromWorldLocation) const;
+
+
+
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif

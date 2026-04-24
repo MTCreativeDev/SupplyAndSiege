@@ -73,4 +73,29 @@ void ASAS_BuildingLayout::SetBuildingDefinition(USAS_BuildingDefinitionData* New
 	BuildingDefinition = NewBuildingDefinition;
 }
 
+FVector ASAS_BuildingLayout::GetBestMoveToWorldLocation(const FVector& FromWorldLocation) const
+{
+	if (!BuildingDefinition || BuildingDefinition->MoveToRelativeLocations.Num() == 0)
+	{
+		return GetActorLocation();
+	}
+
+	float BestDistSq = TNumericLimits<float>::Max();
+	FVector BestWorldLocation = GetActorLocation();
+
+	for (const FVector& RelativeLocation : BuildingDefinition->MoveToRelativeLocations)
+	{
+		const FVector WorldLocation = GetActorTransform().TransformPosition(RelativeLocation);
+		const float DistSq = FVector::DistSquared(FromWorldLocation, WorldLocation);
+
+		if (DistSq < BestDistSq)
+		{
+			BestDistSq = DistSq;
+			BestWorldLocation = WorldLocation;
+		}
+	}
+
+	return BestWorldLocation;
+}
+
 

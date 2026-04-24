@@ -11,7 +11,7 @@ public class SupplyAndSiege : ModuleRules
         PrivatePCHHeaderFile = "SupplyAndSiege.h";
         PublicIncludePaths.Add(ModuleDirectory);
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayTags", "AIModule", "HookDebugLog" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "GameplayTags", "AIModule", "HookDebugLog", "NavigationSystem"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "StateTreeModule", "GameplayStateTreeModule" });
 

@@ -5,7 +5,7 @@
 #include "Core/Objects/SAS_LogisticsMasterJob.h"
 #include "Misc/Structs/SAS_WA_FailureContext.h"
 
-void USAS_LogisticsWorkerAssignment::InitializeAssignment(USAS_LogisticsMasterJob* InParentMasterJob, USAS_UnitInformationComponent* InAssignedWorker, ESAS_WorkerAssignmentType InAssignmentType)
+void USAS_LogisticsWorkerAssignment::InitializeAssignment(USAS_LogisticsMasterJob* InParentMasterJob, USAS_WorkerControlComponent* InAssignedWorker, ESAS_WorkerAssignmentType InAssignmentType)
 {
 	WorkerAssignmentID = FGuid::NewGuid();
 	ParentMasterJob = InParentMasterJob;

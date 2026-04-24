@@ -36,6 +36,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Logistics Master Job")
 	bool CanAcceptMoreAssignments() const;
 
+	TObjectPtr< UItemDefinitionPrimaryData> GetItemDefinition() const { return ItemDefinition; }
+
 protected:
 	virtual bool EvaluateIsComplete() const override;
 
