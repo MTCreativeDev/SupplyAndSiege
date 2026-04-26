@@ -110,6 +110,7 @@ void USAS_VisionComponent::OnTeamChanged(ESAS_Team NewTeam)
 	{
 		Manager->RegisterComponent(this);
 		bRegistered = true;
+		ApplyDefaultHiddenOnRegistration();
 		Manager->RequestImmediateRecompute();
 	}
 	else
