@@ -480,6 +480,7 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
     if (bHit && Hit.GetActor())
     {
         const AActor* Actor = Hit.GetActor();
+        if (Actor->IsHidden()) return;
 
         USAS_UnitInformationComponent* UnitInformationComponent = Actor->FindComponentByClass<USAS_UnitInformationComponent>();
         if (!UnitInformationComponent) return;
@@ -511,6 +512,7 @@ void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const 
     {
         if (!WeakActor.IsValid()) continue;
         AActor* Actor = WeakActor.Get();
+        if (Actor->IsHidden()) continue;
 
         FVector2D ScreenPos;
         if (!ProjectWorldLocationToScreen(Actor->GetActorLocation(), ScreenPos, false)) continue;
