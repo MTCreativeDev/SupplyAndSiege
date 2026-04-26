@@ -92,6 +92,30 @@ void USAS_VisionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void USAS_VisionComponent::OnTeamChanged(ESAS_Team NewTeam)
 {
+	if (NewTeam == CachedTeam)
+	{
+		return;
+	}
+
+	USAS_VisionManagerComponent* Manager = CachedManager.Get();
+	if (Manager && bRegistered)
+	{
+		Manager->UnregisterComponent(this, CachedTeam);
+		bRegistered = false;
+	}
+
+	CachedTeam = NewTeam;
+
+	if (Manager)
+	{
+		Manager->RegisterComponent(this);
+		bRegistered = true;
+		Manager->RequestImmediateRecompute();
+	}
+	else
+	{
+		TryRegisterWithManager();
+	}
 }
 
 void USAS_VisionComponent::TryRegisterWithManager()
