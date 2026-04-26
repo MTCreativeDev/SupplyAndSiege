@@ -460,34 +460,39 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
     FVector WorldOrigin;
     FVector WorldDirection;
 
-    if (!DeprojectScreenPositionToWorld(SelectionStartMousePos.X, SelectionStartMousePos.Y, WorldOrigin, WorldDirection)) return;
+    if (!DeprojectScreenPositionToWorld(ScreenPosition.X, ScreenPosition.Y, WorldOrigin, WorldDirection)) return;
 
     const FVector TraceStart = WorldOrigin;
     const FVector TraceEnd = WorldOrigin + (WorldDirection * 100000.f);
 
-    FHitResult Hit;
+    TArray<FHitResult> Hits;
     FCollisionQueryParams Params;
     Params.bTraceComplex = true;
     
-    const bool bHit = GetWorld()->LineTraceSingleByChannel(
-        Hit,
+    const bool bHit = GetWorld()->LineTraceMultiByChannel(
+        Hits,
         TraceStart,
         TraceEnd,
         Trace_SelectableUnit,
         Params
     );
 
-    if (bHit && Hit.GetActor())
+    if (!bHit)
     {
-        const AActor* Actor = Hit.GetActor();
-        if (Actor->IsHidden()) return;
+        return;
+    }
 
+    for (const FHitResult& Hit : Hits)
+    {
+        AActor* Actor = Hit.GetActor();
+        if (!Actor || Actor->IsHidden()) continue;
+    
         USAS_UnitInformationComponent* UnitInformationComponent = Actor->FindComponentByClass<USAS_UnitInformationComponent>();
-        if (!UnitInformationComponent) return;
+        if (!UnitInformationComponent) continue;
     
         UnitManagerComponent->AddSelectedUnit(UnitInformationComponent);
         CurrentRightClickAction = ERightClickAction::UnitAction;
-
+        return;
     }
 
     

@@ -234,5 +234,16 @@ void USAS_VisionComponent::SetHidden(bool bNewHidden)
 		return;
 	}
 
+	const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>& SelectedUnits = UnitManager->GetSelectedUnits();
+	const bool bIsSelected = SelectedUnits.ContainsByPredicate(
+		[InfoComp](const TWeakObjectPtr<USAS_UnitInformationComponent>& SelectedUnit)
+		{
+			return SelectedUnit.IsValid() && SelectedUnit.Get() == InfoComp;
+		});
+	if (!bIsSelected)
+	{
+		return;
+	}
+
 	UnitManager->RemoveSelectedUnit(InfoComp);
 }
