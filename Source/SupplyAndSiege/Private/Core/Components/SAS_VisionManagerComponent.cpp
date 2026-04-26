@@ -22,11 +22,18 @@ void USAS_VisionManagerComponent::BeginPlay()
 		return;
 	}
 
-	if (UWorld* World = GetWorld())
+	UWorld* World = GetWorld();
+	if (!World)
 	{
-		ResolveViewingTeamTimer = World->GetTimerManager().SetTimerForNextTick(
-			FTimerDelegate::CreateUObject(this, &USAS_VisionManagerComponent::ResolveViewingTeam));
+		return;
 	}
+
+	ResolveViewingTeamTimer = World->GetTimerManager().SetTimerForNextTick(
+		FTimerDelegate::CreateUObject(this, &USAS_VisionManagerComponent::ResolveViewingTeam));
+
+	World->GetTimerManager().SetTimer(
+		UpdateTimer, this, &USAS_VisionManagerComponent::RecomputeVisibility,
+		UpdateIntervalSeconds, /*bLoop=*/true);
 }
 
 void USAS_VisionManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -61,6 +68,8 @@ void USAS_VisionManagerComponent::RegisterComponent(USAS_VisionComponent* Comp)
 		TArray<TWeakObjectPtr<USAS_VisionComponent>>& TeamSources = Sources.FindOrAdd(Comp->GetCachedTeam());
 		TeamSources.AddUnique(WeakComp);
 	}
+
+	RequestImmediateRecompute();
 }
 
 void USAS_VisionManagerComponent::UnregisterComponent(USAS_VisionComponent* Comp, ESAS_Team Team)
@@ -95,6 +104,20 @@ void USAS_VisionManagerComponent::SetViewingTeam(ESAS_Team NewTeam)
 
 void USAS_VisionManagerComponent::RequestImmediateRecompute()
 {
+	if (bImmediateRecomputeQueued)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	bImmediateRecomputeQueued = true;
+	ImmediateRecomputeTimer = World->GetTimerManager().SetTimerForNextTick(
+		FTimerDelegate::CreateUObject(this, &USAS_VisionManagerComponent::RecomputeVisibility));
 }
 
 bool USAS_VisionManagerComponent::IsActorVisibleToViewer(AActor* Actor) const
