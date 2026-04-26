@@ -24,7 +24,7 @@ void USAS_VisionManagerComponent::BeginPlay()
 
 	if (UWorld* World = GetWorld())
 	{
-		World->GetTimerManager().SetTimerForNextTick(
+		ResolveViewingTeamTimer = World->GetTimerManager().SetTimerForNextTick(
 			FTimerDelegate::CreateUObject(this, &USAS_VisionManagerComponent::ResolveViewingTeam));
 	}
 }
@@ -122,7 +122,7 @@ void USAS_VisionManagerComponent::ResolveViewingTeam()
 	ASAS_PlayerController* PC = Cast<ASAS_PlayerController>(World->GetFirstPlayerController());
 	if (!PC)
 	{
-		World->GetTimerManager().SetTimerForNextTick(
+		ResolveViewingTeamTimer = World->GetTimerManager().SetTimerForNextTick(
 			FTimerDelegate::CreateUObject(this, &USAS_VisionManagerComponent::ResolveViewingTeam));
 		return;
 	}
@@ -130,7 +130,7 @@ void USAS_VisionManagerComponent::ResolveViewingTeam()
 	USAS_UnitManagerComponent* UnitManager = PC->FindComponentByClass<USAS_UnitManagerComponent>();
 	if (!UnitManager)
 	{
-		World->GetTimerManager().SetTimerForNextTick(
+		ResolveViewingTeamTimer = World->GetTimerManager().SetTimerForNextTick(
 			FTimerDelegate::CreateUObject(this, &USAS_VisionManagerComponent::ResolveViewingTeam));
 		return;
 	}
