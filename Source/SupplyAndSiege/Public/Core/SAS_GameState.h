@@ -11,6 +11,7 @@ class USAS_IslandManagerComponent;
 class USAS_InventoryManagerComponent;
 class USAS_ResourceManagerComponent;
 class USAS_LogisticsManagerComponent;
+class USAS_VisionManagerComponent;
 
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_GameState : public AGameStateBase
@@ -22,6 +23,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	USAS_InventoryManagerComponent* GetInventoryManagerForTeam(ESAS_Team Team) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Vision")
+	USAS_VisionManagerComponent* GetVisionManager() const { return VisionManagerComponent; }
 	
 
 protected:
@@ -39,6 +43,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Logistics")
 	USAS_LogisticsManagerComponent* LogisticsManagerComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vision")
+	USAS_VisionManagerComponent* VisionManagerComponent;
 
 
 };
