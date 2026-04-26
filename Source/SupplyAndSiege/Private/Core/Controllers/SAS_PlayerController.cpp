@@ -486,10 +486,10 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
     {
         AActor* Actor = Hit.GetActor();
         if (!Actor || Actor->IsHidden()) continue;
-    
+
         USAS_UnitInformationComponent* UnitInformationComponent = Actor->FindComponentByClass<USAS_UnitInformationComponent>();
         if (!UnitInformationComponent) continue;
-    
+
         UnitManagerComponent->AddSelectedUnit(UnitInformationComponent);
         CurrentRightClickAction = ERightClickAction::UnitAction;
         return;
