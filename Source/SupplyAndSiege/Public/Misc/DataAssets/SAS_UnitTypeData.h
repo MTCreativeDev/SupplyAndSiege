@@ -10,6 +10,7 @@
 
 class UTexture2D;
 class USAS_HealthDefinitionData;
+class USAS_VisionDefinitionData;
 /**
  * 
  */
@@ -34,5 +35,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	USAS_HealthDefinitionData* HealthDefinition = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	USAS_VisionDefinitionData* VisionDefinition = nullptr;
 
 };
