@@ -17,6 +17,9 @@ class SUPPLYANDSIEGE_API USAS_VisionManagerComponent : public UActorComponent
 public:
 	USAS_VisionManagerComponent();
 
+	using UActorComponent::RegisterComponent;
+	using UActorComponent::UnregisterComponent;
+
 	void RegisterComponent(USAS_VisionComponent* Comp);
 	void UnregisterComponent(USAS_VisionComponent* Comp, ESAS_Team Team);
 
