@@ -127,10 +127,41 @@ void USAS_VisionComponent::TryRegisterWithManager()
 	CachedManager = Manager;
 	Manager->RegisterComponent(this);
 	bRegistered = true;
+	ApplyDefaultHiddenOnRegistration();
 }
 
 void USAS_VisionComponent::ApplyDefaultHiddenOnRegistration()
 {
+	if (bIsHiddenLocally)
+	{
+		return;
+	}
+
+	USAS_VisionManagerComponent* Manager = CachedManager.Get();
+	if (!Manager)
+	{
+		return;
+	}
+
+	const ESAS_Team Viewer = Manager->GetViewingTeam();
+	const bool bViewerResolved = Manager->IsViewingTeamResolved();
+
+	if (CachedTeam == ESAS_Team::None)
+	{
+		return;
+	}
+
+	const bool bShouldDefaultHide = (!bViewerResolved) || (CachedTeam != Viewer);
+	if (!bShouldDefaultHide)
+	{
+		return;
+	}
+
+	if (AActor* Owner = GetOwner())
+	{
+		Owner->SetActorHiddenInGame(true);
+		bIsHiddenLocally = true;
+	}
 }
 
 void USAS_VisionComponent::SetHidden(bool bNewHidden)
