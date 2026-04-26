@@ -10,6 +10,7 @@
 class USAS_VisionDefinitionData;
 class USAS_UnitInformationComponent;
 class USAS_VisionManagerComponent;
+class UPrimitiveComponent;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class SUPPLYANDSIEGE_API USAS_VisionComponent : public UActorComponent
@@ -56,4 +57,5 @@ private:
 
 	TWeakObjectPtr<USAS_UnitInformationComponent> CachedInfoComp;
 	TWeakObjectPtr<USAS_VisionManagerComponent> CachedManager;
+	TMap<TWeakObjectPtr<UPrimitiveComponent>, ECollisionResponse> CachedSelectableTraceResponses;
 };

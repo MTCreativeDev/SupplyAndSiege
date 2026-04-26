@@ -4,6 +4,8 @@
 
 #include "Core/Components/SAS_UnitInformationComponent.h"
 #include "Core/Components/SAS_VisionManagerComponent.h"
+#include "Components/PrimitiveComponent.h"
+#include "Core/CustomCollision.h"
 #include "Core/SAS_GameState.h"
 #include "Misc/DataAssets/SAS_UnitTypeData.h"
 #include "Misc/DataAssets/SAS_VisionDefinitionData.h"
@@ -200,6 +202,42 @@ void USAS_VisionComponent::SetHidden(bool bNewHidden)
 	}
 
 	Owner->SetActorHiddenInGame(bNewHidden);
+
+	if (bNewHidden)
+	{
+		TArray<UPrimitiveComponent*> PrimitiveComponents;
+		Owner->GetComponents<UPrimitiveComponent>(PrimitiveComponents);
+
+		for (UPrimitiveComponent* PrimitiveComponent : PrimitiveComponents)
+		{
+			if (!IsValid(PrimitiveComponent))
+			{
+				continue;
+			}
+
+			const TWeakObjectPtr<UPrimitiveComponent> ComponentKey(PrimitiveComponent);
+			if (!CachedSelectableTraceResponses.Contains(ComponentKey))
+			{
+				CachedSelectableTraceResponses.Add(
+					ComponentKey,
+					PrimitiveComponent->GetCollisionResponseToChannel(Trace_SelectableUnit));
+			}
+
+			PrimitiveComponent->SetCollisionResponseToChannel(Trace_SelectableUnit, ECR_Ignore);
+		}
+	}
+	else
+	{
+		for (const TPair<TWeakObjectPtr<UPrimitiveComponent>, ECollisionResponse>& CachedResponse : CachedSelectableTraceResponses)
+		{
+			if (UPrimitiveComponent* PrimitiveComponent = CachedResponse.Key.Get())
+			{
+				PrimitiveComponent->SetCollisionResponseToChannel(Trace_SelectableUnit, CachedResponse.Value);
+			}
+		}
+
+		CachedSelectableTraceResponses.Empty();
+	}
 
 	if (!bNewHidden)
 	{
