@@ -98,6 +98,20 @@ void USAS_VisionManagerComponent::SetViewingTeam(ESAS_Team NewTeam)
 	}
 	ViewingTeam = NewTeam;
 	bViewingTeamResolved = true;
+
+	if (ViewingTeam == ESAS_Team::None)
+	{
+		for (const TWeakObjectPtr<USAS_VisionComponent>& WeakTarget : LastVisibleToViewer)
+		{
+			if (USAS_VisionComponent* Target = WeakTarget.Get())
+			{
+				Target->SetHidden(true);
+			}
+		}
+		LastVisibleToViewer.Reset();
+		return;
+	}
+
 	RequestImmediateRecompute();
 }
 
