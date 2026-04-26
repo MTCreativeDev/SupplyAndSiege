@@ -47,6 +47,7 @@ private:
 	bool bRegistered = false;
 	bool bIsHiddenLocally = false;
 	bool bInitializedFromUnitType = false;
+	bool bHasEndedPlay = false;
 
 	int32 RetryCount = 0;
 

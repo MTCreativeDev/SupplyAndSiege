@@ -69,6 +69,8 @@ void USAS_VisionComponent::BeginPlay()
 
 void USAS_VisionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	bHasEndedPlay = true;
+
 	if (USAS_UnitInformationComponent* InfoComp = CachedInfoComp.Get())
 	{
 		InfoComp->NotifyTeamChange.RemoveDynamic(this, &USAS_VisionComponent::OnTeamChanged);
@@ -92,7 +94,7 @@ void USAS_VisionComponent::OnTeamChanged(ESAS_Team NewTeam)
 
 void USAS_VisionComponent::TryRegisterWithManager()
 {
-	if (bRegistered || !bInitializedFromUnitType)
+	if (bHasEndedPlay || bRegistered || !bInitializedFromUnitType)
 	{
 		return;
 	}
