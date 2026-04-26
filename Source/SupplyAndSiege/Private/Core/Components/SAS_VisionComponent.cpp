@@ -157,11 +157,7 @@ void USAS_VisionComponent::ApplyDefaultHiddenOnRegistration()
 		return;
 	}
 
-	if (AActor* Owner = GetOwner())
-	{
-		Owner->SetActorHiddenInGame(true);
-		bIsHiddenLocally = true;
-	}
+	SetHidden(true);
 }
 
 void USAS_VisionComponent::SetHidden(bool bNewHidden)
