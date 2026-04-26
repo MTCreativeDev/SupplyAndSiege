@@ -10,6 +10,8 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "GameFramework/Actor.h"
+#include "Core/Components/SAS_UnitManagerComponent.h"
+#include "Core/Controllers/SAS_PlayerController.h"
 
 USAS_VisionComponent::USAS_VisionComponent()
 {
@@ -133,4 +135,52 @@ void USAS_VisionComponent::ApplyDefaultHiddenOnRegistration()
 
 void USAS_VisionComponent::SetHidden(bool bNewHidden)
 {
+	if (bIsHiddenLocally == bNewHidden)
+	{
+		return;
+	}
+	bIsHiddenLocally = bNewHidden;
+
+	AActor* Owner = GetOwner();
+	if (!IsValid(Owner))
+	{
+		return;
+	}
+
+	Owner->SetActorHiddenInGame(bNewHidden);
+
+	if (!bNewHidden)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+	ASAS_PlayerController* PC = Cast<ASAS_PlayerController>(World->GetFirstPlayerController());
+	if (!PC)
+	{
+		return;
+	}
+	USAS_UnitManagerComponent* UnitManager = PC->FindComponentByClass<USAS_UnitManagerComponent>();
+	if (!UnitManager)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("USAS_VisionComponent::SetHidden: UnitManagerComponent missing from PC; cannot deselect hidden actor."));
+		return;
+	}
+
+	USAS_UnitInformationComponent* InfoComp = CachedInfoComp.Get();
+	if (!InfoComp)
+	{
+		InfoComp = Owner->FindComponentByClass<USAS_UnitInformationComponent>();
+	}
+	if (!IsValid(InfoComp))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("USAS_VisionComponent::SetHidden: UnitInformationComponent missing on %s; cannot deselect."), *Owner->GetName());
+		return;
+	}
+
+	UnitManager->RemoveSelectedUnit(InfoComp);
 }
