@@ -98,7 +98,6 @@ void USAS_VisionManagerComponent::SetViewingTeam(ESAS_Team NewTeam)
 	}
 	ViewingTeam = NewTeam;
 	bViewingTeamResolved = true;
-	LastVisibleToViewer.Reset();
 	RequestImmediateRecompute();
 }
 
