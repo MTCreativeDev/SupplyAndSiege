@@ -128,12 +128,123 @@ void USAS_VisionManagerComponent::RequestImmediateRecompute()
 
 bool USAS_VisionManagerComponent::IsActorVisibleToViewer(AActor* Actor) const
 {
-	return true;
+	if (!IsValid(Actor))
+	{
+		return false;
+	}
+
+	for (const TWeakObjectPtr<USAS_VisionComponent>& Weak : LastVisibleToViewer)
+	{
+		USAS_VisionComponent* Comp = Weak.Get();
+		if (Comp && Comp->GetOwner() == Actor)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void USAS_VisionManagerComponent::RecomputeVisibility()
 {
 	bImmediateRecomputeQueued = false;
+
+	if (!bViewingTeamResolved || ViewingTeam == ESAS_Team::None)
+	{
+		return;
+	}
+
+	TSet<TWeakObjectPtr<USAS_VisionComponent>> NewVisible;
+	NewVisible.Reserve(AllTargets.Num());
+
+	for (const TWeakObjectPtr<USAS_VisionComponent>& WeakTarget : AllTargets)
+	{
+		USAS_VisionComponent* Target = WeakTarget.Get();
+		if (!Target)
+		{
+			continue;
+		}
+		if (Target->GetCachedTeam() == ViewingTeam)
+		{
+			NewVisible.Add(WeakTarget);
+		}
+	}
+
+	if (TArray<TWeakObjectPtr<USAS_VisionComponent>>* TeamSources = Sources.Find(ViewingTeam))
+	{
+		for (const TWeakObjectPtr<USAS_VisionComponent>& WeakSource : *TeamSources)
+		{
+			USAS_VisionComponent* Source = WeakSource.Get();
+			if (!Source)
+			{
+				continue;
+			}
+			AActor* SourceOwner = Source->GetOwner();
+			if (!IsValid(SourceOwner))
+			{
+				continue;
+			}
+
+			const FVector SourceLoc = SourceOwner->GetActorLocation();
+			const float RadiusSq = Source->GetRadiusSquared();
+
+			for (const TWeakObjectPtr<USAS_VisionComponent>& WeakTarget : AllTargets)
+			{
+				if (NewVisible.Contains(WeakTarget))
+				{
+					continue;
+				}
+				USAS_VisionComponent* Target = WeakTarget.Get();
+				if (!Target)
+				{
+					continue;
+				}
+				AActor* TargetOwner = Target->GetOwner();
+				if (!IsValid(TargetOwner))
+				{
+					continue;
+				}
+
+				FVector Delta = TargetOwner->GetActorLocation() - SourceLoc;
+				Delta.Z = 0.0f;
+				if (Delta.SizeSquared() <= RadiusSq)
+				{
+					NewVisible.Add(WeakTarget);
+				}
+			}
+		}
+	}
+
+	for (const TWeakObjectPtr<USAS_VisionComponent>& WeakTarget : NewVisible)
+	{
+		if (LastVisibleToViewer.Contains(WeakTarget))
+		{
+			continue;
+		}
+		if (USAS_VisionComponent* Target = WeakTarget.Get())
+		{
+			Target->SetHidden(false);
+		}
+	}
+
+	for (const TWeakObjectPtr<USAS_VisionComponent>& WeakTarget : LastVisibleToViewer)
+	{
+		if (NewVisible.Contains(WeakTarget))
+		{
+			continue;
+		}
+		if (USAS_VisionComponent* Target = WeakTarget.Get())
+		{
+			Target->SetHidden(true);
+		}
+	}
+
+	LastVisibleToViewer = MoveTemp(NewVisible);
+
+	++TickCounter;
+	if (PruneEveryNTicks > 0 && (TickCounter % PruneEveryNTicks) == 0)
+	{
+		PruneStaleEntries();
+	}
 }
 
 void USAS_VisionManagerComponent::ResolveViewingTeam()
@@ -172,4 +283,22 @@ void USAS_VisionManagerComponent::ResolveViewingTeam()
 
 void USAS_VisionManagerComponent::PruneStaleEntries()
 {
+	AllTargets.RemoveAll([](const TWeakObjectPtr<USAS_VisionComponent>& Weak) { return !Weak.IsValid(); });
+
+	for (auto It = Sources.CreateIterator(); It; ++It)
+	{
+		It.Value().RemoveAll([](const TWeakObjectPtr<USAS_VisionComponent>& Weak) { return !Weak.IsValid(); });
+		if (It.Value().Num() == 0)
+		{
+			It.RemoveCurrent();
+		}
+	}
+
+	for (auto It = LastVisibleToViewer.CreateIterator(); It; ++It)
+	{
+		if (!It->IsValid())
+		{
+			It.RemoveCurrent();
+		}
+	}
 }
