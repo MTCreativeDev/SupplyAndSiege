@@ -133,6 +133,7 @@ bool USAS_VisionManagerComponent::IsActorVisibleToViewer(AActor* Actor) const
 
 void USAS_VisionManagerComponent::RecomputeVisibility()
 {
+	bImmediateRecomputeQueued = false;
 }
 
 void USAS_VisionManagerComponent::ResolveViewingTeam()
