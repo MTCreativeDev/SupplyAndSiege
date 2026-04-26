@@ -109,6 +109,12 @@ void USAS_VisionManagerComponent::RequestImmediateRecompute()
 		return;
 	}
 
+	AActor* Owner = GetOwner();
+	if (!Owner || !Owner->HasAuthority())
+	{
+		return;
+	}
+
 	UWorld* World = GetWorld();
 	if (!World)
 	{
