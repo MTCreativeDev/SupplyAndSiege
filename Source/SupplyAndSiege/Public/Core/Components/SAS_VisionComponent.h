@@ -23,6 +23,7 @@ public:
 	ESAS_Team GetCachedTeam() const { return CachedTeam; }
 	bool IsSource() const { return bIsSource; }
 	float GetRadiusSquared() const { return CachedRadiusSq; }
+	float GetCachedRadius() const { return CachedRadius; }
 
 	/** Called by the manager when the visible-set diff transitions this component. */
 	void SetHidden(bool bNewHidden);
