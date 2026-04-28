@@ -17,6 +17,7 @@ class USAS_SelectionInventoryViewModel;
 class USAS_BuildingDefinitionData;
 class ASAS_BL_BuildPlacement;
 class ASAS_BL_BuildJob;
+class USAS_FogOfWarClientComponent;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FExitBuildingPlacement);
@@ -150,6 +151,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit")
 	USAS_UnitManagerComponent* UnitManagerComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FogOfWar")
+	TObjectPtr<USAS_FogOfWarClientComponent> FogOfWarClient;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller_State")
 	EControllerAction CurrentAction = EControllerAction::None;
