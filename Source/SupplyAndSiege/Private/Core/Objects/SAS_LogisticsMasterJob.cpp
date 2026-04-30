@@ -6,6 +6,7 @@
 #include "Core/Objects/SAS_LogisticsWorkerAssignment.h"
 #include "Misc/Structs/SAS_WA_FailureContext.h"
 #include "Misc/Structs/SAS_LogisticsJobWidgetInfo.h"
+#include "Core/Components/SAS_WorkerControlComponent.h"
 
 void USAS_LogisticsMasterJob::InitializeJob(USAS_LogisticsManagerComponent* InOwningLM, ESAS_MasterJobType InJobType, int32 InPriority, AActor* InRequestingActor)
 {
@@ -15,6 +16,8 @@ void USAS_LogisticsMasterJob::InitializeJob(USAS_LogisticsManagerComponent* InOw
 	Priority = InPriority;
 	RequestingActor = InRequestingActor;
 	MasterJobStatus = ESAS_MasterJobStatus::Pending;
+
+	JobInitialized = true;
 }
 
 void USAS_LogisticsMasterJob::AddAssignment(USAS_LogisticsWorkerAssignment* Assignment)
@@ -22,12 +25,6 @@ void USAS_LogisticsMasterJob::AddAssignment(USAS_LogisticsWorkerAssignment* Assi
 	if (!Assignment) return;
 
 	ActiveAssignments.AddUnique(Assignment);
-
-	if (MasterJobStatus == ESAS_MasterJobStatus::Pending) 
-	{
-		MasterJobStatus = ESAS_MasterJobStatus::Active;
-	}
-	//Will need to update for item delivery types since those will need to evaluate if all items are being delivered.
 }
 
 void USAS_LogisticsMasterJob::NotifyAssignmentCompleted(USAS_LogisticsWorkerAssignment* Assignment)
@@ -42,11 +39,16 @@ void USAS_LogisticsMasterJob::NotifyAssignmentCompleted(USAS_LogisticsWorkerAssi
 void USAS_LogisticsMasterJob::NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignment* Assignment)
 {
 	RemoveAssignment(Assignment);
-	//Will need to re-post assignment
 }
 
 void USAS_LogisticsMasterJob::NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment, FSAS_WA_FailureContext FailureContext)
 {
+	if (!IsValid(Assignment)) return;
+	if (FailureContext.bRejectWorkerForThisMasterJob)
+	{
+		WorkersToIgnore.AddUnique(Assignment->AssignedWorker);
+	}
+
 	RemoveAssignment(Assignment);
 	//Will need to re-post assignment and log failure / failure reason
 }
@@ -76,6 +78,11 @@ FSAS_LogisticsJobWidgetInfo USAS_LogisticsMasterJob::GetJobInfoForWidget() const
 	WidgetInfo.JobStatus = MasterJobStatus;
 	
 	return WidgetInfo;
+}
+
+bool USAS_LogisticsMasterJob::WorkerIsAcceptable(USAS_WorkerControlComponent* Worker)
+{
+	return !WorkersToIgnore.Contains(Worker);
 }
 
 void USAS_LogisticsMasterJob::RemoveAssignment(USAS_LogisticsWorkerAssignment* Assignment)

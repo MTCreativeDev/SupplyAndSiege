@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Core/Actors/SAS_BuildingLayout.h"
+#include "Core/Actors/SAS_SelectableBuilding.h"
 #include "Core/SAS_Enumerators.h"
 #include "SAS_BL_BuildJob.generated.h"
 
@@ -13,7 +13,7 @@ class USAS_InventoryProfileData;
 class USAS_LogisticsMasterJob;
 
 UCLASS()
-class SUPPLYANDSIEGE_API ASAS_BL_BuildJob : public ASAS_BuildingLayout
+class SUPPLYANDSIEGE_API ASAS_BL_BuildJob : public ASAS_SelectableBuilding
 {
 	GENERATED_BODY()
 	

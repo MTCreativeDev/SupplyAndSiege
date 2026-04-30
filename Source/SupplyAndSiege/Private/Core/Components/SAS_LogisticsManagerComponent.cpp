@@ -111,12 +111,6 @@ void USAS_LogisticsManagerComponent::TryAssignJobs()
 	if (ActiveJobs.Num() == 0) return;
 	if (AvailableWorkers.Num() == 0) return;
 
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Success"));
-	}
-
-
 	TArray<TObjectPtr<USAS_LogisticsMasterJob>> SortedJobs = ActiveJobs;
 	SortedJobs.Sort([](const USAS_LogisticsMasterJob& A, const USAS_LogisticsMasterJob& B)
 		{
@@ -162,6 +156,7 @@ void USAS_LogisticsManagerComponent::TryAssignJobs()
 
 			if (BestWorker->TryAcceptAssignment(NewAssignment))
 			{
+				DeliverJob->AddAssignment(NewAssignment);
 				NewAssignment->StartAssignment();
 
 				RemainingWorkers.Remove(BestWorker);
@@ -242,6 +237,7 @@ bool USAS_LogisticsManagerComponent::FindBestTransportCandidate(USAS_LMJ_Deliver
 	for (USAS_WorkerControlComponent* Worker : WorkersToConsider)
 	{
 		if (!IsValid(Worker)) continue;
+		if (!DeliveryJob->WorkerIsAcceptable(Worker)) continue;
 
 		const int32 BaseScore = Worker->GetBaseScoreForJob(ESAS_MasterJobType::DeliverItem);
 		if (BaseScore <= 0) continue;

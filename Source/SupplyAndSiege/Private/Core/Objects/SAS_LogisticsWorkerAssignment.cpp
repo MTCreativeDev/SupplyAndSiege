@@ -4,6 +4,7 @@
 #include "Core/Objects/SAS_LogisticsWorkerAssignment.h"
 #include "Core/Objects/SAS_LogisticsMasterJob.h"
 #include "Misc/Structs/SAS_WA_FailureContext.h"
+#include "Core/Components/SAS_WorkerControlComponent.h"
 
 void USAS_LogisticsWorkerAssignment::InitializeAssignment(USAS_LogisticsMasterJob* InParentMasterJob, USAS_WorkerControlComponent* InAssignedWorker, ESAS_WorkerAssignmentType InAssignmentType)
 {
@@ -26,7 +27,14 @@ void USAS_LogisticsWorkerAssignment::CancelAssignment()
 	if (IsFinished()) return;
 
 	WorkerAssignmentStatus = ESAS_WorkerAssignmentStatus::Cancelled;
+
 	NotifyParentAssignmentCancelled();
+
+	if (AssignedWorker)
+	{
+		AssignedWorker->NotifyAssignmentEnded(this);
+	}
+
 }
 
 void USAS_LogisticsWorkerAssignment::FailAssignment(FSAS_WA_FailureContext FailureContext)
@@ -34,7 +42,14 @@ void USAS_LogisticsWorkerAssignment::FailAssignment(FSAS_WA_FailureContext Failu
 	if (IsFinished()) return;
 
 	WorkerAssignmentStatus = ESAS_WorkerAssignmentStatus::Failed;
+
 	NotifyParentAssignmentFailed(FailureContext);
+
+	if (AssignedWorker)
+	{
+		AssignedWorker->NotifyAssignmentEnded(this);
+	}
+
 }
 
 void USAS_LogisticsWorkerAssignment::CompleteAssignment()
@@ -42,13 +57,35 @@ void USAS_LogisticsWorkerAssignment::CompleteAssignment()
 	if (IsFinished()) return;
 
 	WorkerAssignmentStatus = ESAS_WorkerAssignmentStatus::Completed;
-	NotifyParentAssignmentCompleted();
-}
 
+	NotifyParentAssignmentCompleted();
+
+	if (AssignedWorker)
+	{
+		AssignedWorker->NotifyAssignmentEnded(this);
+	}
+
+}
 
 bool USAS_LogisticsWorkerAssignment::IsFinished() const
 {
 	return WorkerAssignmentStatus == ESAS_WorkerAssignmentStatus::Completed || WorkerAssignmentStatus == ESAS_WorkerAssignmentStatus::Cancelled || WorkerAssignmentStatus == ESAS_WorkerAssignmentStatus::Failed;
+}
+
+void USAS_LogisticsWorkerAssignment::NotifyWorkerActionAccepted()
+{
+}
+
+void USAS_LogisticsWorkerAssignment::NotifyWorkerActionFailed(ESAS_WorkerAssignmentFailureReason Reason)
+{
+}
+
+void USAS_LogisticsWorkerAssignment::NotifyWorkerActionCompleted()
+{
+}
+
+void USAS_LogisticsWorkerAssignment::NotifyWorkerActionInterrupted(ESAS_WorkerAssignmentFailureReason Reason)
+{
 }
 
 void USAS_LogisticsWorkerAssignment::NotifyParentAssignmentCompleted()

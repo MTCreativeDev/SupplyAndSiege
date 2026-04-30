@@ -14,7 +14,7 @@ struct SUPPLYANDSIEGE_API FSAS_WA_FailureContext
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ESAS_WorkerAssignmentFailureReason Reason = ESAS_WorkerAssignmentFailureReason::None;
 
 	UPROPERTY(BlueprintReadOnly)

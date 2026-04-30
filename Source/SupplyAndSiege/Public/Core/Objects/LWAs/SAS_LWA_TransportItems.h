@@ -9,6 +9,7 @@
 
 class UItemDefinitionPrimaryData;
 class USAS_LogisticsManagerComponent;
+class USAS_InventoryComponent;
 
 UENUM(BlueprintType)
 enum class ESAS_TransportAssignmentPhase : uint8
@@ -33,20 +34,36 @@ public:
 	virtual void StartAssignment() override;
 	virtual void CancelAssignment() override;
 	virtual void FailAssignment(FSAS_WA_FailureContext FailureContext) override;
+	virtual void CompleteAssignment() override;
+
 
 	virtual int32 GetAssignedAmount() const override { return AssignedAmount; }
 	virtual UItemDefinitionPrimaryData* GetItemDefinition() const override { return ItemDefinition; }
 	virtual AActor* GetSourceActor() const override { return SourceActor; }
 	virtual AActor* GetTargetActor() const override { return TargetActor; }
 
-	void AdvanceAssignment();
+	virtual void NotifyWorkerActionAccepted() override;
+	virtual void NotifyWorkerActionFailed(ESAS_WorkerAssignmentFailureReason Reason) override;
+	virtual void NotifyWorkerActionCompleted() override;
+	virtual void NotifyWorkerActionInterrupted(ESAS_WorkerAssignmentFailureReason Reason) override;
 
 protected:
+	bool RunEntryChecks();
+	void RequestMoveToSource();
 	bool ReserveOutboundInventory();
 	bool ReserveInboundInventory();
 	void ReleaseReservations();
 	bool PickupReservation();
+	void RequestMoveToTarget();
 	bool DropoffReservation();
+
+
+private:
+
+
+	FSAS_WA_FailureContext MakeFailure(ESAS_WorkerAssignmentFailureReason Reason, bool EditorDebug = true, bool RejectWorkerForThisMasterJob = false, bool ReEvaluateMasterJobValidity = false) const;
+
+
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Transport Assignment")
@@ -72,6 +89,5 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Transport Assignment")
 	bool bPickedUpReservation = false;
-
 
 };

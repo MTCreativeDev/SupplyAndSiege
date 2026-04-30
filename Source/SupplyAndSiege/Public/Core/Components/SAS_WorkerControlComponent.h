@@ -22,7 +22,8 @@ enum class ESAS_WorkerControlState : uint8
 	ManualPersistent	UMETA(DisplayName = "Manual Persistant"),
 	ManualSingle	UMETA(DisplayName = "Manual Single"),
 	Transition	UMETA(DisplayName = "Transition"),
-	LMQueue	UMETA(DisplayName = "Logistics Manager Queue")
+	LMQueue	UMETA(DisplayName = "Logistics Manager Queue"),
+	LMAssignment	UMETA(DisplayName = "Logistics Manager Assignment"),
 };
 
 UENUM(BlueprintType)
@@ -57,10 +58,7 @@ public:
 	virtual bool TryAcceptAssignment(USAS_LogisticsWorkerAssignment* NewAssignment);
 
 	UFUNCTION(BlueprintCallable, Category = "Worker Control")
-	virtual void NotifyAssignmentFinished(USAS_LogisticsWorkerAssignment* FinishedAssignment);
-
-	UFUNCTION(BlueprintCallable, Category = "Worker Control")
-	virtual void NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignment* CancelledAssignment);
+	void NotifyAssignmentEnded(USAS_LogisticsWorkerAssignment* EndedAssignment);
 
 	UFUNCTION(BlueprintCallable, Category = "Worker Control")
 	ESAS_WorkerControlState GetCurrentWorkerControlState() const { return CurrentWorkerControlState; }
@@ -77,6 +75,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Worker Control")
 	int32 GetCarryCapacityForItem(UItemDefinitionPrimaryData* Item) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Worker Control")
+	USAS_InventoryComponent* GetWorkerInventoryComponent() const { return WorkerInventory; }
+
+	void SendStateTreeEvent(const FGameplayTag& EventTag);
+
+	UFUNCTION(BlueprintCallable, Category = "Worker Control")
+	bool IsAcceptingNewAssignments() const;
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -89,7 +95,9 @@ protected:
 	virtual void BeginManualMove_Internal(const FVector& WorldLocation);
 	virtual void BeginManualHarvest_Internal(USAS_ResourceTypeData* ResourceType, FSAS_ResourceKey ResourceKey, const FVector& ResourceLocation);
 
-	void SendStateTreeEvent(const FGameplayTag& EventTag);
+
+
+
 
 
 public:	
@@ -101,7 +109,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<USAS_LogisticsManagerComponent> LogisticsManager = nullptr;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Worker Control")
+
 	TObjectPtr<USAS_LogisticsWorkerAssignment> ActiveAssignment = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Worker Control")
@@ -119,5 +128,5 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "WorkerControl")
 	ESAS_WorkerType WorkerType = ESAS_WorkerType::Unspecified;
 
-		
+	TObjectPtr< USAS_InventoryComponent> WorkerInventory;
 };

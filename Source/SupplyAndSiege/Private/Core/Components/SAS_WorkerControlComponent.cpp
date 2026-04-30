@@ -59,25 +59,23 @@ bool USAS_WorkerControlComponent::TryAcceptAssignment(USAS_LogisticsWorkerAssign
 	if (ActiveAssignment) return false;
 
 	ActiveAssignment = NewAssignment;
+	CurrentWorkerControlState = ESAS_WorkerControlState::LMAssignment;
 	return true;
 }
 
-void USAS_WorkerControlComponent::NotifyAssignmentFinished(USAS_LogisticsWorkerAssignment* FinishedAssignment)
+void USAS_WorkerControlComponent::NotifyAssignmentEnded(USAS_LogisticsWorkerAssignment* EndedAssignment)
 {
-	if (ActiveAssignment == FinishedAssignment)
-	{
-		ActiveAssignment = nullptr;
-		//TODO:Review this to make sure nothing else is needed
-	}
-}
+	if (ActiveAssignment != EndedAssignment) return;
 
-void USAS_WorkerControlComponent::NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignment* CancelledAssignment)
-{
-	if (ActiveAssignment == CancelledAssignment)
+	ActiveAssignment = nullptr;
+
+	if (LogisticsManager)
 	{
-		ActiveAssignment = nullptr;
-		//TODO:Review this to make sure nothing else is needed
+		LogisticsManager->UnregisterAvailableWorker(this);
 	}
+
+	CurrentWorkerControlState = ESAS_WorkerControlState::Idle;
+	RequestEnterLmQueue();
 }
 
 bool USAS_WorkerControlComponent::UpdateCurrentHarvestKeyAndLocation(FSAS_ResourceKey ResourceKey, FVector TargetLocation)
@@ -142,13 +140,8 @@ int32 USAS_WorkerControlComponent::GetCarryCapacityForItem(UItemDefinitionPrimar
 {
 	if (!IsValid(Item)) return 0;
 
-	AActor* Owner = GetOwner();
-	if (!IsValid(Owner)) return 0;
-
-	USAS_InventoryComponent* Inventory = Owner->FindComponentByClass<USAS_InventoryComponent>();
-	if (!IsValid(Inventory)) return 0;
-
-	return Inventory->GetAvailableInboundCapacity(Item, MAX_int32);
+	if (!IsValid(WorkerInventory)) return 0;
+	return WorkerInventory->GetAvailableInboundCapacity(Item, MAX_int32);
 
 }
 
@@ -159,6 +152,7 @@ void USAS_WorkerControlComponent::BeginPlay()
 	if (AActor* Owner = GetOwner())
 	{
 		UnitInformation = Owner->FindComponentByClass<USAS_UnitInformationComponent>();
+		WorkerInventory = Owner->FindComponentByClass<USAS_InventoryComponent>();
 	}
 
 	if (UWorld* World = GetWorld())
@@ -238,4 +232,9 @@ void USAS_WorkerControlComponent::SendStateTreeEvent(const FGameplayTag& EventTa
 	if (!ST) return;
 
 	ST->SendStateTreeEvent(FStateTreeEvent(EventTag));
+}
+
+bool USAS_WorkerControlComponent::IsAcceptingNewAssignments() const
+{
+	return ActiveAssignment == nullptr && CurrentWorkerControlState == ESAS_WorkerControlState::LMQueue;
 }

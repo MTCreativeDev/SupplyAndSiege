@@ -41,10 +41,23 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Logistics Worker Assignment")
 	virtual AActor* GetTargetActor() const { return nullptr; }
 
+	UFUNCTION(BlueprintCallable, Category = "Logistics Worker Assignment")
+	virtual void NotifyWorkerActionAccepted();
+
+	UFUNCTION(BlueprintCallable, Category = "Logistics Worker Assignment")
+	virtual void NotifyWorkerActionFailed(ESAS_WorkerAssignmentFailureReason Reason);
+
+	UFUNCTION(BlueprintCallable, Category = "Logistics Worker Assignment")
+	virtual void NotifyWorkerActionCompleted();
+
+	UFUNCTION(BlueprintCallable, Category = "Logistics Worker Assignment")
+	virtual void NotifyWorkerActionInterrupted(ESAS_WorkerAssignmentFailureReason Reason);
+
 protected:
 	virtual void NotifyParentAssignmentCompleted();
 	virtual void NotifyParentAssignmentCancelled();
 	virtual void NotifyParentAssignmentFailed(FSAS_WA_FailureContext FailureContext);
+
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Logistics Worker Assignment")
@@ -61,6 +74,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Logistics Worker Assignment")
 	TObjectPtr<USAS_WorkerControlComponent> AssignedWorker = nullptr;
-
+	
 	
 };

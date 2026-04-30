@@ -10,77 +10,65 @@
 
 void USAS_LMJ_DeliverItem::InitializeDeliverItemJob(USAS_LogisticsManagerComponent* InOwningLM, AActor* InRequestingActor, UItemDefinitionPrimaryData* InItemDefinition, int32 InRequestedAmount, int32 InPriority)
 {
+	if (JobInitialized) return;
+
 	InitializeJob(InOwningLM, ESAS_MasterJobType::DeliverItem, InPriority, InRequestingActor);
 
 	ItemDefinition = InItemDefinition;
 	RequestedAmount = FMath::Max(0, InRequestedAmount);
 	DeliveredAmount = 0;
 	ReservedAmount = 0;
-
-	//debug
-
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			3.f,
-			FColor::Green,
-			FString::Printf(
-				TEXT("Item: %s | Requested: %d | Delivered: %d | Reserved: %d"),
-				ItemDefinition ? *ItemDefinition->GetName() : TEXT("None"),
-				RequestedAmount,
-				DeliveredAmount,
-				ReservedAmount
-			)
-		);
-	}
 }
 
 void USAS_LMJ_DeliverItem::AddAssignment(USAS_LogisticsWorkerAssignment* Assignment)
 {
-	Super::AddAssignment(Assignment);
-
 	if (!Assignment) return;
-
-	//TODO: Need to get the Worker Assignment properly set up and then create it here.
+	Super::AddAssignment(Assignment);
+	
+	ReservedAmount += Assignment->GetAssignedAmount();
+	
+	if (GetUnreservedAmount() <= 0)
+	{
+		MasterJobStatus = ESAS_MasterJobStatus::Active;
+	}
 }
 
 void USAS_LMJ_DeliverItem::NotifyAssignmentCompleted(USAS_LogisticsWorkerAssignment* Assignment)
 {
 	if (!Assignment) return;
 
-	//TODO: Need to get the Worker Assignment properly set up and then create it here.
+	DeliveredAmount += Assignment->GetAssignedAmount();
+	ReservedAmount = FMath::Max(0, ReservedAmount - Assignment->GetAssignedAmount());
 
-	RemoveAssignment(Assignment);
-	//TODO: need to make sure this function updates the delivered amount and reserved amounts here.
-
-	if (EvaluateIsComplete())
-	{
-		MarkCompleted();
-	}
+	Super::NotifyAssignmentCompleted(Assignment);
 }
 
 void USAS_LMJ_DeliverItem::NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignment* Assignment)
 {
 	if (!Assignment) return;
+	Super::NotifyAssignmentCancelled(Assignment);
+	ReservedAmount = FMath::Max(0, ReservedAmount - Assignment->GetAssignedAmount());
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Cancelled"));
 
-	//TODO: Need to get the Worker Assignment properly set up and then create it here.
 
-	RemoveAssignment(Assignment);
-
-	//Likely need to update need
+	if (GetUnreservedAmount() > 0)
+	{
+		MasterJobStatus = ESAS_MasterJobStatus::Pending;
+	}
 }
 
 void USAS_LMJ_DeliverItem::NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment, FSAS_WA_FailureContext FailureContext)
 {
 	if (!Assignment) return;
 
-	//TODO: Need to get the Worker Assignment properly set up and then create it here.
+	Super::NotifyAssignmentFailed(Assignment, FailureContext);
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Cancelled"));
 
-	RemoveAssignment(Assignment);
-
-	//Likely need to update need
-	//Want to log the failure. This should be visible in UI
+	ReservedAmount = FMath::Max(0, ReservedAmount - Assignment->GetAssignedAmount());
+	if (GetUnreservedAmount() > 0)
+	{
+		MasterJobStatus = ESAS_MasterJobStatus::Pending;
+	}
 }
 
 FSAS_LogisticsJobWidgetInfo USAS_LMJ_DeliverItem::GetJobInfoForWidget() const

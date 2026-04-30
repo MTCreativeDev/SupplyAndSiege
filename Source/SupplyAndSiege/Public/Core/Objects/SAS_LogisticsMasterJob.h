@@ -9,8 +9,10 @@
 
 class USAS_LogisticsManagerComponent;
 class USAS_LogisticsWorkerAssignment;
+class USAS_WorkerControlComponent;
 struct FSAS_WA_FailureContext;
 struct FSAS_LogisticsJobWidgetInfo;
+
 
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnLogisticsMasterJobUpdated, USAS_LogisticsMasterJob*);
@@ -44,6 +46,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Logistics Master Job")
 	virtual FSAS_LogisticsJobWidgetInfo GetJobInfoForWidget() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Logistics Master Job")
+	bool WorkerIsAcceptable(USAS_WorkerControlComponent* Worker);
 
 	//Dispatchers
 
@@ -84,4 +89,11 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Logistics Master Job")
 	TArray <TObjectPtr<USAS_LogisticsWorkerAssignment>> ActiveAssignments;
+
+protected:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Logistics Master Job")
+	TArray<TObjectPtr<USAS_WorkerControlComponent>> WorkersToIgnore;
+
+	bool JobInitialized = false;
 };

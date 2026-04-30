@@ -183,17 +183,21 @@ UENUM(BlueprintType)
 enum class ESAS_WorkerAssignmentFailureReason: uint8
 {
     None   UMETA(DisplayName = "None"),
-    InvlidWorker    UMETA(DisplayName = "Invalid Worker"),
+    InvalidWorker    UMETA(DisplayName = "Invalid Worker"),
     InvalidSourceActor    UMETA(DisplayName = "Invalid Source Actor"),
-    InvlidTargetActor    UMETA(DisplayName = "Invalid Target Actor"),
+    InvalidTargetActor    UMETA(DisplayName = "Invalid Target Actor"),
     InvalidItemDefinition    UMETA(DisplayName = "Invalid Item Definition"),
     InvalidItemAmount   UMETA(DisplayName = "Invalid Item Amount"),
+    InvalidWorkerInventory   UMETA(DisplayName = "Invalid Worker Inventory"),
+    InvalidWorkerCarryCapacity   UMETA(DisplayName = "Invalid Worker Carry Capacity"),
     UnableToNavigateToSourceActor    UMETA(DisplayName = "Unable to Navigate to Source Actor"),
     UnableToNavigateToTargetActor    UMETA(DisplayName = "Unable to Navigate to Target Actor"),
     SourceInventoryMissing  UMETA(DisplayName = "Source Actor Inventory Missing"),
     TargetInventoryMissing  UMETA(DisplayName = "Target Actor Inventory Missing"),
     FailedReservationOutbound   UMETA(DisplayName = "Failed to create Outbound Inventory Reservation"),
     FailedReservationInbound   UMETA(DisplayName = "Failed to create Inbound Inventory Reservation"),
+    FailedPickup    UMETA(DisplayName = "Unable to Navigate to Source Actor"),
+    FailedDelivery    UMETA(DisplayName = "Unable to Navigate to Target Actor"),
     Unknown UMETA(DisplayName = "Unknown")
 };
 
