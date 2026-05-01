@@ -160,53 +160,6 @@ void USAS_LogisticsManagerComponent::TryAssignJobs()
 				NewAssignment->StartAssignment();
 
 				RemainingWorkers.Remove(BestWorker);
-
-				/***************************
-				Debug
-				******************************/
-				AActor* WorkerActor = BestWorker->GetOwner();
-
-				const FString JobName = DeliverJob ? DeliverJob->GetName() : TEXT("NoJob");
-				const FString SourceName = SourceActor ? SourceActor->GetName() : TEXT("NoSource");
-				const FString WorkerName = WorkerActor ? WorkerActor->GetName() : TEXT("NoWorker");
-
-				if (GEngine)
-				{
-					GEngine->AddOnScreenDebugMessage(
-						-1,
-						5.f,
-						FColor::Green,
-						FString::Printf(TEXT("Assigned Job: %s | Source: %s | Worker: %s"), *JobName, *SourceName, *WorkerName)
-					);
-				}
-
-				FVector SourceLocation = SourceActor ? SourceActor->GetActorLocation() : FVector::ZeroVector;
-				FVector TargetLocation = TargetActor ? TargetActor->GetActorLocation() : FVector::ZeroVector;
-
-				if (ASAS_BuildingLayout* SourceBuilding = Cast<ASAS_BuildingLayout>(SourceActor))
-				{
-					SourceLocation = SourceBuilding->GetBestMoveToWorldLocation(WorkerActor ? WorkerActor->GetActorLocation() : SourceActor->GetActorLocation());
-				}
-
-				if (ASAS_BuildingLayout* TargetBuilding = Cast<ASAS_BuildingLayout>(TargetActor))
-				{
-					TargetLocation = TargetBuilding->GetBestMoveToWorldLocation(SourceLocation);
-				}
-
-				if (UWorld* World = GetWorld())
-				{
-					const FVector ActorLocation = WorkerActor ? WorkerActor->GetActorLocation() : FVector::ZeroVector;
-
-					DrawDebugLine(World, ActorLocation + FVector(0, 0, 5000.f), ActorLocation, FColor::Yellow, true, -1.f, 0, 20.f);
-					DrawDebugLine(World, SourceLocation + FVector(0, 0, 5000.f), SourceLocation, FColor::Blue, true, -1.f, 0, 20.f);
-					DrawDebugLine(World, TargetLocation + FVector(0, 0, 5000.f), TargetLocation, FColor::Green, true, -1.f, 0, 20.f);
-				}
-
-				/***********************************
-				End Debug
-				*********************************/
-
-
 			}
 
 			break;

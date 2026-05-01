@@ -59,13 +59,17 @@ void USAS_LWA_TransportItems::FailAssignment(FSAS_WA_FailureContext FailureConte
 	}
 	else
 	{
-		//TODO:: handle inventory in inventory and release inbound reservation only. Need to release the target inventory reservation as well
+		//TODO:: handle items in inventory and release inbound reservation
 	}
 	Super::FailAssignment(FailureContext);
 }
 
 void USAS_LWA_TransportItems::CompleteAssignment()
 {
+	if (IsFinished()) return;
+
+	ReleaseReservations();
+
 	Super::CompleteAssignment();
 }
 
@@ -153,7 +157,46 @@ void USAS_LWA_TransportItems::ReleaseReservations()
 
 bool USAS_LWA_TransportItems::PickupReservation()
 {
-	return false;
+	if (!SourceActor || !AssignedWorker || !OutboundReservationHandle.IsValid()) return false;
+
+	USAS_InventoryComponent* SourceInventory = SourceActor->FindComponentByClass<USAS_InventoryComponent>();
+	if (!SourceInventory) return false;
+
+	USAS_InventoryComponent* WorkerInventory = AssignedWorker->GetWorkerInventoryComponent();
+	if (!WorkerInventory) return false;
+
+	int32 RemovedQuantity = 0;
+	if (!SourceInventory->FinalizeOutboundPickup(OutboundReservationHandle, RemovedQuantity))
+	{
+		return false;
+	}
+
+	OutboundReservationHandle.Reset();
+
+	if (RemovedQuantity <= 0) return false;
+
+	const int32 AddedQuantity = WorkerInventory->AddItem(ItemDefinition, RemovedQuantity);
+	if (AddedQuantity != RemovedQuantity)
+	{
+		//TODO:: Need to have extra items grabbed dropped on the ground. Otherwise items get deleted.
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				5.f,
+				FColor::Red,
+				FString::Printf(TEXT("Pickup failed: Removed %d but added %d to worker"), RemovedQuantity, AddedQuantity)
+			);
+		}
+
+		//TODO:: In the future, if this happens we can continue, but need to update the job reservation and the inventory reservation at the destination. Easire to just cancel though.
+
+		bPickedUpReservation = AddedQuantity > 0;
+		return false;
+	}
+
+	bPickedUpReservation = true;
+	return true;
 }
 
 void USAS_LWA_TransportItems::RequestMoveToTarget()
@@ -172,7 +215,34 @@ void USAS_LWA_TransportItems::RequestMoveToTarget()
 
 bool USAS_LWA_TransportItems::DropoffReservation()
 {
-	return false;
+	if (!AssignedWorker || !TargetActor || !InboundReservationHandle.IsValid()) return false;
+
+	USAS_InventoryComponent* WorkerInventory = AssignedWorker->GetWorkerInventoryComponent();
+	if (!WorkerInventory) return false;
+
+	USAS_InventoryComponent* TargetInventory = TargetActor->FindComponentByClass<USAS_InventoryComponent>();
+	if (!TargetInventory) return false;
+
+	const int32 RemovedQuantity = WorkerInventory->RemoveItem(ItemDefinition, AssignedAmount);
+	if (RemovedQuantity <= 0) return false;
+
+	int32 AddedQuantity = 0;
+	if (!TargetInventory->FinalizeInboundDropoff(InboundReservationHandle, RemovedQuantity, AddedQuantity))
+	{
+		// TODO: Removed from worker but failed to add to target. Need fallback/drop item.
+		return false;
+	}
+
+	InboundReservationHandle.Reset();
+
+	if (AddedQuantity != RemovedQuantity)
+	{
+		// TODO: Partial dropoff. Need fallback/drop item.
+		return false;
+	}
+
+	bPickedUpReservation = false;
+	return true;
 }
 
 void USAS_LWA_TransportItems::NotifyWorkerActionAccepted()
@@ -192,7 +262,6 @@ void USAS_LWA_TransportItems::NotifyWorkerActionAccepted()
 		if (!ReserveInboundInventory())
 		{
 			FailAssignment(MakeFailure(ESAS_WorkerAssignmentFailureReason::FailedReservationInbound));
-			if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Failed Reserve Inbound"));
 			return;
 		}
 		break;

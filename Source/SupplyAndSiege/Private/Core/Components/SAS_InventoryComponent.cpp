@@ -252,11 +252,12 @@ int32 USAS_InventoryComponent::GetAvailableInboundCapacity(UItemDefinitionPrimar
 {
 	if (!Item || RequestedQuantity <= 0) return 0;
 
-	const int32 Overflow = GetPhysicalOverflow(Item, RequestedQuantity);
-	const int32 PhysicalCapacityForRequested = RequestedQuantity - Overflow;
+	const int32 TestQuantity = RequestedQuantity + GetReservedInboundAmount(Item);
+	const int32 Overflow = GetPhysicalOverflow(Item, TestQuantity);
+	const int32 PhysicalCapacity = TestQuantity - Overflow;
 	const int32 ReservedInbound = GetReservedInboundAmount(Item);
 
-	return FMath::Max(0, PhysicalCapacityForRequested - ReservedInbound);
+	return FMath::Max(0, PhysicalCapacity - ReservedInbound);
 }
 
 bool USAS_InventoryComponent::ReserveOutbound(UItemDefinitionPrimaryData* Item, int32 RequestedQuantity, UObject* Claimer, FSAS_InventoryReservationHandle& OutHandle, int32& OutReservedQuantity)
@@ -444,30 +445,12 @@ void USAS_InventoryComponent::GetUnitInformationAndBindToTeamChange()
 	AActor* Owner = GetOwner();
 	if (!Owner)
 	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				5.f,
-				FColor::Red,
-				TEXT("Inventory Component Could Not Find Unit Information Component")
-			);
-		}
 		return;
 	}
 
 	UnitInfoComponent = Owner->FindComponentByClass<USAS_UnitInformationComponent>();
 	if (!UnitInfoComponent)
 	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				5.f,
-				FColor::Red,
-				TEXT("Inventory Component Could Not Find Unit Information Component")
-			);
-		}
 		return;
 	}
 

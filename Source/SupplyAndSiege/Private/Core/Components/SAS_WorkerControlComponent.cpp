@@ -191,6 +191,7 @@ bool USAS_WorkerControlComponent::CanEnterLmQueueImmediately() const
 void USAS_WorkerControlComponent::StartTransitionIntoLmQueue()
 {
 	CurrentWorkerControlState = ESAS_WorkerControlState::Transition;
+	SendStateTreeEvent(SASGameplayTags::StateTree_Worker_TransitionToLogistics);
 }
 
 void USAS_WorkerControlComponent::FinishEnterLmQueue()
@@ -198,7 +199,9 @@ void USAS_WorkerControlComponent::FinishEnterLmQueue()
 	if (LogisticsManager)
 	{
 		CurrentWorkerControlState = ESAS_WorkerControlState::LMQueue;
+		SendStateTreeEvent(SASGameplayTags::StateTree_Worker_Logistics_Unassigned);
 		LogisticsManager->RegisterAvailableWorker(this);
+		
 	}
 
 
