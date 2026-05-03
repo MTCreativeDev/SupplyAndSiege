@@ -10,6 +10,7 @@
 class UStaticMesh;
 class USAS_UnitTypeData;
 class USAS_InventoryProfileData;
+class ASAS_SelectableBuilding;
 /**
  * 
  */
@@ -52,5 +53,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FSAS_BuildingCost BuildingCost;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<ASAS_SelectableBuilding> CompletedBuildingClass;
 
 };

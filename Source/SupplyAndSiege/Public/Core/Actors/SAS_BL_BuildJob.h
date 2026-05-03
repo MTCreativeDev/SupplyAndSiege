@@ -22,6 +22,14 @@ public:
 
 	void InitializeBuildJob(ESAS_Team NewAssignedTeam);
 
+protected:
+
+	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	void HandleDeliveryJobUpdated(USAS_LogisticsMasterJob* UpdatedJob);
+	void UpdateBuildProgress();
+	void CompleteBuildJob();
+
 
 private:
 	void RequestResourceDeliveryJobs();
@@ -41,6 +49,6 @@ protected:
 	TObjectPtr<UMaterialInterface> BuildingUnderConstructionMaterial;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Building_Construction")
-	TArray<TObjectPtr<USAS_LogisticsMasterJob>>ItemDeliveryJobs;
+	TArray<USAS_LogisticsMasterJob*> ItemDeliveryJobs;
 
 };

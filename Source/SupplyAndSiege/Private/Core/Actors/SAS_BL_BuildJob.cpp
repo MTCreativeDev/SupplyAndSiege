@@ -9,6 +9,10 @@
 #include "Core/Components/SAS_LogisticsManagerComponent.h"
 #include "Misc/DataAssets/SAS_BuildingDefinitionData.h"
 #include "Misc/Structs/SAS_ResourceDeliveryRequest.h"
+#include "Components/StaticMeshComponent.h"
+#include "Core/Objects/SAS_LogisticsMasterJob.h"
+#include "Core/Objects/LMJs/SAS_LMJ_DeliverItem.h"
+#include "Misc/Structs/SAS_LogisticsJobWidgetInfo.h"
 
 ASAS_BL_BuildJob::ASAS_BL_BuildJob()
 {
@@ -24,9 +28,97 @@ void ASAS_BL_BuildJob::InitializeBuildJob(ESAS_Team NewAssignedTeam)
 	if (!ConstructionInventoryProfile) return;
 	Inventory->SetInventoryProfile(ConstructionInventoryProfile);
 
+	if (BuildingUnderConstructionMaterial)
+	{
+		TArray<UStaticMeshComponent*> Meshes = { PrimaryMesh, SecondaryMesh };
+
+		for (UStaticMeshComponent* Mesh : Meshes)
+		{
+			if (!Mesh) continue;
+
+			const int32 MaterialCount = Mesh->GetNumMaterials();
+			for (int32 i = 0; i < MaterialCount; i++)
+			{
+				Mesh->SetMaterial(i, BuildingUnderConstructionMaterial);
+			}
+		}
+	}
+
 	RequestResourceDeliveryJobs();
 
 	return;
+}
+
+void ASAS_BL_BuildJob::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	for (USAS_LogisticsMasterJob* Job : ItemDeliveryJobs)
+	{
+		if (IsValid(Job))
+		{
+			Job->OnLogisticsMasterJobUpdated.RemoveAll(this);
+		}
+	}
+
+	ItemDeliveryJobs.Reset();
+
+	Super::EndPlay(EndPlayReason);
+}
+
+void ASAS_BL_BuildJob::HandleDeliveryJobUpdated(USAS_LogisticsMasterJob* UpdatedJob)
+{
+	if (IsActorBeingDestroyed()) return;
+	if (!IsValid(UpdatedJob)) return;
+	if (!ItemDeliveryJobs.Contains(UpdatedJob)) return;
+
+	UpdateBuildProgress();
+}
+
+void ASAS_BL_BuildJob::UpdateBuildProgress()
+{
+	int32 TotalRequested = 0;
+	int32 TotalDelivered = 0;
+
+	for (USAS_LogisticsMasterJob* Job : ItemDeliveryJobs)
+	{
+		USAS_LMJ_DeliverItem* DeliverJob = Cast<USAS_LMJ_DeliverItem>(Job);
+		if (!IsValid(DeliverJob)) continue;
+
+		const FSAS_LogisticsJobWidgetInfo Info = DeliverJob->GetJobInfoForWidget();
+
+		TotalRequested += Info.RequestedAmount;
+		TotalDelivered += Info.DeliveredAmount;
+	}
+
+	const float Progress = TotalRequested > 0 ? static_cast<float>(TotalDelivered) / static_cast<float>(TotalRequested) : 1.f;
+
+	// TODO: need to create worldspace widget for the progress bar.
+
+	if (Progress >= 1.f)
+	{
+		//TODO: In the future need to address the actual build job portion that should happen after item delivery is complete.
+		CompleteBuildJob();
+	}
+}
+
+void ASAS_BL_BuildJob::CompleteBuildJob()
+{
+	if (!BuildingDefinition || !BuildingDefinition->CompletedBuildingClass) return;
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	World->SpawnActor<AActor>(BuildingDefinition->CompletedBuildingClass, GetActorTransform());
+
+	for (USAS_LogisticsMasterJob* Job : ItemDeliveryJobs)
+	{
+		if (IsValid(Job))
+		{
+			Job->OnLogisticsMasterJobUpdated.RemoveAll(this);
+		}
+	}
+
+	ItemDeliveryJobs.Reset();
+	Destroy();
 }
 
 void ASAS_BL_BuildJob::RequestResourceDeliveryJobs()
@@ -50,5 +142,11 @@ void ASAS_BL_BuildJob::RequestResourceDeliveryJobs()
 	DeliveryRequest.Priority = 1;
 		//TODO: Implement priority
 
-	LMC->CreateBuildSiteResourceDeliveryJob(DeliveryRequest);
+	ItemDeliveryJobs = LMC->CreateBuildSiteResourceDeliveryJob(DeliveryRequest);
+
+	for (USAS_LogisticsMasterJob* Job : ItemDeliveryJobs)
+	{
+		if (!IsValid(Job)) continue;
+		Job->OnLogisticsMasterJobUpdated.AddUObject(this, &ASAS_BL_BuildJob::HandleDeliveryJobUpdated);
+	}
 }
