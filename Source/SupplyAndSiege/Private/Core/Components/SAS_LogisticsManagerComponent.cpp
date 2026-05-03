@@ -108,13 +108,35 @@ void USAS_LogisticsManagerComponent::HandleLogisticsMasterJobUpdated(USAS_Logist
 
 void USAS_LogisticsManagerComponent::TryAssignJobs()
 {
+	ActiveOfferings.RemoveAll([](const FSAS_LogisticsOffering& Offer)
+		{
+			return !IsValid(Offer.SourceInventory) || !IsValid(Offer.Item) || Offer.Quantity <= 0;
+		});
+
+	AvailableWorkers.RemoveAll([](const TObjectPtr<USAS_WorkerControlComponent>& W)
+		{
+			return !IsValid(W);
+		});
+
+	ActiveJobs.RemoveAll([](const TObjectPtr<USAS_LogisticsMasterJob>& Job)
+		{
+			return !IsValid(Job);
+		});
+
 	if (ActiveJobs.Num() == 0) return;
 	if (AvailableWorkers.Num() == 0) return;
 
 	TArray<TObjectPtr<USAS_LogisticsMasterJob>> SortedJobs = ActiveJobs;
-	SortedJobs.Sort([](const USAS_LogisticsMasterJob& A, const USAS_LogisticsMasterJob& B)
+
+	SortedJobs.Sort([](const TObjectPtr<USAS_LogisticsMasterJob>& A, const TObjectPtr<USAS_LogisticsMasterJob>& B)
 		{
-			return A.Priority > B.Priority;
+			const USAS_LogisticsMasterJob* JobA = A.Get();
+			const USAS_LogisticsMasterJob* JobB = B.Get();
+
+			if (!IsValid(JobA)) return false;
+			if (!IsValid(JobB)) return true;
+
+			return JobA->Priority > JobB->Priority;
 		});
 
 	TArray<TObjectPtr<USAS_WorkerControlComponent>> RemainingWorkers = AvailableWorkers;
@@ -125,7 +147,7 @@ void USAS_LogisticsManagerComponent::TryAssignJobs()
 		if (ActiveJob->MasterJobStatus != ESAS_MasterJobStatus::Pending) continue;
 
 		USAS_WorkerControlComponent* BestWorker = nullptr;
-		FSAS_LogisticsOffering BestOffering;
+		FSAS_LogisticsOffering BestOffering = FSAS_LogisticsOffering();
 		int32 AssignedAmount = 0;
 
 		switch (ActiveJob->MasterJobType)
@@ -140,15 +162,32 @@ void USAS_LogisticsManagerComponent::TryAssignJobs()
 				break;
 			}
 
-			USAS_LWA_TransportItems* NewAssignment = NewObject<USAS_LWA_TransportItems>(this);
+			if (!IsValid(BestWorker) || !IsValid(BestOffering.SourceInventory) || !IsValid(DeliverJob->RequestingActor))
+			{
+				break;
+			}
+
+			UItemDefinitionPrimaryData* ItemDefinition = DeliverJob->GetItemDefinition();
+			if (!IsValid(ItemDefinition))
+			{
+				break;
+			}
 
 			AActor* SourceActor = BestOffering.SourceInventory->GetOwner();
 			AActor* TargetActor = DeliverJob->RequestingActor;
 
+			if (!IsValid(SourceActor) || !IsValid(TargetActor))
+			{
+				break;
+			}
+
+			USAS_LWA_TransportItems* NewAssignment = NewObject<USAS_LWA_TransportItems>(this);
+			if (!IsValid(NewAssignment)) break;
+
 			NewAssignment->InitializeTransportAssignment(
 				DeliverJob,
 				BestWorker,
-				DeliverJob->GetItemDefinition(),
+				ItemDefinition,
 				AssignedAmount,
 				SourceActor,
 				TargetActor
@@ -159,7 +198,10 @@ void USAS_LogisticsManagerComponent::TryAssignJobs()
 				DeliverJob->AddAssignment(NewAssignment);
 				NewAssignment->StartAssignment();
 
-				RemainingWorkers.Remove(BestWorker);
+				RemainingWorkers.RemoveAll([BestWorker](const TObjectPtr<USAS_WorkerControlComponent>& W)
+					{
+						return W == BestWorker;
+					});
 			}
 
 			break;
@@ -354,21 +396,29 @@ bool USAS_LogisticsManagerComponent::GetCachedOrComputePathLength(AActor* Source
 	return true;
 }
 
-void USAS_LogisticsManagerComponent::CreateBuildSiteResourceDeliveryJob(const FSAS_ResourceDeliveryRequest& ResourceDeliveryInformation)
+TArray<USAS_LogisticsMasterJob*> USAS_LogisticsManagerComponent::CreateBuildSiteResourceDeliveryJob(const FSAS_ResourceDeliveryRequest& ResourceDeliveryInformation)
 {
-	if (!ResourceDeliveryInformation.IsValid()) return;
+	TArray<USAS_LogisticsMasterJob*> CreatedJobs;
+
+	if (!ResourceDeliveryInformation.IsValid()) return CreatedJobs;
 
 	for (const TPair<TObjectPtr<UItemDefinitionPrimaryData>, int32>& Pair : ResourceDeliveryInformation.ResourceCost)
 	{
 		USAS_LMJ_DeliverItem* NewJob = NewObject<USAS_LMJ_DeliverItem>(this);
+		if (!IsValid(NewJob)) continue;
+
 		NewJob->InitializeDeliverItemJob(this, ResourceDeliveryInformation.BuildSite, Pair.Key, Pair.Value, ResourceDeliveryInformation.Priority);
 		NewJob->OnLogisticsMasterJobUpdated.AddUObject(this, &USAS_LogisticsManagerComponent::HandleLogisticsMasterJobUpdated);
-		ActiveJobs.Add(NewJob);
-		NotifyLogisticsMasterJobUpdated.Broadcast(NewJob);
 
+		ActiveJobs.Add(NewJob);
+		CreatedJobs.Add(NewJob);
+
+		NotifyLogisticsMasterJobUpdated.Broadcast(NewJob);
 	}
 
 	TryAssignJobs();
+
+	return CreatedJobs;
 }
 
 void USAS_LogisticsManagerComponent::RegisterAvailableWorker(USAS_WorkerControlComponent* Worker)
@@ -389,6 +439,3 @@ void USAS_LogisticsManagerComponent::UnregisterAvailableWorker(USAS_WorkerContro
 
 	NotifyAvailableWorkersUpdated.Broadcast(GetAvailableWorkers());
 }
-
-
-

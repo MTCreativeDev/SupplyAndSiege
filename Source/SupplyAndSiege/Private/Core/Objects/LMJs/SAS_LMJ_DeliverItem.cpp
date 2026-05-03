@@ -31,6 +31,8 @@ void USAS_LMJ_DeliverItem::AddAssignment(USAS_LogisticsWorkerAssignment* Assignm
 	{
 		MasterJobStatus = ESAS_MasterJobStatus::Active;
 	}
+
+	OnLogisticsMasterJobUpdated.Broadcast(this);
 }
 
 void USAS_LMJ_DeliverItem::NotifyAssignmentCompleted(USAS_LogisticsWorkerAssignment* Assignment)
@@ -41,6 +43,8 @@ void USAS_LMJ_DeliverItem::NotifyAssignmentCompleted(USAS_LogisticsWorkerAssignm
 	ReservedAmount = FMath::Max(0, ReservedAmount - Assignment->GetAssignedAmount());
 
 	Super::NotifyAssignmentCompleted(Assignment);
+
+	OnLogisticsMasterJobUpdated.Broadcast(this);
 }
 
 void USAS_LMJ_DeliverItem::NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignment* Assignment)
@@ -55,6 +59,8 @@ void USAS_LMJ_DeliverItem::NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignm
 	{
 		MasterJobStatus = ESAS_MasterJobStatus::Pending;
 	}
+
+	OnLogisticsMasterJobUpdated.Broadcast(this);
 }
 
 void USAS_LMJ_DeliverItem::NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment* Assignment, FSAS_WA_FailureContext FailureContext)
@@ -69,6 +75,8 @@ void USAS_LMJ_DeliverItem::NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment
 	{
 		MasterJobStatus = ESAS_MasterJobStatus::Pending;
 	}
+
+	OnLogisticsMasterJobUpdated.Broadcast(this);
 }
 
 FSAS_LogisticsJobWidgetInfo USAS_LMJ_DeliverItem::GetJobInfoForWidget() const

@@ -57,6 +57,9 @@ void USAS_LogisticsMasterJob::MarkCancelled()
 {
 	if (IsFinished()) return;
 	MasterJobStatus = ESAS_MasterJobStatus::Cancelled;
+
+	OnLogisticsMasterJobUpdated.Broadcast(this);
+
 	//Need to add in logic to allow for a certain amount of failures before this job becomes inactive.
 	if (OwningLM)
 	{
@@ -101,10 +104,12 @@ void USAS_LogisticsMasterJob::MarkCompleted()
 {
 	if (IsFinished()) return;
 	MasterJobStatus = ESAS_MasterJobStatus::Completed;
-	//Will need to check in children. Transport jobs will likely have multiple assignments
+	
+	OnLogisticsMasterJobUpdated.Broadcast(this);
+
 	if (OwningLM)
 	{
-		//TODO: Set up LM level closout of a master level job
+		//TODO: Set up LM level closout of a master level job. Possibly use the broadcast above?
 	}
 }
 
@@ -112,6 +117,9 @@ void USAS_LogisticsMasterJob::MarkFailed()
 {
 	if (IsFinished()) return;
 	MasterJobStatus = ESAS_MasterJobStatus::Failed;
+
+	OnLogisticsMasterJobUpdated.Broadcast(this);
+
 	if (OwningLM)
 	{
 		//TODO: Set up LM level cancellation of a master level job

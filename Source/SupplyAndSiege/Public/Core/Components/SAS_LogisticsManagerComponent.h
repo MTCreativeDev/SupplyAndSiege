@@ -30,7 +30,7 @@ class SUPPLYANDSIEGE_API USAS_LogisticsManagerComponent : public UActorComponent
 public:	
 	USAS_LogisticsManagerComponent();
 
-	void CreateBuildSiteResourceDeliveryJob(const FSAS_ResourceDeliveryRequest& ResourceDeliveryInformation);
+	TArray<USAS_LogisticsMasterJob*> CreateBuildSiteResourceDeliveryJob(const FSAS_ResourceDeliveryRequest& ResourceDeliveryInformation);
 
 	UFUNCTION(BlueprintCallable, Category = "Logistics")
 	TArray<USAS_LogisticsMasterJob*> GetActiveJobs() const { return ActiveJobs; }
