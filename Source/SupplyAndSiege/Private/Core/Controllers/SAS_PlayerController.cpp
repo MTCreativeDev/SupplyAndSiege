@@ -495,10 +495,22 @@ void ASAS_PlayerController::DoSingleSelect(const FVector2D& ScreenPosition)
 void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const FVector2D& ScreenPositionB)
 {
     if (!UnitManagerComponent) { return; }
-    
-    if (!IsInputKeyDown(EKeys::LeftShift) && !IsInputKeyDown(EKeys::RightShift))
+
+    TArray<USAS_UnitInformationComponent*> NewSelection;
+
+    if (IsInputKeyDown(EKeys::LeftShift) && IsInputKeyDown(EKeys::RightShift))
     {
-        UnitManagerComponent->ClearAllSelectedUnits();
+        for (const TWeakObjectPtr<USAS_UnitInformationComponent>& SelectedUnit : UnitManagerComponent->SelectedUnits)
+        {
+            if (SelectedUnit.IsValid())
+            {
+                NewSelection.AddUnique(SelectedUnit.Get());
+            }
+        }
+    }
+
+    else
+    {
         CurrentRightClickAction = ERightClickAction::None;
     }
     
@@ -522,11 +534,11 @@ void ASAS_PlayerController::DoBoxSelect(const FVector2D& ScreenPositionA, const 
         USAS_UnitInformationComponent* InfoComponent = Actor->FindComponentByClass<USAS_UnitInformationComponent>();
         if (!InfoComponent) continue;
 
-        UnitManagerComponent->AddSelectedUnit(InfoComponent);
-        CurrentRightClickAction = ERightClickAction::UnitAction;
-        //TODO: Have the right click action get updated after all of this rather than each time.
-        //TODO: Set up a process to only have the unit manager broadcast an update after all of the selected units are complete. Right now this will cause the UI to update x amount of times based on units selected.
+        NewSelection.AddUnique(InfoComponent);
     }
+
+    UnitManagerComponent->SetSelectedUnits(NewSelection);
+    CurrentRightClickAction = NewSelection.Num() > 0 ? ERightClickAction::UnitAction : ERightClickAction::None;
 }
 
 void ASAS_PlayerController::RightClickStarted()

@@ -77,7 +77,10 @@ public:
 
 protected:
 
+	UPROPERTY()
 	TArray<TObjectPtr<USAS_LogisticsMasterJob>> ActiveJobs;
+
+	UPROPERTY()
 	TArray<TObjectPtr<USAS_WorkerControlComponent>> AvailableWorkers;
 
 	UPROPERTY()

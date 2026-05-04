@@ -141,20 +141,23 @@ void USAS_LogisticsManagerComponent::TryAssignJobs()
 
 	TArray<TObjectPtr<USAS_WorkerControlComponent>> RemainingWorkers = AvailableWorkers;
 
-	for (TObjectPtr<USAS_LogisticsMasterJob> ActiveJob : SortedJobs)
+	for (const TObjectPtr<USAS_LogisticsMasterJob>& ActiveJob : SortedJobs)
 	{
-		if (!IsValid(ActiveJob)) continue;
-		if (ActiveJob->MasterJobStatus != ESAS_MasterJobStatus::Pending) continue;
+		USAS_LogisticsMasterJob* Job = ActiveJob.Get();
+
+		if (!IsValid(Job)) continue;
+
+		if (Job->MasterJobStatus != ESAS_MasterJobStatus::Pending) continue;
 
 		USAS_WorkerControlComponent* BestWorker = nullptr;
 		FSAS_LogisticsOffering BestOffering = FSAS_LogisticsOffering();
 		int32 AssignedAmount = 0;
 
-		switch (ActiveJob->MasterJobType)
+		switch (Job->MasterJobType)
 		{
 		case ESAS_MasterJobType::DeliverItem:
 		{
-			USAS_LMJ_DeliverItem* DeliverJob = Cast<USAS_LMJ_DeliverItem>(ActiveJob);
+			USAS_LMJ_DeliverItem* DeliverJob = Cast<USAS_LMJ_DeliverItem>(Job);
 			if (!IsValid(DeliverJob)) break;
 
 			if (!FindBestTransportCandidate(DeliverJob,RemainingWorkers, BestWorker, BestOffering, AssignedAmount))

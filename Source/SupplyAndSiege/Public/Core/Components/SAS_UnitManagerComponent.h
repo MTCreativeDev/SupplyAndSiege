@@ -24,9 +24,16 @@ public:
 	void SetTeam(ESAS_Team NewTeam);
 	void AssignSelectableUnit(TWeakObjectPtr<AActor> NewUnit, bool BypassComponentCheck);
 	void RemoveSelectableUnit(TWeakObjectPtr<AActor> UnitToRemove);
-	void AddSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation);
-	void RemoveSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation);
+
+	UFUNCTION(BlueprintCallable, Category = "Selection")
+	void SetSelectedUnits(const TArray<USAS_UnitInformationComponent*>& NewSelection);
+
+	UFUNCTION(BlueprintCallable, Category = "Selection")
 	void ClearAllSelectedUnits();
+
+	UFUNCTION(BlueprintCallable, Category = "Selection")
+	void AddSelectedUnit(USAS_UnitInformationComponent* UnitInfo);
+
 	void RightClickReceived(const FHitResult Hit);
 	void IssueMoveOrderToUnits(const TArray<TWeakObjectPtr<USAS_UnitControlComponent>>& UnitsToMove, const FVector& WorldLocation);
 	const TArray<TWeakObjectPtr<USAS_UnitInformationComponent>>& GetSelectedUnits() const { return SelectedUnits; }
@@ -75,5 +82,6 @@ protected:
 private:
 
 	TArray<TWeakObjectPtr<USAS_UnitControlComponent>> PendingFormationUnits;
+
 
 };

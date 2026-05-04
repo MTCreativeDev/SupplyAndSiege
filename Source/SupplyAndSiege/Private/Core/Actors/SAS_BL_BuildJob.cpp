@@ -13,6 +13,7 @@
 #include "Core/Objects/SAS_LogisticsMasterJob.h"
 #include "Core/Objects/LMJs/SAS_LMJ_DeliverItem.h"
 #include "Misc/Structs/SAS_LogisticsJobWidgetInfo.h"
+#include "Kismet/GameplayStatics.h"
 
 ASAS_BL_BuildJob::ASAS_BL_BuildJob()
 {
@@ -107,7 +108,18 @@ void ASAS_BL_BuildJob::CompleteBuildJob()
 	UWorld* World = GetWorld();
 	if (!World) return;
 
-	World->SpawnActor<AActor>(BuildingDefinition->CompletedBuildingClass, GetActorTransform());
+	ASAS_SelectableBuilding* ConstructedBuilding;
+	FTransform ConstructedBuildingTransform = GetActorTransform();
+
+	ConstructedBuilding = World->SpawnActorDeferred<ASAS_SelectableBuilding>(
+		BuildingDefinition->CompletedBuildingClass,
+		ConstructedBuildingTransform,
+		nullptr,
+		nullptr	
+	);
+
+	ConstructedBuilding->AssignTeamOnSpawn = UnitInformation->AssignedTeam;
+	UGameplayStatics::FinishSpawningActor(ConstructedBuilding, ConstructedBuildingTransform);
 
 	for (USAS_LogisticsMasterJob* Job : ItemDeliveryJobs)
 	{

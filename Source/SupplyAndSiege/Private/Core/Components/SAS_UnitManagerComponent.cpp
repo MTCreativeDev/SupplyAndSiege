@@ -76,31 +76,60 @@ void USAS_UnitManagerComponent::RemoveSelectableUnit(TWeakObjectPtr<AActor> Unit
 	}
 }
 
-void USAS_UnitManagerComponent::AddSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation)
+void USAS_UnitManagerComponent::SetSelectedUnits(const TArray<USAS_UnitInformationComponent*>& NewSelection)
 {
-	if (!UnitInformation.IsValid()) return;
-	SelectedUnits.AddUnique(UnitInformation);
+	TArray<TWeakObjectPtr<USAS_UnitInformationComponent>> CleanNewSelection;
+	CleanNewSelection.Reserve(NewSelection.Num());
 
-	UnitInformation->NotifySelected(AssignedTeam);
-	OnUnitSelectionChange.Broadcast(SelectedUnits);
-}
+	for (USAS_UnitInformationComponent* UnitInfo : NewSelection)
+	{
+		if (!IsValid(UnitInfo)) continue;
+		CleanNewSelection.AddUnique(UnitInfo);
+	}
 
-void USAS_UnitManagerComponent::RemoveSelectedUnit(TWeakObjectPtr<USAS_UnitInformationComponent> UnitInformation)
-{
-	SelectedUnits.Remove(UnitInformation);
-	UnitInformation->NotifyDeselected(AssignedTeam);
+	bool bChanged = SelectedUnits.Num() != CleanNewSelection.Num();
+
+	if (!bChanged)
+	{
+		for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitInfo : CleanNewSelection)
+		{
+			if (!SelectedUnits.Contains(UnitInfo))
+			{
+				bChanged = true;
+				break;
+			}
+		}
+	}
+
+	if (!bChanged) return;
+
+	SelectedUnits = CleanNewSelection;
 	OnUnitSelectionChange.Broadcast(SelectedUnits);
 }
 
 void USAS_UnitManagerComponent::ClearAllSelectedUnits()
 {
-	for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitCompPtr : SelectedUnits)
+	TArray<USAS_UnitInformationComponent*> EmptySelection;
+	SetSelectedUnits(EmptySelection);
+}
+
+void USAS_UnitManagerComponent::AddSelectedUnit(USAS_UnitInformationComponent* UnitInfo)
+{
+	if (!IsValid(UnitInfo)) return;
+
+	TArray<USAS_UnitInformationComponent*> NewSelection;
+	NewSelection.Reserve(SelectedUnits.Num() + 1);
+
+	for (const TWeakObjectPtr<USAS_UnitInformationComponent>& SelectedUnit : SelectedUnits)
 	{
-		if (!UnitCompPtr.IsValid()) continue;
-		UnitCompPtr->NotifyDeselected(AssignedTeam);
+		if (SelectedUnit.IsValid())
+		{
+			NewSelection.Add(SelectedUnit.Get());
+		}
 	}
-	SelectedUnits.Empty();
-	OnUnitSelectionChange.Broadcast(SelectedUnits);
+
+	NewSelection.AddUnique(UnitInfo);
+	SetSelectedUnits(NewSelection);
 }
 
 void USAS_UnitManagerComponent::RightClickReceived(const FHitResult Hit)
@@ -172,7 +201,6 @@ void USAS_UnitManagerComponent::IssueMoveOrderToUnits(const TArray<TWeakObjectPt
 }
 
 UE_DISABLE_OPTIMIZATION
-
 void USAS_UnitManagerComponent::OnFormationQueryComplete(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
 {
 	if (QueryStatus != EEnvQueryStatus::Success)
