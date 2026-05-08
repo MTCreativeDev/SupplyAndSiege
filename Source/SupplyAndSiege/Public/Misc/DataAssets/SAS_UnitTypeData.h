@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataAsset.h"
+#include "SAS_GameDataAsset.h"
 #include "Core/SAS_Enumerators.h"
 #include "SAS_UnitTypeData.generated.h"
 
@@ -14,23 +14,22 @@ class USAS_HealthDefinitionData;
  * 
  */
 UCLASS(BlueprintType)
-class SUPPLYANDSIEGE_API USAS_UnitTypeData : public UDataAsset
+class SUPPLYANDSIEGE_API USAS_UnitTypeData : public USAS_GameDataAsset
 {
 	GENERATED_BODY()
 	
+
+	USAS_UnitTypeData()
+	{
+		CanBeProduced = true;
+	}
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FName UnitId;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FText DisplayName;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ESAS_UnitCategory UnitCategory;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UTexture2D* Icon = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	USAS_HealthDefinitionData* HealthDefinition = nullptr;

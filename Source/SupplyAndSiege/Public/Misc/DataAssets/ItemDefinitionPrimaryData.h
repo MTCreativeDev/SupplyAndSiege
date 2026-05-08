@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataAsset.h"
+#include "SAS_GameDataAsset.h"
 #include "ItemDefinitionPrimaryData.generated.h"
 
 /**
@@ -12,20 +12,13 @@
 class UTexture2D;
 
 UCLASS(BlueprintType)
-class SUPPLYANDSIEGE_API UItemDefinitionPrimaryData : public UPrimaryDataAsset
+class SUPPLYANDSIEGE_API UItemDefinitionPrimaryData : public USAS_GameDataAsset
 {
 	GENERATED_BODY()
-	
 
-public:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FText DisplayName;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UTexture2D* Icon = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FText Description;
+	UItemDefinitionPrimaryData()
+	{
+		CanBeProduced = true;
+	}
 
 };
