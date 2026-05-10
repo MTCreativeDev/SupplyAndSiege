@@ -163,8 +163,13 @@ void USAS_VisionManagerComponent::RecomputeVisibility()
 
 	if (!bViewingTeamResolved || ViewingTeam == ESAS_Team::None)
 	{
+		UE_LOG(LogTemp, Verbose, TEXT("USAS_VisionManagerComponent::RecomputeVisibility skipped (resolved=%d, viewingTeam=%d)"),
+			bViewingTeamResolved ? 1 : 0, (int32)ViewingTeam);
 		return;
 	}
+
+	UE_LOG(LogTemp, Verbose, TEXT("USAS_VisionManagerComponent::RecomputeVisibility running (viewingTeam=%d, targets=%d, sourceTeams=%d)"),
+		(int32)ViewingTeam, AllTargets.Num(), Sources.Num());
 
 	TSet<TWeakObjectPtr<USAS_VisionComponent>> NewVisible;
 	NewVisible.Reserve(AllTargets.Num());
@@ -291,6 +296,7 @@ void USAS_VisionManagerComponent::ResolveViewingTeam()
 
 	ViewingTeam = UnitManager->AssignedTeam;
 	bViewingTeamResolved = true;
+	UE_LOG(LogTemp, Display, TEXT("USAS_VisionManagerComponent: ViewingTeam resolved to %d"), (int32)ViewingTeam);
 	RequestImmediateRecompute();
 }
 

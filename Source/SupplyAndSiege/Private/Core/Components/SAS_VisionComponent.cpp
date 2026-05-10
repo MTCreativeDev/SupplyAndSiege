@@ -154,6 +154,9 @@ void USAS_VisionComponent::TryRegisterWithManager()
 	CachedManager = Manager;
 	Manager->RegisterComponent(this);
 	bRegistered = true;
+	UE_LOG(LogTemp, Verbose, TEXT("USAS_VisionComponent: %s registered (team=%d, isSource=%d, radius=%.1f)"),
+		GetOwner() ? *GetOwner()->GetName() : TEXT("<no owner>"),
+		(int32)CachedTeam, bIsSource ? 1 : 0, CachedRadius);
 	ApplyDefaultHiddenOnRegistration();
 }
 
@@ -194,6 +197,11 @@ void USAS_VisionComponent::SetHidden(bool bNewHidden)
 		return;
 	}
 	bIsHiddenLocally = bNewHidden;
+
+	UE_LOG(LogTemp, Verbose, TEXT("USAS_VisionComponent::SetHidden(%d) on %s (team=%d)"),
+		bNewHidden ? 1 : 0,
+		GetOwner() ? *GetOwner()->GetName() : TEXT("<no owner>"),
+		(int32)CachedTeam);
 
 	AActor* Owner = GetOwner();
 	if (!IsValid(Owner))
