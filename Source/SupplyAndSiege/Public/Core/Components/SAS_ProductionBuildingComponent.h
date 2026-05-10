@@ -4,7 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "Misc/DataAssets/SAS_GameDataAsset.h"
 #include "Misc/DataAssets/SAS_RecipeData.h"
-#include "SAS_ProductionBuidlingComponent.generated.h"
+#include "SAS_ProductionBuildingComponent.generated.h"
 
 USTRUCT(BlueprintType)
 struct FProductionRequirements
@@ -19,13 +19,13 @@ struct FProductionRequirements
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRequirementsUpdatedDelegate, const FProductionRequirements&, Requirements);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class SUPPLYANDSIEGE_API USAS_ProductionBuidlingComponent : public UActorComponent
+class SUPPLYANDSIEGE_API USAS_ProductionBuildingComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	USAS_ProductionBuidlingComponent();
+	USAS_ProductionBuildingComponent();
 
 protected:
 	// Called when the game starts
@@ -35,10 +35,12 @@ protected:
 	TArray<TObjectPtr<USAS_GameDataAsset>> ProductionQueue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recipes")
-	TMap<TObjectPtr<USAS_GameDataAsset>, TObjectPtr<USAS_RecipeData>> Recipes;
+	TArray<TObjectPtr<USAS_RecipeData>> Recipes;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TMap<TObjectPtr<USAS_GameDataAsset>, int32> Inventory;
+
+	TMap<TObjectPtr<USAS_GameDataAsset>, TObjectPtr<USAS_RecipeData>> RecipesMap;
 
 	TMap<USAS_GameDataAsset*, int32> GetTotalRequiredCounts();
 
@@ -46,7 +48,13 @@ protected:
 
 	bool HaveRequirementsForProduct(USAS_GameDataAsset* Product);
 
+	UFUNCTION(BlueprintCallable, Category = "Production")
 	bool AddProductToQueue(USAS_GameDataAsset* Product);
+
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+private:
+	void BuildRecipesMap();  // Helper to populate RecipesMap from Recipes
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

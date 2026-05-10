@@ -1,7 +1,9 @@
-#include "Core/Components/SAS_ProductionBuidlingComponent.h"
+#include "Core/Components/SAS_ProductionBuildingComponent.h"
+#include "Framework/Notifications/NotificationManager.h"
+#include "Widgets/Notifications/SNotificationList.h"
 
 // Sets default values for this component's properties
-USAS_ProductionBuidlingComponent::USAS_ProductionBuidlingComponent()
+USAS_ProductionBuildingComponent::USAS_ProductionBuildingComponent()
 {
     // Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
     // off to improve performance if you don't need them.
@@ -12,24 +14,24 @@ USAS_ProductionBuidlingComponent::USAS_ProductionBuidlingComponent()
 
 
 // Called when the game starts
-void USAS_ProductionBuidlingComponent::BeginPlay()
+void USAS_ProductionBuildingComponent::BeginPlay()
 {
     Super::BeginPlay();
-
+    BuildRecipesMap();
     // ...
 
 }
 
 
 // Called every frame
-void USAS_ProductionBuidlingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void USAS_ProductionBuildingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
     // ...
 }
 
-TMap<USAS_GameDataAsset*, int32> USAS_ProductionBuidlingComponent::GetTotalRequiredCounts()
+TMap<USAS_GameDataAsset*, int32> USAS_ProductionBuildingComponent::GetTotalRequiredCounts()
 {
     TMap<USAS_GameDataAsset*, int32> TotalRequiredCounts;
     for (TObjectPtr<USAS_GameDataAsset> Product : ProductionQueue)
@@ -59,7 +61,7 @@ TMap<USAS_GameDataAsset*, int32> USAS_ProductionBuidlingComponent::GetTotalRequi
     return TotalRequiredCounts;
 }
 
-TMap<USAS_GameDataAsset*, int32> USAS_ProductionBuidlingComponent::GetRequiredCountsForProduct(USAS_GameDataAsset* Product)
+TMap<USAS_GameDataAsset*, int32> USAS_ProductionBuildingComponent::GetRequiredCountsForProduct(USAS_GameDataAsset* Product)
 {
     TMap<USAS_GameDataAsset*, int32> RequiredCounts;
     TSet<USAS_GameDataAsset*> Visited;
@@ -73,13 +75,13 @@ TMap<USAS_GameDataAsset*, int32> USAS_ProductionBuidlingComponent::GetRequiredCo
             }
             Visited.Add(Asset);
 
-            if (!Recipes.Contains(Asset))
+            if (!RecipesMap.Contains(Asset))
             {
                 Visited.Remove(Asset);
                 return;
             }
 
-            const USAS_RecipeData* Recipe = Recipes[Asset];
+            const USAS_RecipeData* Recipe = RecipesMap[Asset];
             if (!Recipe)
             {
                 Visited.Remove(Asset);
@@ -104,7 +106,7 @@ TMap<USAS_GameDataAsset*, int32> USAS_ProductionBuidlingComponent::GetRequiredCo
     return RequiredCounts;
 }
 
-bool USAS_ProductionBuidlingComponent::HaveRequirementsForProduct(USAS_GameDataAsset* Product)
+bool USAS_ProductionBuildingComponent::HaveRequirementsForProduct(USAS_GameDataAsset* Product)
 {
     TMap<USAS_GameDataAsset*, int32> RequiredCounts = GetRequiredCountsForProduct(Product);
     for (auto& Pair : RequiredCounts)
@@ -119,14 +121,14 @@ bool USAS_ProductionBuidlingComponent::HaveRequirementsForProduct(USAS_GameDataA
 }
 
 // Returns if the product was successfully added to the queue (i.e. it exists and has a recipe)
-bool USAS_ProductionBuidlingComponent::AddProductToQueue(USAS_GameDataAsset* Product)
+bool USAS_ProductionBuildingComponent::AddProductToQueue(USAS_GameDataAsset* Product)
 {
-    if (!Product || !Recipes.Contains(Product))
+    if (!Product || !RecipesMap.Contains(Product))
         return false;
 
     ProductionQueue.Add(Product);
     TMap<USAS_GameDataAsset*, int32> RequiredCounts = GetTotalRequiredCounts();
-
+    UE_LOG(LogTemp, Warning, TEXT("Required Counts: %d"), RequiredCounts.Num());
     if (RequiredCounts.Num() > 0)
     {
 		FProductionRequirements requirements = { RequiredCounts };
@@ -145,3 +147,56 @@ bool USAS_ProductionBuidlingComponent::AddProductToQueue(USAS_GameDataAsset* Pro
 
     return true;
 }
+
+void USAS_ProductionBuildingComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+    Super::PostEditChangeProperty(PropertyChangedEvent);
+
+    if (PropertyChangedEvent.Property &&
+        PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(USAS_ProductionBuildingComponent, Recipes))
+    {
+        TSet<TObjectPtr<USAS_GameDataAsset>> SeenProducts;
+        bool bHasDuplicates = false;
+        
+        // First pass: detect duplicates
+        for (int i = 0; i < Recipes.Num(); ++i)
+        {
+            TObjectPtr<USAS_RecipeData>& Recipe = Recipes[i];
+
+            if (Recipe && Recipe->Product)
+            {
+                if (SeenProducts.Contains(Recipe->Product))
+                {
+                    // Log error and show notification
+                    UE_LOG(LogTemp, Error, TEXT("Duplicate Product found in RecipesArray. Each Product must be unique."));
+                    FNotificationInfo Info(FText::FromString("Error: Duplicate Product found in RecipesArray. Each Product must be unique."));
+
+                    Info.bUseLargeFont = false;
+                    Info.bFireAndForget = true;
+                    FSlateNotificationManager::Get().AddNotification(Info);
+                    Recipe = nullptr;  // Set to null to make it unselected/empty
+                    break;
+                }
+                SeenProducts.Add(Recipe->Product);
+            }
+        }
+
+       
+
+        // Always update the map
+        BuildRecipesMap();
+    }
+}
+
+void USAS_ProductionBuildingComponent::BuildRecipesMap()
+{
+    RecipesMap.Empty();
+    for (const TObjectPtr<USAS_RecipeData>& Recipe : Recipes)
+    {
+        if (Recipe && Recipe->Product)
+        {
+            RecipesMap.Add(Recipe->Product, Recipe);
+        }
+    }
+}
+
