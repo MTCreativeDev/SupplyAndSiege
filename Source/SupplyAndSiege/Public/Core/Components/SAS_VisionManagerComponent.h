@@ -32,6 +32,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Vision")
 	bool IsActorVisibleToViewer(AActor* Actor) const;
 
+	/** Returns the array of vision sources currently registered for the given team.
+	 *  Returned reference is valid until the next register/unregister call.
+	 *  Empty array returned if no sources are registered for the team. */
+	const TArray<TWeakObjectPtr<USAS_VisionComponent>>& GetSources(ESAS_Team Team) const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

@@ -157,6 +157,16 @@ bool USAS_VisionManagerComponent::IsActorVisibleToViewer(AActor* Actor) const
 	return false;
 }
 
+const TArray<TWeakObjectPtr<USAS_VisionComponent>>& USAS_VisionManagerComponent::GetSources(ESAS_Team Team) const
+{
+	static const TArray<TWeakObjectPtr<USAS_VisionComponent>> EmptyArray;
+	if (const TArray<TWeakObjectPtr<USAS_VisionComponent>>* Found = Sources.Find(Team))
+	{
+		return *Found;
+	}
+	return EmptyArray;
+}
+
 void USAS_VisionManagerComponent::RecomputeVisibility()
 {
 	bImmediateRecomputeQueued = false;

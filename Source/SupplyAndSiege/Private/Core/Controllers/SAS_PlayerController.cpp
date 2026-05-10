@@ -7,6 +7,7 @@
 #include "DrawDebugHelpers.h"
 #include "Blueprint/UserWidget.h"
 #include "Core/CustomCollision.h"
+#include "Core/Components/SAS_FogOfWarClientComponent.h"
 #include "Core/Components/SAS_UnitManagerComponent.h"
 #include "Core/Objects/SAS_SelectionInventoryViewModel.h"
 #include "Core/Actors/SAS_BL_BuildPlacement.h"
@@ -24,8 +25,7 @@ ASAS_PlayerController::ASAS_PlayerController()
     //WARNING: This only works in a single player game.
     UnitManagerComponent->SetTeam(ESAS_Team::Team1);
 
-
-
+    FogOfWarClient = CreateDefaultSubobject<USAS_FogOfWarClientComponent>(TEXT("FogOfWarClient"));
 }
 
 void ASAS_PlayerController::Tick(float DeltaSeconds)
