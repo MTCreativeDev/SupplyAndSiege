@@ -58,7 +58,6 @@ void USAS_ResourceClusterComponent::MarkDepleted(UPrimitiveComponent* HitCompone
 	DisableInstance(ISM, InstanceIndex);
 	HideInstance(ISM, InstanceIndex);
 	//TODO: Need to look into the best method to handle the collision using a HISM. We are moving it out of the playable space which should make this fine, but will follow up. Also need to look into updating the NavComponent.
-
 }
 
 bool USAS_ResourceClusterComponent::GetInstanceTransform(const UPrimitiveComponent* HitComponent, int32 InstanceIndex, FTransform& OutWorldTransform) const
@@ -178,6 +177,19 @@ USAS_ResourceTypeData* USAS_ResourceClusterComponent::CheckComponentForResourceT
 	}
 
 	return nullptr;
+}
+
+bool USAS_ResourceClusterComponent::AreAllInstancesDepleted(const UInstancedStaticMeshComponent* ISM) const
+{
+	if (!ISM) return false;
+
+	const int32 InstanceCount = ISM->GetInstanceCount();
+	if (InstanceCount <= 0) return true;
+
+	const TSet<int32>* DisabledSet = DisabledInstancesByComponent.Find(ISM);
+	if (!DisabledSet) return false;
+
+	return DisabledSet->Num() == InstanceCount;
 }
 
 

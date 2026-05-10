@@ -9,11 +9,12 @@
 
 #include "SAS_ResourceManagerComponent.generated.h"
 
-
 class USAS_ResourceTypeData;
 class USAS_ResourceClusterComponent;
 class UPrimitiveComponent;
 class UInstancedStaticMeshComponent;
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnResourceInstanceDepleted, const USAS_ResourceClusterComponent*, int32);
 
 //I normally like to create a separate class for structs, but I dont think this will be used elsewhere. If it is, I will move it to its own file.
 USTRUCT()
@@ -111,6 +112,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Resource")
 	void ReleaseAllReservationsForClaimer(AActor* Claimer, const FSAS_ResourceKey& KeyToKeep, bool bHasKeyToKeep);
 
+	FOnResourceInstanceDepleted& GetOnResourceInstanceDepletedDelegate()
+	{
+		return OnResourceInstanceDepleted;
+	}
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -123,6 +129,8 @@ private:
 	FSAS_ResourceRuntimeState& FindOrAddState_OnModify(const FSAS_ResourceKey& Key, const USAS_ResourceTypeData* TypeData);
 
 	FIntPoint WorldToCell2D(const FVector& World, float CellSize) const;
+
+	FOnResourceInstanceDepleted OnResourceInstanceDepleted;
 
 protected:
 

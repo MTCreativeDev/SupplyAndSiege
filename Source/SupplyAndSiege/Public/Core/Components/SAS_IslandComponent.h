@@ -27,6 +27,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
 	void PlayFallAnimation();
 
+	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
+	void SubtractCaelium(int32 Amount);
+
 protected:
 	virtual void BeginPlay() override;
 

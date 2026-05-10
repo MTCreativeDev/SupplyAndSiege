@@ -87,3 +87,16 @@ static FAutoConsoleCommand GCmdMineCaelium(
     }),
     ECVF_Cheat
 );
+
+void USAS_IslandComponent::SubtractCaelium(int32 Amount)
+{
+	CaeliumRemaining = FMath::Max(0, CaeliumRemaining - Amount);
+
+	UE_LOG(LogTemp, Warning, TEXT("Caelium subtracted from %s: %d remaining"),
+		*IslandActor->GetName(), CaeliumRemaining);
+
+	if (IslandManager)
+	{
+		IslandManager->CheckIslandCaeliumDeposits(this);
+	}
+}
