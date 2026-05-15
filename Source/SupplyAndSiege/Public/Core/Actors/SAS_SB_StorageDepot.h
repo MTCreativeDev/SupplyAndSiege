@@ -6,7 +6,7 @@
 #include "Core/Actors/SAS_SelectableBuilding.h"
 #include "SAS_SB_StorageDepot.generated.h"
 
-class USAS_InventoryComponent;
+class USAS_IC_ResourceDepot;
 /**
  * 
  */
@@ -20,7 +20,7 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
-	USAS_InventoryComponent* Inventory;
+	USAS_IC_ResourceDepot* Inventory;
 
 
 };
