@@ -66,6 +66,11 @@ TArray<USAS_IslandComponent*> USAS_IslandManagerComponent::GetIslandComponents()
 void USAS_IslandManagerComponent::CheckIslandCaeliumDeposits(USAS_IslandComponent* IslandComponent)
 {
 	if (!IslandComponent) return;
+	if (IslandsBeingDestroyed.Contains(TWeakObjectPtr<USAS_IslandComponent>(IslandComponent)))
+	{
+		return;
+	}
+
 	int32 Caelium = GetCaeliumDeposits(IslandComponent); 
 	bool IsCaeliumDepleted = IsDepleted(Caelium);
 	bool EnoughCaelium = CanIslandFloat(Caelium);
@@ -73,19 +78,10 @@ void USAS_IslandManagerComponent::CheckIslandCaeliumDeposits(USAS_IslandComponen
 	{
 		RemoveIslandFromQueue(IslandComponent);
 	}
+
 	if (AActor* IslandActor = IslandComponent->GetOwner())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("IslandCaeliumDeposits: %s, %d"), *IslandActor->GetName(), Caelium);
-	}
-
-	if (IslandsBeingDestroyed.Contains(TWeakObjectPtr<USAS_IslandComponent>(IslandComponent)))
-	{
-		return;
-	}
-
-	if (IsCaeliumDepleted || !EnoughCaelium)
-	{
-		RemoveIslandFromQueue(IslandComponent);
 	}
 }
 
@@ -109,9 +105,7 @@ void USAS_IslandManagerComponent::RemoveIslandFromQueue(USAS_IslandComponent* Is
 	UE_LOG(LogTemp, Warning, TEXT("Initiating island destruction: %s"), *IslandActor->GetName());
 	IslandComponent->PlayFallAnimation();
 	OnIslandDestroyed.Broadcast(IslandComponent->GetIslandID(), IslandActor);
-
-	// Schedule island destruction after a delay for the destruction animation to run
-	const float DestructionDelay = 2.0f;
+	const float DestructionDelay2Seconds = 2.0f;
 	FTimerHandle DestructionTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(
 		DestructionTimerHandle,
@@ -122,12 +116,12 @@ void USAS_IslandManagerComponent::RemoveIslandFromQueue(USAS_IslandComponent* Is
 				IslandActor->Destroy();
 			}
 		},
-		DestructionDelay,
+		DestructionDelay2Seconds,
 		false
 	);
 
 	UE_LOG(LogTemp, Warning, TEXT("Island %s scheduled for destruction in %.1f seconds"),
-		*IslandActor->GetName(), DestructionDelay);
+		*IslandActor->GetName(), DestructionDelay2Seconds);
 }
 
 void USAS_IslandManagerComponent::CleanupIslandQueue()
@@ -140,84 +134,64 @@ void USAS_IslandManagerComponent::CleanupIslandQueue()
 
 void USAS_IslandManagerComponent::TestIslandDestruction()
 {
-	UE_LOG(LogTemp, Warning, TEXT("=== Test: Island Destruction Start ==="));
+    UE_LOG(LogTemp, Warning, TEXT("=== Test: Island Destruction Start ==="));
+    TArray<USAS_IslandComponent*> Islands = GetIslandComponents();
 
-	if (!GetWorld())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Test: No world available!"));
-		return;
-	}
+    if (Islands.Num() == 0)
+    {
+        UE_LOG(LogTemp, Error, TEXT("No existing islands found to test destruction on. Spawn some islands first!"));
+        return;
+    }
 
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Name = FName("TestIslandActor");
-	AActor* TestActor = GetWorld()->SpawnActor<AActor>(AActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+    USAS_IslandComponent* TargetIsland = Islands[0];
+    if (!TargetIsland)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Target Island pointer is null!"));
+        return;
+    }
 
-	if (!TestActor)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Test: Failed to spawn test actor!"));
-		return;
-	}
+    UE_LOG(LogTemp, Log, TEXT("Found %d island(s). Testing on: %s"), Islands.Num(), *TargetIsland->GetName());
 
-	TestActor->SetActorLabel(TEXT("TestIsland"));
-	UE_LOG(LogTemp, Warning, TEXT("Test: [PASS] Spawned test actor: %s"), *TestActor->GetName());
-
-	USAS_IslandComponent* TestIsland = NewObject<USAS_IslandComponent>(TestActor, USAS_IslandComponent::StaticClass());
-	if (!TestIsland)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Test: Failed to create island component!"));
-		TestActor->Destroy();
-		return;
-	}
-	TestActor->AddInstanceComponent(TestIsland);
-	TestIsland->RegisterComponent();
-	UE_LOG(LogTemp, Warning, TEXT("Test: [PASS] Created and registered island component"));
-	AddIslandToQueue(TestIsland);
-	UE_LOG(LogTemp, Warning, TEXT("Test: [PASS] Island added to queue"));
-	TArray<USAS_IslandComponent*> Islands = GetIslandComponents();
-	if (Islands.Num() == 0)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Test: [FAIL] Island not found in queue!"));
-		TestActor->Destroy();
-		return;
-	}
-	UE_LOG(LogTemp, Warning, TEXT("Test: [PASS] Found %d island(s) in queue"), Islands.Num());
-	USAS_IslandComponent* TargetIsland = Islands[0];
+    const int32 TestCaeliumAmount = 100;
+	TargetIsland->SetCaeliumDeposits(TestCaeliumAmount);
 	int32 InitialCaelium = TargetIsland->GetCaeliumDeposits();
-	UE_LOG(LogTemp, Warning, TEXT("Test: [PASS] Island initial caelium: %d"), InitialCaelium);
-	UE_LOG(LogTemp, Warning, TEXT("Test: [ACTION] Depleting all caelium (%d)..."), InitialCaelium);
-	TargetIsland->SubtractCaelium(InitialCaelium);
+	UE_LOG(LogTemp, Log, TEXT("Target Island prepared with initial caelium: %d"), InitialCaelium);
+    UE_LOG(LogTemp, Log, TEXT("Depleting all caelium (%d)..."), InitialCaelium);
+    TargetIsland->SubtractCaelium(InitialCaelium);
 
-	int32 DepletedCaelium = TargetIsland->GetCaeliumDeposits();
-	if (DepletedCaelium == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Test: [PASS] Caelium depleted to: %d"), DepletedCaelium);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Test: [WARN] Caelium is: %d (expected 0)"), DepletedCaelium);
-	}
-	UE_LOG(LogTemp, Warning, TEXT("Test: [ACTION] Triggering destruction check..."));
+    int32 DepletedCaelium = TargetIsland->GetCaeliumDeposits();
+    if (DepletedCaelium == 0)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Caelium successfully depleted to 0."));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Caelium is: %d (expected 0)"), DepletedCaelium);
+        return;
+    }
+    
 	CheckIslandCaeliumDeposits(TargetIsland);
-	if (IslandsBeingDestroyed.Contains(TWeakObjectPtr<USAS_IslandComponent>(TargetIsland)))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Test: [PASS] Island marked for destruction"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Test: [WARN] Island not marked for destruction"));
-	}
-	TArray<USAS_IslandComponent*> RemainingIslands = GetIslandComponents();
-	if (RemainingIslands.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Test: [PASS] Island removed from active queue"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Test: [WARN] Island still in queue: %d"), RemainingIslands.Num());
-	}
-	UE_LOG(LogTemp, Warning, TEXT("Test: [INFO] Actor will be destroyed in 2.0 seconds..."));
-	UE_LOG(LogTemp, Warning, TEXT("=== Test: Island Destruction Complete ==="));
-	UE_LOG(LogTemp, Warning, TEXT("Test: [SUCCESS] All tests passed! Island scheduled for destruction."));
+
+	if (IslandsBeingDestroyed.Contains(TargetIsland))
+    {
+        UE_LOG(LogTemp, Log, TEXT("Island successfully marked for destruction"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Island was NOT marked for destruction"));
+    }
+
+    TArray<USAS_IslandComponent*> RemainingIslands = GetIslandComponents();
+    if (!RemainingIslands.Contains(TargetIsland))
+    {
+        UE_LOG(LogTemp, Log, TEXT("Island removed from active queue"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Island is still in the active queue!"));
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("=== Test: Island Destruction Complete ==="));
 }
 
 static FAutoConsoleCommand TestIslandDestructionCmd(

@@ -28,6 +28,9 @@ public:
 	void PlayFallAnimation();
 
 	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
+	void SetCaeliumDeposits(int32 Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
 	void SubtractCaelium(int32 Amount);
 
 protected:
