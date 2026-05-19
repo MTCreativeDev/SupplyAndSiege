@@ -103,6 +103,22 @@ void USAS_UnitManagerComponent::SetSelectedUnits(const TArray<USAS_UnitInformati
 
 	if (!bChanged) return;
 
+	for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitInfo : SelectedUnits)
+	{
+		if (UnitInfo.IsValid() && !CleanNewSelection.Contains(UnitInfo))
+		{
+			UnitInfo->NotifyDeselected(AssignedTeam);
+		}
+	}
+
+	for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitInfo : CleanNewSelection)
+	{
+		if (UnitInfo.IsValid() && !SelectedUnits.Contains(UnitInfo))
+		{
+			UnitInfo->NotifySelected(AssignedTeam);
+		}
+	}
+
 	SelectedUnits = CleanNewSelection;
 	OnUnitSelectionChange.Broadcast(SelectedUnits);
 }

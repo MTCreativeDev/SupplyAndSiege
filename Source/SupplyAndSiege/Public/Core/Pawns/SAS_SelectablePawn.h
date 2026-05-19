@@ -10,6 +10,8 @@
 class USAS_UnitInformationComponent;
 class UCapsuleComponent;
 class UFloatingPawnMovement;
+class USAS_UnitSightComponent;
+
 
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_SelectablePawn : public APawn
@@ -43,6 +45,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UFloatingPawnMovement* MovementComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USAS_UnitSightComponent* UnitSightComponent;
+
 
 
 

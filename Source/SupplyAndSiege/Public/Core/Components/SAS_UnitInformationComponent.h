@@ -32,6 +32,8 @@ public:
 
 	void RemoveUnitFromGame();
 
+	ESAS_Team GetTeam() const { return AssignedTeam; }
+
 	void NotifySelected(ESAS_Team SelectedByTeam);
 
 	void NotifyDeselected(ESAS_Team DeselectedByTeam);

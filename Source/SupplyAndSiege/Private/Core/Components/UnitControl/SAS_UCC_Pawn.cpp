@@ -30,11 +30,6 @@ void USAS_UCC_Pawn::BeginMove_Internal(const FVector& WorldLocation)
 	CurrentPawnControlState = ESAS_PawnControlState::Moving;
 	SendStateTreeEvent(SASGameplayTags::StateTree_Pawn_MoveOrder);
 
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Move Received"));
-	}
-
 }
 
 void USAS_UCC_Pawn::SendStateTreeEvent(const FGameplayTag& EventTag)

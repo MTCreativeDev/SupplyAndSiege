@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Core/Components/SAS_UnitControlComponent.h"
+#include "Core/Components/SAS_UnitSightComponent.h"
 
 
 ASAS_SelectablePawn::ASAS_SelectablePawn()
@@ -28,7 +29,8 @@ ASAS_SelectablePawn::ASAS_SelectablePawn()
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
-
+	UnitSightComponent = CreateDefaultSubobject<USAS_UnitSightComponent>(TEXT("UnitSightComponent"));
+	UnitSightComponent->SetupAttachment(RootComponent);
 
 }
 
