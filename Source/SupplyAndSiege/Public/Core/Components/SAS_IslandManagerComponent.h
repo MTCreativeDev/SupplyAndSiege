@@ -8,6 +8,8 @@
 
 class USAS_IslandComponent;
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnIslandDestroyed, const FGuid, AActor*);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_IslandManagerComponent : public UActorComponent
 {
@@ -43,6 +45,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SAS_Island")
 	void UpdateIslandStatuses();
 
+	UFUNCTION(BlueprintCallable, Category = "Debug")
+	void TestIslandDestruction();
+
+	FOnIslandDestroyed& GetOnIslandDestroyedDelegate()
+	{
+		return OnIslandDestroyed;
+	}
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -51,10 +61,19 @@ public:
 	int32 MinCaeliumToFloat = 10;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SAS_Island")
+	int32 CaeliumDestructionThreshold = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SAS_Island")
 	FTimerHandle IslandCheckTimerHandle;
 
 private:
 	UPROPERTY()
 	TArray<TWeakObjectPtr<USAS_IslandComponent>> IslandQueue;
+
+	UPROPERTY()
+	TSet<TWeakObjectPtr<USAS_IslandComponent>> IslandsBeingDestroyed;
+
+	FOnIslandDestroyed OnIslandDestroyed;
+
 		
 };

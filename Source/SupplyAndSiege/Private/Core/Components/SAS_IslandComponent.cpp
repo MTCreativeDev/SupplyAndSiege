@@ -56,12 +56,7 @@ int32 USAS_IslandComponent::MineCaeliumDeposits()
 
 	int32 AmountMined = FMath::Min(CaeliumMined, CaeliumRemaining);
 	UE_LOG(LogTemp, Display, TEXT("AmountMined: %s, %d"), *IslandActor->GetName(), AmountMined);
-	CaeliumRemaining -= AmountMined;
-	UE_LOG(LogTemp, Display, TEXT("CaeliumRemaining: %s, %d"), *IslandActor->GetName(), CaeliumRemaining);
-	if (IslandManager && CaeliumRemaining <= IslandManager->MinCaeliumToFloat)
-	{
-		IslandManager->RemoveIslandFromQueue(this);
-	}
+	SubtractCaelium(AmountMined);
 	return AmountMined;
 }
 
@@ -87,3 +82,24 @@ static FAutoConsoleCommand GCmdMineCaelium(
     }),
     ECVF_Cheat
 );
+
+void USAS_IslandComponent::SetCaeliumDeposits(int32 Amount)
+{
+	CaeliumRemaining = FMath::Max(0, Amount);
+}
+
+void USAS_IslandComponent::SubtractCaelium(int32 Amount)
+{
+	CaeliumRemaining = FMath::Max(0, CaeliumRemaining - Amount);
+
+	if (AActor* OwnerActor = GetOwner())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Caelium subtracted from %s: %d remaining"),
+			*OwnerActor->GetName(), CaeliumRemaining);
+	}
+
+	if (IslandManager)
+	{
+		IslandManager->CheckIslandCaeliumDeposits(this);
+	}
+}

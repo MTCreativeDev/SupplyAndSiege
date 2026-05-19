@@ -29,6 +29,7 @@ public:
 
 	bool GetInstanceTransform(const UPrimitiveComponent* HitComponent, int32 InstanceIndex, FTransform& OutWorldTransform) const;
 
+	bool AreAllInstancesDepleted(const UInstancedStaticMeshComponent* ISM) const;
 
 protected:
 	virtual void BeginPlay() override;
