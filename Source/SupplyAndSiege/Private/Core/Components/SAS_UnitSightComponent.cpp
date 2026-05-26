@@ -5,6 +5,8 @@
 #include "Components/SphereComponent.h"
 #include "Core/CustomCollision.h"
 #include "Core/Components/SAS_UnitInformationComponent.h"
+#include "Core/Components/SAS_VisibilityManagerComponent.h"
+#include "GameFramework/GameStateBase.h"
 
 
 USAS_UnitSightComponent::USAS_UnitSightComponent()
@@ -33,27 +35,58 @@ void USAS_UnitSightComponent::BeginPlay()
 
 	OnComponentBeginOverlap.AddDynamic(this, &USAS_UnitSightComponent::HandleSightBeginOverlap);
 	OnComponentEndOverlap.AddDynamic(this, &USAS_UnitSightComponent::HandleSightEndOverlap);
+
+	UWorld* World = GetWorld();
+	AGameStateBase* GS = World->GetGameState();
+	VisibilityManagerComponent = GS->FindComponentByClass<USAS_VisibilityManagerComponent>();
+
+	ensureMsgf(
+		VisibilityManagerComponent,
+		TEXT("%s is missing VisibilityManagerComponent"),
+		*GetNameSafe(GetOwner())
+	);
 	
 }
 
-void USAS_UnitSightComponent::HandleSightBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweek, const FHitResult& SweepResult)
+void USAS_UnitSightComponent::HandleSightBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!IsValidEnemy(OtherActor)) return;
+	if (!OtherActor) return;
 
-	VisibleEnemies.AddUnique(OtherActor);
+	AActor* Owner = GetOwner();
+	if (!Owner || !VisibilityManagerComponent) return;
+	
+	if (!IsValidEnemy(OtherActor)) return;
+	if (VisibleEnemies.Contains(OtherActor)) return;
+
+	VisibleEnemies.Add(OtherActor);
+
+	if (OwnerUnitInfo && OwnerUnitInfo->GetTeam() == ESAS_Team::Team1)
+	{
+		VisibilityManagerComponent->RegisterSeenEnemy(OtherActor, Owner);
+	}
+
 	OnEnemyDetected.Broadcast(OtherActor);
+
 }
 
 void USAS_UnitSightComponent::HandleSightEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (!OtherActor) return;
 
-	const int32 RemovedCount = VisibleEnemies.Remove(OtherActor);
+	AActor* Owner = GetOwner();
+	if (!Owner || !VisibilityManagerComponent) return;
 
-	if (RemovedCount > 0)
+	if (!VisibleEnemies.Contains(OtherActor)) return;
+
+	VisibleEnemies.Remove(OtherActor);
+
+	if (OwnerUnitInfo && OwnerUnitInfo->GetTeam() == ESAS_Team::Team1)
 	{
-		OnEnemyLost.Broadcast(OtherActor);
+		VisibilityManagerComponent->RegisterLostEnemy(OtherActor, Owner);
 	}
+
+	OnEnemyLost.Broadcast(OtherActor);
+
 }
 
 bool USAS_UnitSightComponent::IsValidEnemy(AActor* OtherActor)

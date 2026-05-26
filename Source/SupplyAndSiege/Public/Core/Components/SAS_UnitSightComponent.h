@@ -8,6 +8,7 @@
 
 class USphereComponent;
 class USAS_UnitInformationComponent;
+class USAS_VisibilityManagerComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDetected, AActor*, EnemyActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyLost, AActor*, EnemyActor);
@@ -32,7 +33,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void HandleSightBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweek, const FHitResult& SweepResult);
+	void HandleSightBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void HandleSightEndOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
@@ -50,6 +51,9 @@ protected:
 		
 	UPROPERTY()
 	TArray<TObjectPtr<AActor>> VisibleEnemies;
+
+	UPROPERTY()
+	USAS_VisibilityManagerComponent* VisibilityManagerComponent;
 
 
 };

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Core/SAS_Enumerators.h"
+#include "Core/Interfaces/SAS_PlayerVisibilityInterface.h"
 #include "SAS_SelectablePawn.generated.h"
 
 class USAS_UnitInformationComponent;
@@ -14,7 +15,7 @@ class USAS_UnitSightComponent;
 
 
 UCLASS()
-class SUPPLYANDSIEGE_API ASAS_SelectablePawn : public APawn
+class SUPPLYANDSIEGE_API ASAS_SelectablePawn : public APawn, public ISAS_PlayerVisibilityInterface
 {
 	GENERATED_BODY()
 
@@ -23,12 +24,17 @@ public:
 
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
+	virtual void SetVisibleToPlayer_Implementation(bool bVisible) override;
+	virtual bool IsVisibleToPlayer_Implementation() const override;
+
 
 protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category = "SAS_Unit")
 	void DestroySelf();
+
+	void ApplyInitialTeamVisibility();
 
 public:
 
@@ -50,6 +56,8 @@ protected:
 	USAS_UnitSightComponent* UnitSightComponent;
 
 
-
+private:
+	UPROPERTY()
+	bool bVisibleToPlayer = true;
 
 };

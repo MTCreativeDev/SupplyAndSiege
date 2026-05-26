@@ -11,6 +11,7 @@ class USAS_IslandManagerComponent;
 class USAS_InventoryManagerComponent;
 class USAS_ResourceManagerComponent;
 class USAS_LogisticsManagerComponent;
+class USAS_VisibilityManagerComponent;
 
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_GameState : public AGameStateBase
@@ -40,5 +41,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Logistics")
 	USAS_LogisticsManagerComponent* LogisticsManagerComponent;
 
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Unit_Visibility")
+	USAS_VisibilityManagerComponent* VisibilityManagerComponent;
 };

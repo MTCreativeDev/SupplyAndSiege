@@ -7,6 +7,7 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Core/Components/SAS_UnitControlComponent.h"
 #include "Core/Components/SAS_UnitSightComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 
 
 ASAS_SelectablePawn::ASAS_SelectablePawn()
@@ -39,11 +40,34 @@ UPawnMovementComponent* ASAS_SelectablePawn::GetMovementComponent() const
 	return MovementComponent;
 }
 
+
+void ASAS_SelectablePawn::SetVisibleToPlayer_Implementation(bool bVisible)
+{
+	bVisibleToPlayer = bVisible;
+	SetActorHiddenInGame(!bVisible);
+
+
+	//Placeholder until we have a skm. Mainly trying to future proof and expects only 1 skm.
+	if (USkeletalMeshComponent* SkelMesh = FindComponentByClass<USkeletalMeshComponent>())
+	{
+		SkelMesh->SetVisibility(bVisible, true);
+		SkelMesh->SetComponentTickEnabled(bVisible);
+		SkelMesh->bPauseAnims = !bVisible;
+	}
+}
+
+bool ASAS_SelectablePawn::IsVisibleToPlayer_Implementation() const
+{
+	return bVisibleToPlayer;
+}
+
 void ASAS_SelectablePawn::BeginPlay()
 {
 	Super::BeginPlay();
 
 	UnitInformationComponent->SetTeam(AssignTeamOnSpawn);
+
+	ApplyInitialTeamVisibility();
 
 	USAS_UnitControlComponent* ControlComp = FindComponentByClass<USAS_UnitControlComponent>();
 	if (!ControlComp)
@@ -69,3 +93,11 @@ void ASAS_SelectablePawn::DestroySelf()
 	Destroy();
 }
 
+void ASAS_SelectablePawn::ApplyInitialTeamVisibility()
+{
+	const ESAS_Team Team = UnitInformationComponent->GetTeam();
+
+	const bool bIsPlayerTeam = Team == ESAS_Team::Team1;
+
+	ISAS_PlayerVisibilityInterface::Execute_SetVisibleToPlayer(this, bIsPlayerTeam);
+}
