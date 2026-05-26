@@ -19,11 +19,6 @@ class SUPPLYANDSIEGE_API USAS_UnitTypeData : public USAS_GameDataAsset
 	GENERATED_BODY()
 	
 
-	USAS_UnitTypeData()
-	{
-		CanBeProduced = true;
-	}
-
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FName UnitId;

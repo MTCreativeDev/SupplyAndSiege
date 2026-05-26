@@ -145,3 +145,6 @@ Config/DefaultEditorSettings.ini
 
 *.blend[0-9]
 
+Plugins/VisualStudioTools/
+
+.github/copilot-instructions.md

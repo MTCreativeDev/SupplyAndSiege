@@ -424,6 +424,36 @@ TArray<USAS_LogisticsMasterJob*> USAS_LogisticsManagerComponent::CreateBuildSite
 	return CreatedJobs;
 }
 
+TArray<USAS_LogisticsMasterJob*> USAS_LogisticsManagerComponent::CreateBuildSiteResourceDeliveryJob2(const FSAS_ResourceDeliveryRequest2& ResourceDeliveryInformation)
+{
+	TArray<USAS_LogisticsMasterJob*> CreatedJobs;
+
+	if (!ResourceDeliveryInformation.IsValid()) return CreatedJobs;
+
+	for (const TPair<TObjectPtr<USAS_GameDataAsset>, int32>& Pair : ResourceDeliveryInformation.ResourceCost)
+	{
+		USAS_LMJ_DeliverItem* NewJob = NewObject<USAS_LMJ_DeliverItem>(this);
+		if (!IsValid(NewJob)) continue;
+
+		// Note: InitializeDeliverItemJob could be modified to take a UGameDataAsset to be more universal, but I don't feel comfortable making that change.
+		UItemDefinitionPrimaryData* ItemDefinition = Cast<UItemDefinitionPrimaryData>(Pair.Key);
+		if (!ItemDefinition) continue;
+
+
+		NewJob->InitializeDeliverItemJob(this, ResourceDeliveryInformation.BuildSite, ItemDefinition, Pair.Value, ResourceDeliveryInformation.Priority);
+		NewJob->OnLogisticsMasterJobUpdated.AddUObject(this, &USAS_LogisticsManagerComponent::HandleLogisticsMasterJobUpdated);
+
+		ActiveJobs.Add(NewJob);
+		CreatedJobs.Add(NewJob);
+
+		NotifyLogisticsMasterJobUpdated.Broadcast(NewJob);
+	}
+
+	TryAssignJobs();
+
+	return CreatedJobs;
+}
+
 void USAS_LogisticsManagerComponent::RegisterAvailableWorker(USAS_WorkerControlComponent* Worker)
 {
 	if (!IsValid(Worker)) return;

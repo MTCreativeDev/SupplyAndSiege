@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 #include "Core/SAS_Enumerators.h"
+#include "Core/Components/SAS_LogisticsManagerComponent.h"
 #include "SAS_GameState.generated.h"
 
 class USAS_IslandManagerComponent;
@@ -22,7 +23,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	USAS_InventoryManagerComponent* GetInventoryManagerForTeam(ESAS_Team Team) const;
-	
+
+	UFUNCTION(BlueprintCallable, Category = "Logistics")
+	USAS_LogisticsManagerComponent* GetLogisticsManager() const;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
@@ -39,6 +42,5 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Logistics")
 	USAS_LogisticsManagerComponent* LogisticsManagerComponent;
-
 
 };

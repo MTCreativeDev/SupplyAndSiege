@@ -25,9 +25,4 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Display")
     FText Description;
 
-    // Might need to be broken down into a seperate class if we want to have different
-	// production rules for different types of assets, but for now this is fine
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Production")
-    bool CanBeProduced = false;
-	
 };

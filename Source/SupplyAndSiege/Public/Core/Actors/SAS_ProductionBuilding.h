@@ -4,7 +4,10 @@
 #include "Components/ActorComponent.h"
 #include "Misc/DataAssets/SAS_GameDataAsset.h"
 #include "Misc/DataAssets/SAS_RecipeData.h"
-#include "SAS_ProductionBuildingComponent.generated.h"
+#include "Core/Objects/SAS_LogisticsMasterJob.h"
+#include "Core/Actors/SAS_ResourceGenSelectableBuilding.h"
+#include "SAS_ProductionBuilding.generated.h"
+
 
 USTRUCT(BlueprintType)
 struct FProductionRequirements
@@ -12,20 +15,17 @@ struct FProductionRequirements
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = "Production")
-	TMap<USAS_GameDataAsset*, int32> RequiredCounts;
+	TMap<TObjectPtr<USAS_GameDataAsset>, int32> RequiredCounts;
 };
 
-// Declare the delegate for the requirements updated event
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRequirementsUpdatedDelegate, const FProductionRequirements&, Requirements);
-
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class SUPPLYANDSIEGE_API USAS_ProductionBuildingComponent : public UActorComponent
+UCLASS()
+class SUPPLYANDSIEGE_API ASAS_ProductionBuilding : public ASAS_ResourceGenSelectableBuilding
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	USAS_ProductionBuildingComponent();
+	ASAS_ProductionBuilding();
 
 protected:
 	// Called when the game starts
@@ -40,11 +40,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TMap<TObjectPtr<USAS_GameDataAsset>, int32> Inventory;
 
+	TArray<USAS_LogisticsMasterJob*> ActiveLogisticsJobs;
+
 	TMap<TObjectPtr<USAS_GameDataAsset>, TObjectPtr<USAS_RecipeData>> RecipesMap;
 
-	TMap<USAS_GameDataAsset*, int32> GetTotalRequiredCounts();
+	TMap<TObjectPtr<USAS_GameDataAsset>, int32> GetTotalRequiredCounts();
 
-	TMap<USAS_GameDataAsset*, int32> GetRequiredCountsForProduct(USAS_GameDataAsset* Product);
+	TMap<TObjectPtr<USAS_GameDataAsset>, int32> GetRequiredCountsForProduct(USAS_GameDataAsset* Product);
 
 	bool HaveRequirementsForProduct(USAS_GameDataAsset* Product);
 
@@ -55,12 +57,6 @@ protected:
 
 private:
 	void BuildRecipesMap();  // Helper to populate RecipesMap from Recipes
-public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// Event dispatcher for when requirements are updated (assignable in Blueprints)
-	UPROPERTY(BlueprintAssignable, Category = "Production")
-	FOnRequirementsUpdatedDelegate OnRequirementsUpdated;
 
 };

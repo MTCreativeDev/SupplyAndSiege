@@ -15,10 +15,4 @@ UCLASS(BlueprintType)
 class SUPPLYANDSIEGE_API UItemDefinitionPrimaryData : public USAS_GameDataAsset
 {
 	GENERATED_BODY()
-
-	UItemDefinitionPrimaryData()
-	{
-		CanBeProduced = true;
-	}
-
 };

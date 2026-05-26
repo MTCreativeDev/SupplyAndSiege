@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Misc/Structs/SAS_ResourceDeliveryRequest.h"
+#include "Misc/Structs/SAS_ResourceDeliveryRequest2.h"
 #include "Misc/Structs/SAS_LogisticsOffering.h"
 #include "Misc/Structs/SAS_LogisticsOfferingEntry.h"
 #include "Misc/Structs/SAS_LogisticsOfferingGrouped.h"
@@ -31,6 +32,7 @@ public:
 	USAS_LogisticsManagerComponent();
 
 	TArray<USAS_LogisticsMasterJob*> CreateBuildSiteResourceDeliveryJob(const FSAS_ResourceDeliveryRequest& ResourceDeliveryInformation);
+	TArray<USAS_LogisticsMasterJob*> CreateBuildSiteResourceDeliveryJob2(const FSAS_ResourceDeliveryRequest2& ResourceDeliveryInformation);
 
 	UFUNCTION(BlueprintCallable, Category = "Logistics")
 	TArray<USAS_LogisticsMasterJob*> GetActiveJobs() const { return ActiveJobs; }

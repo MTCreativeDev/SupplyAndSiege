@@ -34,3 +34,8 @@ USAS_InventoryManagerComponent* ASAS_GameState::GetInventoryManagerForTeam(ESAS_
 	default: return nullptr;
 	}
 }
+
+USAS_LogisticsManagerComponent* ASAS_GameState::GetLogisticsManager() const
+{
+	return LogisticsManagerComponent;
+}
