@@ -6,16 +6,16 @@
 #include "GameFramework/Actor.h"
 #include "SAS_FogWriter.generated.h"
 
-class UDecalComponent;
 class UMaterialInstanceDynamic;
 class UTextureRenderTarget2D;
 class UMaterialInterface;
+class URuntimeVirtualTexture;
+class UStaticMeshComponent;
 
 /**
- * Decal actor spawned per local player by USAS_FogOfWarClientComponent.
- * Its M_FogWriter material has "Output Virtual Textures" enabled, which is what
- * makes this primitive write into RVT_FogOfWar during the RVT pass. The RVT bounds
- * themselves are defined by an ARuntimeVirtualTextureVolume placed in the level.
+ * RVT writer actor spawned per local player by USAS_FogOfWarClientComponent.
+ * It uses a hidden mesh because RVT writes are driven through primitive components.
+ * The RVT bounds themselves are defined by an ARuntimeVirtualTextureVolume found or spawned by the client component.
  */
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_FogWriter : public AActor
@@ -30,21 +30,26 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "FogOfWar")
 	void SetMaskTexture(UTextureRenderTarget2D* MaskRT);
 
-	/** Configure the decal world-XY footprint. Called once on spawn. */
+	/** Configure the writer mesh world-XY half-size. Called once on spawn. */
 	UFUNCTION(BlueprintCallable, Category = "FogOfWar")
 	void ConfigureDecalExtent(const FVector2D& WorldExtent);
+
+	URuntimeVirtualTexture* GetFogRuntimeVirtualTexture() const { return FogRuntimeVirtualTexture; }
 
 protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FogOfWar")
-	TObjectPtr<UDecalComponent> Decal;
+	TObjectPtr<UStaticMeshComponent> WriterMesh;
 
 	/** Set in the Blueprint subclass: the M_FogWriter material (parent of the dynamic instance).
-	 *  The material must have "Output Virtual Textures" enabled targeting RVT_FogOfWar — that
-	 *  flag is what makes this primitive write into the RVT during the RVT pass. */
+	 *  The material must have "Output Virtual Textures" enabled targeting RVT_FogOfWar. */
 	UPROPERTY(EditDefaultsOnly, Category = "FogOfWar")
 	TObjectPtr<UMaterialInterface> WriterMaterial;
+
+	/** Set in the Blueprint subclass: the RVT this writer draws into. */
+	UPROPERTY(EditDefaultsOnly, Category = "FogOfWar")
+	TObjectPtr<URuntimeVirtualTexture> FogRuntimeVirtualTexture;
 
 	/** Dynamic material instance used to set the mask texture parameter at runtime. */
 	UPROPERTY(Transient)

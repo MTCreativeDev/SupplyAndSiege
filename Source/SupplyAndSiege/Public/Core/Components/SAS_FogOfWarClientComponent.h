@@ -8,19 +8,24 @@
 #include "SAS_FogOfWarClientComponent.generated.h"
 
 class APlayerController;
+class ARuntimeVirtualTextureVolume;
+class ASAS_FogOverlay;
 class ASAS_FogWriter;
 class USAS_VisionManagerComponent;
 class UCanvasRenderTarget2D;
 class UTexture2D;
 class UMaterialParameterCollection;
 class UMaterialInterface;
+class URuntimeVirtualTextureComponent;
+class URuntimeVirtualTexture;
 
 /**
  * Client-local fog-of-war painter. Attaches to ASAS_PlayerController and runs only on the
  * local controller. Reads source registry from the GameState's USAS_VisionManagerComponent
  * filtered to the local player's team, paints into a ping-pong UCanvasRenderTarget2D
- * (RGBA8: R=soft current, G=explored memory, B=hard current), and pushes the result to
- * a runtime-spawned ASAS_FogWriter whose material writes into RVT_FogOfWar.
+ * (RGBA8: R=soft current, G=explored memory, B=hard current), pushes the result to
+ * the visual overlay path, and optionally mirrors it through an ASAS_FogWriter for RVT
+ * compatibility when a writer class is configured.
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SUPPLYANDSIEGE_API USAS_FogOfWarClientComponent : public UActorComponent
@@ -61,16 +66,27 @@ protected:
 	/** Returns a pointer to the GameState's vision manager, or nullptr if not yet present. */
 	USAS_VisionManagerComponent* GetVisionManager() const;
 
-	/** First-time setup: create RTs, spawn fog writer, push MPC params. Idempotent. */
+	/** First-time setup: create RTs, spawn overlay/optional fog writer, push MPC params. Idempotent. */
 	void InitializeIfReady();
+
+	/** Ensure there is an RVT volume covering the same world bounds as the fog mask. */
+	void EnsureRuntimeVirtualTextureVolume(UWorld* World, URuntimeVirtualTexture* FogRVT);
+
+	/** Returns the world-space box dirtied when the fog mask changes. */
+	FBoxSphereBounds GetFogWorldBounds() const;
+
+	/** Marks the RVT pages covered by the fog bounds dirty after the mask RT changes. */
+	void InvalidateFogRuntimeVirtualTexture() const;
 
 	/** Paints the next ping-pong RT from sources for the given team, copying G from PreviousRT. */
 	void PaintMaskInto(UCanvasRenderTarget2D* TargetRT, UCanvasRenderTarget2D* PreviousRT, ESAS_Team ViewingTeam);
 
 public:
+	/** Center of the playable fog area in world XY, matching USAS_MinimapWidget. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FogOfWar|Bounds")
 	FVector2D WorldOrigin = FVector2D::ZeroVector;
 
+	/** Half-size of the playable fog area in world units. A value of (10000, 10000) covers -10000..10000 around WorldOrigin. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FogOfWar|Bounds")
 	FVector2D WorldExtent = FVector2D(10000.f, 10000.f);
 
@@ -101,6 +117,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FogOfWar|FogWriter")
 	TSubclassOf<ASAS_FogWriter> FogWriterClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FogOfWar|Overlay")
+	TSubclassOf<ASAS_FogOverlay> FogOverlayClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FogOfWar|Overlay")
+	float OverlayZHeight = 1500.f;
+
 protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UCanvasRenderTarget2D> RT_A;
@@ -111,7 +133,17 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<ASAS_FogWriter> OwnedFogWriter;
 
+	UPROPERTY(Transient)
+	TObjectPtr<ASAS_FogOverlay> OwnedFogOverlay;
+
+	UPROPERTY(Transient)
+	TObjectPtr<ARuntimeVirtualTextureVolume> OwnedFogVolume;
+
+	UPROPERTY(Transient)
+	TObjectPtr<URuntimeVirtualTextureComponent> FogVirtualTextureComponent;
+
 	int32 ActiveRTIndex = 0;
+	int32 PaintDebugLogBudget = 0;
 	bool bReady = false;
 	bool bDependencyWarningLogged = false;
 	ESAS_Team CachedViewingTeam = ESAS_Team::None;

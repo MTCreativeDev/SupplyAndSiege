@@ -2,6 +2,8 @@
 
 #include "Core/Components/SAS_FogOfWarClientComponent.h"
 
+#include "Core/Actors/SAS_FogOverlay.h"
+#include "Components/RuntimeVirtualTextureComponent.h"
 #include "Core/Actors/SAS_FogWriter.h"
 #include "Core/Components/SAS_VisionComponent.h"
 #include "Core/Components/SAS_VisionManagerComponent.h"
@@ -11,12 +13,20 @@
 #include "Engine/Canvas.h"
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "TimerManager.h"
+#include "VT/RuntimeVirtualTexture.h"
+#include "VT/RuntimeVirtualTextureVolume.h"
+
+namespace
+{
+	constexpr float FogRVTVolumeHeight = 1000.f;
+}
 
 USAS_FogOfWarClientComponent::USAS_FogOfWarClientComponent()
 {
@@ -70,9 +80,20 @@ void USAS_FogOfWarClientComponent::EndPlay(const EEndPlayReason::Type EndPlayRea
 		OwnedFogWriter->Destroy();
 		OwnedFogWriter = nullptr;
 	}
+	if (OwnedFogOverlay)
+	{
+		OwnedFogOverlay->Destroy();
+		OwnedFogOverlay = nullptr;
+	}
+	if (OwnedFogVolume)
+	{
+		OwnedFogVolume->Destroy();
+		OwnedFogVolume = nullptr;
+	}
 
 	RT_A = nullptr;
 	RT_B = nullptr;
+	FogVirtualTextureComponent = nullptr;
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -88,9 +109,11 @@ FVector2D USAS_FogOfWarClientComponent::WorldToMaskUV(const FVector& WorldLocati
 	{
 		return FVector2D::ZeroVector;
 	}
+
+	const FVector2D FullExtent = WorldExtent * 2.f;
 	return FVector2D(
-		(WorldLocation.X - WorldOrigin.X) / WorldExtent.X,
-		(WorldLocation.Y - WorldOrigin.Y) / WorldExtent.Y);
+		((WorldLocation.X - WorldOrigin.X) / FullExtent.X) + 0.5f,
+		((WorldLocation.Y - WorldOrigin.Y) / FullExtent.Y) + 0.5f);
 }
 
 void USAS_FogOfWarClientComponent::RequestImmediateRedraw()
@@ -159,11 +182,11 @@ void USAS_FogOfWarClientComponent::InitializeIfReady()
 	}
 
 	if (!FogOfWarMPC || !PaintSoftMaterial || !PaintHardMaterial || !CopyGMaterial
-		|| !SoftBrushTexture || !HardBrushTexture || !FogWriterClass)
+		|| !SoftBrushTexture || !HardBrushTexture)
 	{
 		UE_LOG(LogTemp, Error,
 			TEXT("USAS_FogOfWarClientComponent on %s is missing one or more authored assets ")
-			TEXT("(MPC/materials/brushes/writer class). Disabling."),
+			TEXT("(MPC/materials/brushes). Disabling."),
 			*GetNameSafe(GetOwner()));
 		if (UWorld* World = GetWorld())
 		{
@@ -183,27 +206,67 @@ void USAS_FogOfWarClientComponent::InitializeIfReady()
 	if (RT_A) { UKismetRenderingLibrary::ClearRenderTarget2D(this, RT_A, FLinearColor::Black); }
 	if (RT_B) { UKismetRenderingLibrary::ClearRenderTarget2D(this, RT_B, FLinearColor::Black); }
 
-	// Spawn fog writer at world center of the playable area.
-	const FVector SpawnLoc(
-		WorldOrigin.X + WorldExtent.X * 0.5f,
-		WorldOrigin.Y + WorldExtent.Y * 0.5f,
-		1000.f);
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = GetOwner();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	OwnedFogWriter = World->SpawnActor<ASAS_FogWriter>(
-		FogWriterClass, SpawnLoc, FRotator::ZeroRotator, SpawnParams);
-	if (OwnedFogWriter)
+
+	if (FogWriterClass)
 	{
-		OwnedFogWriter->ConfigureDecalExtent(WorldExtent);
-		OwnedFogWriter->SetMaskTexture(GetVisionMaskRT());
+		URuntimeVirtualTexture* FogRVT = nullptr;
+		if (const ASAS_FogWriter* WriterCDO = FogWriterClass->GetDefaultObject<ASAS_FogWriter>())
+		{
+			FogRVT = WriterCDO->GetFogRuntimeVirtualTexture();
+		}
+		EnsureRuntimeVirtualTextureVolume(World, FogRVT);
+
+		// WorldOrigin is the playable-area center. The writer mesh is hidden from the main pass
+		// and only renders to the RVT, so keep it inside the RVT volume near world Z=0.
+		const FVector SpawnLoc(WorldOrigin.X, WorldOrigin.Y, 0.f);
+		OwnedFogWriter = World->SpawnActor<ASAS_FogWriter>(
+			FogWriterClass, SpawnLoc, FRotator::ZeroRotator, SpawnParams);
+		if (OwnedFogWriter)
+		{
+			OwnedFogWriter->ConfigureDecalExtent(WorldExtent);
+			OwnedFogWriter->SetMaskTexture(GetVisionMaskRT());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("USAS_FogOfWarClientComponent has no FogWriterClass; RVT fog writer/material integration will not run."));
 	}
 
-	// Push world bounds to MPC so materials can compute UV.
+	if (FogOverlayClass)
+	{
+		const FVector OverlayLoc(WorldOrigin.X, WorldOrigin.Y, OverlayZHeight);
+		OwnedFogOverlay = World->SpawnActor<ASAS_FogOverlay>(
+			FogOverlayClass, OverlayLoc, FRotator::ZeroRotator, SpawnParams);
+		if (OwnedFogOverlay)
+		{
+			OwnedFogOverlay->ConfigureOverlay(WorldOrigin, WorldExtent, OverlayZHeight);
+			OwnedFogOverlay->SetMaskTexture(GetVisionMaskRT());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning,
+				TEXT("USAS_FogOfWarClientComponent failed to spawn FogOverlayClass %s."),
+				*GetNameSafe(FogOverlayClass.Get()));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("USAS_FogOfWarClientComponent has no FogOverlayClass; visual fog overlay will not render."));
+	}
+
+	// Push lower-left/full-size bounds to the MPC so materials can compute UV with (WorldXY - MinXY) / FullExtent.
+	const FVector2D MinXY = WorldOrigin - WorldExtent;
+	const FVector2D FullExtent = WorldExtent * 2.f;
 	UKismetMaterialLibrary::SetVectorParameterValue(this, FogOfWarMPC, TEXT("WorldOriginExtent"),
-		FLinearColor(WorldOrigin.X, WorldOrigin.Y, WorldExtent.X, WorldExtent.Y));
+		FLinearColor(MinXY.X, MinXY.Y, FullExtent.X, FullExtent.Y));
 
 	CachedViewingTeam = Team;
+	PaintDebugLogBudget = 5;
 	bReady = true;
 
 	World->GetTimerManager().ClearTimer(InitRetryTimer);
@@ -211,9 +274,98 @@ void USAS_FogOfWarClientComponent::InitializeIfReady()
 		UpdateTimer, this, &USAS_FogOfWarClientComponent::UpdateMask, UpdateIntervalSeconds, true);
 
 	UE_LOG(LogTemp, Log,
-		TEXT("USAS_FogOfWarClientComponent ready: ViewingTeam=%d, RT=%dx%d, Bounds=(O=%s, E=%s)."),
+		TEXT("USAS_FogOfWarClientComponent ready: ViewingTeam=%d, RT=%dx%d, Bounds=(Center=%s, HalfExtent=%s)."),
 		static_cast<int32>(CachedViewingTeam), RTResolution, RTResolution,
 		*WorldOrigin.ToString(), *WorldExtent.ToString());
+}
+
+void USAS_FogOfWarClientComponent::EnsureRuntimeVirtualTextureVolume(UWorld* World, URuntimeVirtualTexture* FogRVT)
+{
+	if (!World || !FogRVT)
+	{
+		UE_LOG(LogTemp, Error,
+			TEXT("USAS_FogOfWarClientComponent cannot create/find RVT volume because FogRuntimeVirtualTexture is not set on BP_FogWriter."));
+		return;
+	}
+
+	for (TActorIterator<ARuntimeVirtualTextureVolume> It(World); It; ++It)
+	{
+		ARuntimeVirtualTextureVolume* ExistingVolume = *It;
+		if (ExistingVolume && ExistingVolume->VirtualTextureComponent
+			&& ExistingVolume->VirtualTextureComponent->GetVirtualTexture() == FogRVT)
+		{
+			const FVector VolumeLocation(
+				WorldOrigin.X - WorldExtent.X,
+				WorldOrigin.Y - WorldExtent.Y,
+				-FogRVTVolumeHeight * 0.5f);
+			const FVector VolumeScale(WorldExtent.X * 2.f, WorldExtent.Y * 2.f, FogRVTVolumeHeight);
+			ExistingVolume->VirtualTextureComponent->SetMobility(EComponentMobility::Movable);
+			ExistingVolume->SetActorLocation(VolumeLocation);
+			ExistingVolume->SetActorScale3D(VolumeScale);
+			FogVirtualTextureComponent = ExistingVolume->VirtualTextureComponent;
+
+			UE_LOG(LogTemp, Log,
+				TEXT("USAS_FogOfWarClientComponent using existing RVT volume '%s' for '%s': Location=%s, Scale=%s."),
+				*ExistingVolume->GetName(), *FogRVT->GetName(),
+				*ExistingVolume->GetActorLocation().ToString(), *ExistingVolume->GetActorScale3D().ToString());
+			return;
+		}
+	}
+
+	const FVector VolumeLocation(
+		WorldOrigin.X - WorldExtent.X,
+		WorldOrigin.Y - WorldExtent.Y,
+		-FogRVTVolumeHeight * 0.5f);
+	const FVector VolumeScale(WorldExtent.X * 2.f, WorldExtent.Y * 2.f, FogRVTVolumeHeight);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = GetOwner();
+	SpawnParams.Name = MakeUniqueObjectName(World, ARuntimeVirtualTextureVolume::StaticClass(), TEXT("FogOfWar_RVTVolume"));
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	OwnedFogVolume = World->SpawnActor<ARuntimeVirtualTextureVolume>(
+		ARuntimeVirtualTextureVolume::StaticClass(), VolumeLocation, FRotator::ZeroRotator, SpawnParams);
+
+	if (!OwnedFogVolume || !OwnedFogVolume->VirtualTextureComponent)
+	{
+		UE_LOG(LogTemp, Error,
+			TEXT("USAS_FogOfWarClientComponent failed to spawn FogOfWar_RVTVolume."));
+		return;
+	}
+
+	OwnedFogVolume->VirtualTextureComponent->SetMobility(EComponentMobility::Movable);
+	OwnedFogVolume->SetActorScale3D(VolumeScale);
+	OwnedFogVolume->VirtualTextureComponent->SetVirtualTexture(FogRVT);
+	FogVirtualTextureComponent = OwnedFogVolume->VirtualTextureComponent;
+
+	UE_LOG(LogTemp, Log,
+		TEXT("USAS_FogOfWarClientComponent spawned RVT volume '%s': Texture=%s, Location=%s, Scale=%s."),
+		*OwnedFogVolume->GetName(), *FogRVT->GetName(),
+		*OwnedFogVolume->GetActorLocation().ToString(), *OwnedFogVolume->GetActorScale3D().ToString());
+}
+
+FBoxSphereBounds USAS_FogOfWarClientComponent::GetFogWorldBounds() const
+{
+	const FVector Min(
+		WorldOrigin.X - WorldExtent.X,
+		WorldOrigin.Y - WorldExtent.Y,
+		-FogRVTVolumeHeight * 0.5f);
+	const FVector Max(
+		WorldOrigin.X + WorldExtent.X,
+		WorldOrigin.Y + WorldExtent.Y,
+		FogRVTVolumeHeight * 0.5f);
+
+	return FBoxSphereBounds(FBox(Min, Max));
+}
+
+void USAS_FogOfWarClientComponent::InvalidateFogRuntimeVirtualTexture() const
+{
+	if (!FogVirtualTextureComponent)
+	{
+		return;
+	}
+
+	FogVirtualTextureComponent->Invalidate(GetFogWorldBounds());
 }
 
 void USAS_FogOfWarClientComponent::UpdateMask()
@@ -241,6 +393,11 @@ void USAS_FogOfWarClientComponent::UpdateMask()
 	{
 		OwnedFogWriter->SetMaskTexture(NextRT);
 	}
+	if (OwnedFogOverlay)
+	{
+		OwnedFogOverlay->SetMaskTexture(NextRT);
+	}
+	InvalidateFogRuntimeVirtualTexture();
 }
 
 void USAS_FogOfWarClientComponent::PaintMaskInto(
@@ -274,6 +431,7 @@ void USAS_FogOfWarClientComponent::PaintMaskInto(
 
 	// Pass 2 & 3: for each source on ViewingTeam, paint soft and hard brushes additively.
 	const TArray<TWeakObjectPtr<USAS_VisionComponent>>& Sources = Manager->GetSources(ViewingTeam);
+	int32 PaintedSourceCount = 0;
 
 	UMaterialInstanceDynamic* SoftMID = UMaterialInstanceDynamic::Create(PaintSoftMaterial, this);
 	UMaterialInstanceDynamic* HardMID = UMaterialInstanceDynamic::Create(PaintHardMaterial, this);
@@ -297,7 +455,7 @@ void USAS_FogOfWarClientComponent::PaintMaskInto(
 		const float RadiusCm = Source->GetCachedRadius();
 		if (RadiusCm <= 0.f) { continue; }
 
-		const FVector2D RadiusUV(RadiusCm / WorldExtent.X, RadiusCm / WorldExtent.Y);
+		const FVector2D RadiusUV(RadiusCm / (WorldExtent.X * 2.f), RadiusCm / (WorldExtent.Y * 2.f));
 		const FVector2D PixelTopLeft(
 			(UV.X - RadiusUV.X) * CanvasSize.X,
 			(UV.Y - RadiusUV.Y) * CanvasSize.Y);
@@ -313,7 +471,20 @@ void USAS_FogOfWarClientComponent::PaintMaskInto(
 		{
 			Canvas->K2_DrawMaterial(HardMID, PixelTopLeft, PixelSize, FVector2D::ZeroVector, FVector2D::UnitVector);
 		}
+		++PaintedSourceCount;
 	}
 
 	UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(this, DrawContext);
+
+	if (PaintDebugLogBudget > 0 || PaintedSourceCount == 0)
+	{
+		UE_LOG(LogTemp, Display,
+			TEXT("USAS_FogOfWarClientComponent paint: Team=%d Sources=%d Painted=%d Target=%s Prev=%s."),
+			static_cast<int32>(ViewingTeam), Sources.Num(), PaintedSourceCount,
+			*GetNameSafe(TargetRT), *GetNameSafe(PreviousRT));
+		if (PaintDebugLogBudget > 0)
+		{
+			--PaintDebugLogBudget;
+		}
+	}
 }
