@@ -151,9 +151,9 @@ void USAS_UnitManagerComponent::AddSelectedUnit(USAS_UnitInformationComponent* U
 void USAS_UnitManagerComponent::RightClickReceived(const FHitResult Hit)
 {
 	if (SelectedUnits.Num() == 0) return;
-	
+
 	AActor* HitActor = Hit.GetActor();
-	if (!HitActor)
+	if (!IsValid(HitActor))
 	{
 		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
 		return;
@@ -171,13 +171,36 @@ void USAS_UnitManagerComponent::RightClickReceived(const FHitResult Hit)
 	{
 	case ESAS_ClickTargetType::Ground:
 		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+
 		break;
 	case ESAS_ClickTargetType::Resource:
 		HandleResourceRightClickForSelectedUnits(Hit);
 		break;
 
+	case ESAS_ClickTargetType::Unit:
+	{
+
+		USAS_UnitInformationComponent* TargetUnitInformationComponent = HitActor->FindComponentByClass<USAS_UnitInformationComponent>();
+
+		if (!IsValid(TargetUnitInformationComponent))
+		{
+			HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+			return;
+		}
+
+		if (TargetUnitInformationComponent->GetTeam() == AssignedTeam)
+		{
+			HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+			return;
+		}
+
+		HandleEnemyUnitRightClickForSelectedUnits(TargetUnitInformationComponent, Hit.ImpactPoint);
+		break;
+	}
+
 	default:
 		HandleGroundRightClickForSelectedUnits(Hit.ImpactPoint);
+
 		break;
 	}
 
@@ -351,5 +374,34 @@ void USAS_UnitManagerComponent::HandleResourceRightClickForSelectedUnits(const F
 		IssueMoveOrderToUnits(UnitsRequiringMove, InstanceTransform.GetLocation());
 	}
 
+}
+
+void USAS_UnitManagerComponent::HandleEnemyUnitRightClickForSelectedUnits(USAS_UnitInformationComponent* TargetUnitInformationComponent, const FVector& ClickLocation)
+{
+	if (!IsValid(TargetUnitInformationComponent)) return;
+
+	TArray<TWeakObjectPtr<USAS_UnitControlComponent>> UnitsRequiringMove;
+	UnitsRequiringMove.Reserve(SelectedUnits.Num());
+
+	for (const TWeakObjectPtr<USAS_UnitInformationComponent>& UnitInfoPtr : SelectedUnits)
+	{
+		if (!UnitInfoPtr.IsValid()) continue;
+
+		USAS_UnitControlComponent* UnitControl = GetUnitControlFromInfo(UnitInfoPtr.Get());
+		if (!UnitControl) continue;
+
+		if (!UnitControl->CanReceiveAttackOrder())
+		{
+			UnitsRequiringMove.Add(UnitControl);
+			continue;
+		}
+
+		UnitControl->HandleAttackUnitOrder(TargetUnitInformationComponent, ClickLocation);
+	}
+
+	if (UnitsRequiringMove.Num() > 0)
+	{
+		IssueMoveOrderToUnits(UnitsRequiringMove, ClickLocation);
+	}
 }
 

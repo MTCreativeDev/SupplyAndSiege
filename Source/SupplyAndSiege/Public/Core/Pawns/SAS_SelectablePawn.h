@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "Core/SAS_Enumerators.h"
 #include "Core/Interfaces/SAS_PlayerVisibilityInterface.h"
+#include "Core/Interfaces/SAS_ClickTarget.h"
 #include "SAS_SelectablePawn.generated.h"
 
 class USAS_UnitInformationComponent;
@@ -15,7 +16,7 @@ class USAS_UnitSightComponent;
 
 
 UCLASS()
-class SUPPLYANDSIEGE_API ASAS_SelectablePawn : public APawn, public ISAS_PlayerVisibilityInterface
+class SUPPLYANDSIEGE_API ASAS_SelectablePawn : public APawn, public ISAS_PlayerVisibilityInterface, public ISAS_ClickTarget
 {
 	GENERATED_BODY()
 
@@ -26,6 +27,8 @@ public:
 
 	virtual void SetVisibleToPlayer_Implementation(bool bVisible) override;
 	virtual bool IsVisibleToPlayer_Implementation() const override;
+
+	virtual ESAS_ClickTargetType GetClickTargetType_Implementation() const override;
 
 
 protected:

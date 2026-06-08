@@ -23,16 +23,21 @@ public:
 	virtual bool GroundSelectIsMove() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Unit Control")
-	virtual void HandleGroundRightClick(const FVector& WorldLocation);
+	virtual bool ResourceSelectIsMove(USAS_ResourceTypeData* ResourceType) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Unit Control")
-	virtual bool ResourceSelectIsMove(USAS_ResourceTypeData* ResourceType) const;
+	virtual bool CanReceiveAttackOrder() const;
+
+
+	UFUNCTION(BlueprintCallable, Category = "Unit Control")
+	virtual void HandleGroundRightClick(const FVector& WorldLocation);
 
 	UFUNCTION(BlueprintCallable, Category = "Unit Control")
 	virtual void HandleResourceRightClick(USAS_ResourceTypeData* ResourceType, FSAS_ResourceKey ResourceKey, const FVector& ResourceLocation);
 
 	UFUNCTION(BlueprintCallable, Category = "Unit Control")
-	virtual void HandleActorRightClick(AActor* TargetActor, const FVector& ClickLocation);
+	virtual void HandleAttackUnitOrder(USAS_UnitInformationComponent* TargetUnitInformationComponent, const FVector& ClickLocation);
+
 
 	UFUNCTION(BlueprintCallable, Category = "Unit Control")
 	virtual bool CanReceivePlayerCommands() const;

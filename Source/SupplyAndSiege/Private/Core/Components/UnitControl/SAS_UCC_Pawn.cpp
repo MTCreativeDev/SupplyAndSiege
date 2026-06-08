@@ -30,6 +30,7 @@ void USAS_UCC_Pawn::BeginMove_Internal(const FVector& WorldLocation)
 	CurrentPawnControlState = ESAS_PawnControlState::Moving;
 	SendStateTreeEvent(SASGameplayTags::StateTree_Pawn_MoveOrder);
 
+
 }
 
 void USAS_UCC_Pawn::SendStateTreeEvent(const FGameplayTag& EventTag)

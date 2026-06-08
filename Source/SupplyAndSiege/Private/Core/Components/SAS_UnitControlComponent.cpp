@@ -26,15 +26,21 @@ bool USAS_UnitControlComponent::ResourceSelectIsMove(USAS_ResourceTypeData* Reso
 	return false;
 }
 
+bool USAS_UnitControlComponent::CanReceiveAttackOrder() const
+{
+	return false;
+}
+
 void USAS_UnitControlComponent::HandleResourceRightClick(USAS_ResourceTypeData* ResourceType, FSAS_ResourceKey ResourceKey, const FVector& ResourceLocation)
 {
 	return;
 }
 
-void USAS_UnitControlComponent::HandleActorRightClick(AActor* TargetActor, const FVector& ClickLocation)
+void USAS_UnitControlComponent::HandleAttackUnitOrder(USAS_UnitInformationComponent* TargetUnitInformationComponent, const FVector& ClickLocation)
 {
-	return;
 }
+
+
 
 bool USAS_UnitControlComponent::CanReceivePlayerCommands() const
 {

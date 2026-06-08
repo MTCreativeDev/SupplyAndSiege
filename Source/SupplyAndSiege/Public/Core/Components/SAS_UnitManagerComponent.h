@@ -58,6 +58,8 @@ private:
 
 	void HandleGroundRightClickForSelectedUnits(const FVector& WorldLocation);
 	void HandleResourceRightClickForSelectedUnits(const FHitResult& Hit);
+	void HandleEnemyUnitRightClickForSelectedUnits(USAS_UnitInformationComponent* TargetUnitInformationComponent, const FVector& ClickLocation);
+
 
 public:
 	//This is the array of all available units to this player. Units include buildings, pawns etc. Anything that the player can select.

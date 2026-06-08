@@ -61,6 +61,11 @@ bool ASAS_SelectablePawn::IsVisibleToPlayer_Implementation() const
 	return bVisibleToPlayer;
 }
 
+ESAS_ClickTargetType ASAS_SelectablePawn::GetClickTargetType_Implementation() const
+{
+	return ESAS_ClickTargetType::Unit;
+}
+
 void ASAS_SelectablePawn::BeginPlay()
 {
 	Super::BeginPlay();

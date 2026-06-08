@@ -40,11 +40,15 @@ void USAS_UnitSightComponent::BeginPlay()
 	AGameStateBase* GS = World->GetGameState();
 	VisibilityManagerComponent = GS->FindComponentByClass<USAS_VisibilityManagerComponent>();
 
+	UpdateOverlaps();
+
 	ensureMsgf(
 		VisibilityManagerComponent,
 		TEXT("%s is missing VisibilityManagerComponent"),
 		*GetNameSafe(GetOwner())
 	);
+
+	
 	
 }
 
@@ -99,5 +103,7 @@ bool USAS_UnitSightComponent::IsValidEnemy(AActor* OtherActor)
 
 	return OtherUnitInfo->GetTeam() != OwnerUnitInfo->GetTeam();
 }
+
+
 
 

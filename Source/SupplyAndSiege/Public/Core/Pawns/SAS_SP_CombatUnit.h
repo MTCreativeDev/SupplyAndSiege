@@ -23,6 +23,7 @@ public:
 
 protected:
 
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	USAS_CombatComponent* CombatComponent;
 
 

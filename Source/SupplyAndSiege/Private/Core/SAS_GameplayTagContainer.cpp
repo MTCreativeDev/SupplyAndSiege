@@ -11,4 +11,5 @@ namespace SASGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(StateTree_Worker_Logistics_Unassigned, "StateTree.Worker.Logistics.Unassigned");
 	UE_DEFINE_GAMEPLAY_TAG(StateTree_Worker_Logistics_DeliverItem_MoveToSource, "StateTree.Worker.Logistics.DeliverItem.MoveToSource");
 	UE_DEFINE_GAMEPLAY_TAG(StateTree_Worker_Logistics_DeliverItem_MoveToTarget, "StateTree.Worker.Logistics.DeliverItem.MoveToTarget");
+	UE_DEFINE_GAMEPLAY_TAG(StateTree_Combat_AttackTarget, "StateTree.Combat.AttackTarget");
 }

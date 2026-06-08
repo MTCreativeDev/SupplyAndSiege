@@ -40,11 +40,14 @@ protected:
 
 	bool IsValidEnemy(AActor* OtherActor);
 
+private:
+
+
 public:	
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UnitSight")
-	float SightRadius = 1500.f;
+	float SightRadius = 3000.f;
 
 	UPROPERTY()
 	TObjectPtr<USAS_UnitInformationComponent> OwnerUnitInfo;

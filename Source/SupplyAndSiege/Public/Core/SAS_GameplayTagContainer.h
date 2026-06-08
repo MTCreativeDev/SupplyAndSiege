@@ -11,4 +11,5 @@ namespace SASGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StateTree_Worker_Logistics_Unassigned);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StateTree_Worker_Logistics_DeliverItem_MoveToSource);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StateTree_Worker_Logistics_DeliverItem_MoveToTarget);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(StateTree_Combat_AttackTarget);
 }
