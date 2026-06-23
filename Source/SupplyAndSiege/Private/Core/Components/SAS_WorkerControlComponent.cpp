@@ -38,6 +38,7 @@ ESAS_WorkerRequestResult USAS_WorkerControlComponent::RequestManualHarvest(USAS_
 
 ESAS_WorkerRequestResult USAS_WorkerControlComponent::RequestEnterLmQueue()
 {
+	if (bIsBeingDestroyed) return ESAS_WorkerRequestResult::Rejected;
 	if (!LogisticsManager) return ESAS_WorkerRequestResult::Rejected;
 	if (CurrentWorkerControlState == ESAS_WorkerControlState::Transition) return ESAS_WorkerRequestResult::Rejected;
 	if (CurrentWorkerControlState == ESAS_WorkerControlState::LMQueue) return ESAS_WorkerRequestResult::Accepted;
@@ -75,6 +76,10 @@ void USAS_WorkerControlComponent::NotifyAssignmentEnded(USAS_LogisticsWorkerAssi
 	}
 
 	CurrentWorkerControlState = ESAS_WorkerControlState::Idle;
+
+	if (bIsBeingDestroyed) return;
+	if (bSuppressAutoLmRequeue) return;
+
 	RequestEnterLmQueue();
 }
 
@@ -166,14 +171,27 @@ void USAS_WorkerControlComponent::BeginPlay()
 	
 }
 
+void USAS_WorkerControlComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	CleanupBeforeUnitDestroyed();
+
+	Super::EndPlay(EndPlayReason);
+}
+
 bool USAS_WorkerControlComponent::ExitLmControlForPlayerOverride()
 {
-	if (CurrentWorkerControlState != ESAS_WorkerControlState::LMQueue) return true;
+	if (CurrentWorkerControlState != ESAS_WorkerControlState::LMQueue && CurrentWorkerControlState != ESAS_WorkerControlState::LMAssignment) return true;
+
+	bSuppressAutoLmRequeue = true;
+
 	if (ActiveAssignment)
 	{
 		ActiveAssignment->CancelAssignment();
 		ActiveAssignment = nullptr;
 	}
+
+	bSuppressAutoLmRequeue = false;
+
 	if (LogisticsManager)
 	{
 		LogisticsManager->UnregisterAvailableWorker(this);
@@ -240,4 +258,29 @@ void USAS_WorkerControlComponent::SendStateTreeEvent(const FGameplayTag& EventTa
 bool USAS_WorkerControlComponent::IsAcceptingNewAssignments() const
 {
 	return ActiveAssignment == nullptr && CurrentWorkerControlState == ESAS_WorkerControlState::LMQueue;
+}
+
+void USAS_WorkerControlComponent::CleanupBeforeUnitDestroyed()
+{
+	if (bIsBeingDestroyed) return;
+	bIsBeingDestroyed = true;
+
+	if (ActiveAssignment)
+	{
+		ActiveAssignment->CancelAssignment();
+		ActiveAssignment = nullptr;
+	}
+
+	if (LogisticsManager)
+	{
+		LogisticsManager->UnregisterAvailableWorker(this);
+	}
+
+	CurrentWorkerControlState = ESAS_WorkerControlState::Idle;
+
+	CurrentHarvestResourceType = nullptr;
+	CurrentHarvestResourceKey = FSAS_ResourceKey();
+	CurrentHarvestTargetLocation = FVector::ZeroVector;
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Properly Left LM"));
 }

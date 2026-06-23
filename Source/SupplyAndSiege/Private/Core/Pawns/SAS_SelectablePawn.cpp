@@ -8,6 +8,7 @@
 #include "Core/Components/SAS_UnitControlComponent.h"
 #include "Core/Components/SAS_UnitSightComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Core/Components/SAS_HungerComponent.h"
 
 
 ASAS_SelectablePawn::ASAS_SelectablePawn()
@@ -33,6 +34,7 @@ ASAS_SelectablePawn::ASAS_SelectablePawn()
 	UnitSightComponent = CreateDefaultSubobject<USAS_UnitSightComponent>(TEXT("UnitSightComponent"));
 	UnitSightComponent->SetupAttachment(RootComponent);
 
+	HungerComponent = CreateDefaultSubobject<USAS_HungerComponent>(TEXT("HungerComponent"));
 }
 
 UPawnMovementComponent* ASAS_SelectablePawn::GetMovementComponent() const
@@ -92,9 +94,18 @@ void ASAS_SelectablePawn::BeginPlay()
 	
 }
 
+void ASAS_SelectablePawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (UnitInformationComponent)
+	{
+		UnitInformationComponent->RemoveUnitFromGame();
+	}
+
+	Super::EndPlay(EndPlayReason);
+}
+
 void ASAS_SelectablePawn::DestroySelf()
 {
-	UnitInformationComponent->RemoveUnitFromGame();
 	Destroy();
 }
 

@@ -16,6 +16,7 @@ class USAS_LogisticsMasterJob;
 class USAS_WorkerControlComponent;
 class USAS_LMJ_DeliverItem;
 class USAS_InventoryComponent;
+class UItemDefinitionPrimaryData;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNotifyLogisticsMasterJobUpdated, USAS_LogisticsMasterJob*, LogisticsMasterJob);
@@ -43,6 +44,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Logistics")
 	TArray<USAS_WorkerControlComponent*> GetAvailableWorkers() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Logistics|Food")
+	bool TryConsumeFood();
 
 	//Dispatchers
 
@@ -88,5 +92,8 @@ protected:
 
 	UPROPERTY()
 	TMap<FSAS_SourceTargetPair, FSAS_PathDistanceCache> CachedPathDistances;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hunger")
+	TObjectPtr<UItemDefinitionPrimaryData> FoodItemDefinition;
 
 };

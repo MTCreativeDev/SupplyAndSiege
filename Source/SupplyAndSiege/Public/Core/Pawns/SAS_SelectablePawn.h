@@ -13,6 +13,7 @@ class USAS_UnitInformationComponent;
 class UCapsuleComponent;
 class UFloatingPawnMovement;
 class USAS_UnitSightComponent;
+class USAS_HungerComponent;
 
 
 UCLASS()
@@ -33,6 +34,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UFUNCTION(BlueprintCallable, Category = "SAS_Unit")
 	void DestroySelf();
@@ -57,6 +60,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USAS_UnitSightComponent* UnitSightComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SAS_Unit_Pawn")
+	USAS_HungerComponent* HungerComponent;
 
 
 private:

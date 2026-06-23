@@ -83,9 +83,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Worker Control")
 	bool IsAcceptingNewAssignments() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Worker Control")
+	void CleanupBeforeUnitDestroyed();
+
 protected:
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual bool ExitLmControlForPlayerOverride();
 	virtual bool CanEnterLmQueueImmediately() const;
@@ -129,4 +133,7 @@ protected:
 	ESAS_WorkerType WorkerType = ESAS_WorkerType::Unspecified;
 
 	TObjectPtr< USAS_InventoryComponent> WorkerInventory;
+
+	bool bIsBeingDestroyed = false;
+	bool bSuppressAutoLmRequeue = false;
 };

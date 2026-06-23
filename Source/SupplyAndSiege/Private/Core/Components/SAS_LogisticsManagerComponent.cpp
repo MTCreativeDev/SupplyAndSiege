@@ -61,6 +61,32 @@ TArray<USAS_WorkerControlComponent*> USAS_LogisticsManagerComponent::GetAvailabl
 	return Result;
 }
 
+bool USAS_LogisticsManagerComponent::TryConsumeFood()
+{
+	if (!IsValid(FoodItemDefinition)) return false;
+
+	ActiveOfferings.RemoveAll([](const FSAS_LogisticsOffering& Offer)
+	{
+		return !IsValid(Offer.SourceInventory) || !IsValid(Offer.Item) || Offer.Quantity <= 0;
+	});
+
+	for (const FSAS_LogisticsOffering& Offer : ActiveOfferings)
+	{
+		if (!IsValid(Offer.SourceInventory)) continue;
+		if (!IsValid(Offer.Item)) continue;
+		if (Offer.Item != FoodItemDefinition) continue;
+		if (Offer.Quantity <= 0) continue;
+
+		// This should be the real authority.
+		if (Offer.SourceInventory->RemoveItem(FoodItemDefinition, 1) == 1)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void USAS_LogisticsManagerComponent::BeginPlay()
 {
 	Super::BeginPlay();
