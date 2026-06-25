@@ -18,6 +18,8 @@ void USAS_PopulationManagerComponent::RegisterHousing(AActor* HousingActor)
 	if (!IsValid(HousingActor)) return;
 
 	CurrentHouses.AddUnique(HousingActor);
+
+	NotifyPopulationChange();
 }
 
 void USAS_PopulationManagerComponent::UnregisterHousing(AActor* HousingActor)
@@ -28,6 +30,8 @@ void USAS_PopulationManagerComponent::UnregisterHousing(AActor* HousingActor)
 		{
 			return !ExistingHouse.IsValid() || ExistingHouse.Get() == HousingActor;
 		});
+
+	NotifyPopulationChange();
 }
 
 void USAS_PopulationManagerComponent::RegisterVillager(AActor* VillagerActor)
@@ -35,6 +39,8 @@ void USAS_PopulationManagerComponent::RegisterVillager(AActor* VillagerActor)
 	if (!IsValid(VillagerActor)) return;
 
 	CurrentPopulation.AddUnique(VillagerActor);
+
+	NotifyPopulationChange();
 }
 
 void USAS_PopulationManagerComponent::UnregisterVillager(AActor* VillagerActor)
@@ -45,6 +51,8 @@ void USAS_PopulationManagerComponent::UnregisterVillager(AActor* VillagerActor)
 		{
 			return !ExistingVillager.IsValid() || ExistingVillager.Get() == VillagerActor;
 		});
+
+	NotifyPopulationChange();
 }
 
 int32 USAS_PopulationManagerComponent::GetCurrentMaxPopulation()
@@ -149,5 +157,10 @@ void USAS_PopulationManagerComponent::TrySpawnVillager()
 int32 USAS_PopulationManagerComponent::GetAvailableHousingSpace()
 {
 	return GetCurrentMaxPopulation() - GetCurrentPopulationCount();
+}
+
+void USAS_PopulationManagerComponent::NotifyPopulationChange()
+{
+	OnPopulationChange.Broadcast(GetCurrentPopulationCount(),GetCurrentMaxPopulation());
 }
 

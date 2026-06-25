@@ -9,6 +9,12 @@
 class ASAS_SelectablePawn;
 class ASAS_SelectableBuilding;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+	FOnPopulationChange,
+	int32, CurrentPopulation,
+	int32, MaxHousingSpace
+);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SUPPLYANDSIEGE_API USAS_PopulationManagerComponent : public UActorComponent
 {
@@ -30,6 +36,10 @@ public:
 	int32 GetCurrentPopulationCount();
 
 
+	//dispatchers
+	UPROPERTY(BlueprintAssignable, Category = "Population")
+	FOnPopulationChange OnPopulationChange;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -40,6 +50,8 @@ protected:
 
 private:
 	int32 GetAvailableHousingSpace();
+
+	void NotifyPopulationChange();
 
 
 
