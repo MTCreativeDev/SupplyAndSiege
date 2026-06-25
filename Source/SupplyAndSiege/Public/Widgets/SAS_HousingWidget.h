@@ -18,6 +18,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Housing")
 	USAS_PopulationManagerComponent* PopulationManagerComponent;
 	
 };

@@ -97,6 +97,8 @@ void USAS_PopulationManagerComponent::BeginPlay()
 
 void USAS_PopulationManagerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
 	TrySpawnVillager();
 }
 
