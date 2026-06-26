@@ -85,7 +85,7 @@ protected:
 	float CurrentHunger = 300.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hunger")
-	float HungerDrainPerSecond = 15.56f;
+	float HungerDrainPerSecond = .56f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hunger")
 	float HungryThreshold = 200.f;

@@ -26,7 +26,9 @@ public:
 	void RegisterHousing(AActor* HousingActor);
 	void UnregisterHousing(AActor* HousingActor);
 
+	UFUNCTION(BlueprintCallable, Category = "Housing")
 	void RegisterVillager(AActor* VillagerActor);
+	UFUNCTION(BlueprintCallable, Category = "Housing")
 	void UnregisterVillager(AActor* VillagerActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Housing")

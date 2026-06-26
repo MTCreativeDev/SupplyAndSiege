@@ -164,5 +164,6 @@ int32 USAS_PopulationManagerComponent::GetAvailableHousingSpace()
 void USAS_PopulationManagerComponent::NotifyPopulationChange()
 {
 	OnPopulationChange.Broadcast(GetCurrentPopulationCount(),GetCurrentMaxPopulation());
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Added"));
 }
 
