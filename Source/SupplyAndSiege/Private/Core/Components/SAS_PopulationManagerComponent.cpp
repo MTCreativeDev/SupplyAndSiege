@@ -112,7 +112,6 @@ void USAS_PopulationManagerComponent::TrySpawnVillager()
 
 	if (FMath::FRand() > SpawnChance) return;
 		
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Try Spawn"));
 	if (VillagerSpawnLocations.Num() < 1) return;
 
 	int32 VillagersToSpawn = 1;
@@ -126,9 +125,7 @@ void USAS_PopulationManagerComponent::TrySpawnVillager()
 			VillagersToSpawn = 2;
 		}
 	}
-	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Villagers To Spawn: %d"), VillagersToSpawn));
-
+		
 	UWorld* World = GetWorld();
 	if (!World) return;
 
@@ -164,6 +161,5 @@ int32 USAS_PopulationManagerComponent::GetAvailableHousingSpace()
 void USAS_PopulationManagerComponent::NotifyPopulationChange()
 {
 	OnPopulationChange.Broadcast(GetCurrentPopulationCount(),GetCurrentMaxPopulation());
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Added"));
 }
 

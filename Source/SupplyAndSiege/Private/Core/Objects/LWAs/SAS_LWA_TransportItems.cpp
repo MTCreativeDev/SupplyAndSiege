@@ -179,15 +179,6 @@ bool USAS_LWA_TransportItems::PickupReservation()
 	if (AddedQuantity != RemovedQuantity)
 	{
 		//TODO:: Need to have extra items grabbed dropped on the ground. Otherwise items get deleted.
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				5.f,
-				FColor::Red,
-				FString::Printf(TEXT("Pickup failed: Removed %d but added %d to worker"), RemovedQuantity, AddedQuantity)
-			);
-		}
 
 		//TODO:: In the future, if this happens we can continue, but need to update the job reservation and the inventory reservation at the destination. Easire to just cancel though.
 
@@ -369,15 +360,7 @@ bool USAS_LWA_TransportItems::RunEntryChecks()
 	if (CarryCapacity < AssignedAmount)
 	{
 		//Debug
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				4.f,
-				FColor::Red,
-				FString::Printf(TEXT("Transport Assignment Amount Mismatch. Assigned: %d | CarryCapacity: %d"), AssignedAmount, CarryCapacity)
-			);
-		}
+
 		//End Debug
 
 		if (CarryCapacity == 0)

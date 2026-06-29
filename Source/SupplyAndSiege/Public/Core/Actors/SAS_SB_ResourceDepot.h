@@ -22,9 +22,11 @@ public:
 
 	virtual USAS_InventoryComponent* GetInputInventory() override;
 
+
+
 protected:
 
-
+	virtual void BeginPlay() override;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")

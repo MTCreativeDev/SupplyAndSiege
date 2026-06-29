@@ -144,10 +144,6 @@ int32 USAS_ResourceManagerComponent::ApplyHarvest(const FSAS_ResourceKey& Key, c
 
 	if (State.bDepleted)
 	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Terminate Reservation"));
-		}
 
 		Reservations.Remove(Key);
 

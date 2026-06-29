@@ -96,15 +96,7 @@ void ASAS_PlayerController::Tick(float DeltaSeconds)
 
         else
         {
-            if (GEngine)
-            {
-                GEngine->AddOnScreenDebugMessage(
-                    -1,
-                    0.f,
-                    FColor::Yellow,
-                    FString::Printf(TEXT("Failed to get mouse pos"))
-                );
-            }
+
         }
         UpdateSelectionDragState();
                 
@@ -394,10 +386,7 @@ void ASAS_PlayerController::SelectionStarted()
         }
         else
         {
-            if (GEngine)
-            {
-                GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("Invalid"));
-            }
+
         }
 
 

@@ -9,6 +9,7 @@
 #include "Core/Components/SAS_VisibilityManagerComponent.h"
 #include "Core/Components/SAS_PopulationManagerComponent.h"
 #include "Core/Components/SAS_TimeManagerComponent.h"
+#include "Core/Components/SAS_WinLossManagerComponent.h"
 
 ASAS_GameState::ASAS_GameState()
 {
@@ -29,6 +30,7 @@ ASAS_GameState::ASAS_GameState()
 	VisibilityManagerComponent = CreateDefaultSubobject<USAS_VisibilityManagerComponent>(TEXT("VisibilityManagerComponent"));
 
 	PopulationManagerComponent = CreateDefaultSubobject<USAS_PopulationManagerComponent>(TEXT("PopulationManagerComponent"));
+
 	TimeManagerComponent = CreateDefaultSubobject<USAS_TimeManagerComponent>(TEXT("TimeManagerComponent"));
 
 }

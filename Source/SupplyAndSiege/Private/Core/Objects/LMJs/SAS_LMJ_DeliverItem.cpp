@@ -52,7 +52,6 @@ void USAS_LMJ_DeliverItem::NotifyAssignmentCancelled(USAS_LogisticsWorkerAssignm
 	if (!Assignment) return;
 	Super::NotifyAssignmentCancelled(Assignment);
 	ReservedAmount = FMath::Max(0, ReservedAmount - Assignment->GetAssignedAmount());
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Cancelled"));
 
 
 	if (GetUnreservedAmount() > 0)
@@ -68,7 +67,6 @@ void USAS_LMJ_DeliverItem::NotifyAssignmentFailed(USAS_LogisticsWorkerAssignment
 	if (!Assignment) return;
 
 	Super::NotifyAssignmentFailed(Assignment, FailureContext);
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Cancelled"));
 
 	ReservedAmount = FMath::Max(0, ReservedAmount - Assignment->GetAssignedAmount());
 	if (GetUnreservedAmount() > 0)

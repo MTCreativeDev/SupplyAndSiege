@@ -282,5 +282,4 @@ void USAS_WorkerControlComponent::CleanupBeforeUnitDestroyed()
 	CurrentHarvestResourceKey = FSAS_ResourceKey();
 	CurrentHarvestTargetLocation = FVector::ZeroVector;
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Properly Left LM"));
 }

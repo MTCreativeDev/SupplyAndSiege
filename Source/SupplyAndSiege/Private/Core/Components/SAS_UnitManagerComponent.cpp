@@ -62,17 +62,7 @@ void USAS_UnitManagerComponent::RemoveSelectableUnit(TWeakObjectPtr<AActor> Unit
 				ActorList += TEXT(", ");
 			}
 		}
-
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			30.f,
-			FColor::Green,
-			FString::Printf(
-				TEXT("SelectableUnits Count: %d | [%s]"),
-				SelectableUnits.Num(),
-				*ActorList
-			)
-		);
+		
 	}
 }
 

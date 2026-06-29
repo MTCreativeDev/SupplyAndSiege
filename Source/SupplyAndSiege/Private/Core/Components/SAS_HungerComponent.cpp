@@ -87,7 +87,6 @@ bool USAS_HungerComponent::TryEat()
 		return false;
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Consumed Food"));
 	RestoreHunger(FoodRestoreAmount);
 	return true;
 }
@@ -148,9 +147,6 @@ void USAS_HungerComponent::EvaluateHungerState()
 
 void USAS_HungerComponent::SetHungerState(ESAS_HungerState NewState)
 {
-
-	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow, FString::Printf(TEXT("New Hunger State: %s"), *UEnum::GetValueAsString(NewState)));
-
 	if (HungerState == NewState) return;
 
 	const ESAS_HungerState OldState = HungerState;

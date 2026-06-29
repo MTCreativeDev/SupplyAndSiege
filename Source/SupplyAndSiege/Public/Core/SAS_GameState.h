@@ -14,6 +14,7 @@ class USAS_LogisticsManagerComponent;
 class USAS_VisibilityManagerComponent;
 class USAS_PopulationManagerComponent;
 class USAS_TimeManagerComponent;
+class USAS_WinLossManagerComponent;
 
 UCLASS()
 class SUPPLYANDSIEGE_API ASAS_GameState : public AGameStateBase
@@ -51,5 +52,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Time")
 	USAS_TimeManagerComponent* TimeManagerComponent;
+
 
 };
